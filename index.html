@@ -78,6 +78,13 @@
   #chartWrap svg .grid { stroke:var(--line); }
   #progTable tr.on td { background:var(--line); } #progTable td.name { cursor:pointer; }
   .gm { padding:3px 0; }
+  details.res-acc { margin-top:14px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:var(--card); }
+  details.res-acc > summary { cursor:pointer; list-style:none; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+  details.res-acc > summary::-webkit-details-marker { display:none; }
+  details.res-acc > summary::before { content:'▸'; margin-right:8px; color:var(--mut); transition:transform .15s; }
+  details.res-acc[open] > summary::before { transform:rotate(90deg); }
+  .hist-top { display:flex; flex-wrap:wrap; gap:16px; align-items:stretch; margin-bottom:20px; }
+  .plist.picks { grid-template-columns:1fr; } .plist.picks select { flex:1; min-width:0; padding:4px 6px; }
   .cw { background:var(--card); border-radius:12px; padding:16px; margin-bottom:16px; border-left:4px solid var(--acc); }
   .cw.past { opacity:.6; border-left-color:var(--bd); }
   .cw-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
@@ -116,7 +123,7 @@
   <div class="top-btns">
     <span id="syncStatus" class="legend" style="align-self:center;margin:0"></span>
     <button type="button" class="theme-btn" id="themeBtn"></button>
-    <button type="button" class="theme-btn" id="cfgBtn" title="Configuration / Log in" aria-label="Configuration">⚙️</button>
+    <button type="button" class="theme-btn" id="cfgBtn" title="Configuration" aria-label="Configuration">⚙️</button>
   </div>
   <h1>🎾 Padel <span>Squad</span></h1>
   <div class="sub" id="roBanner" style="display:none;color:#facc15;font-weight:600"></div>
@@ -126,7 +133,6 @@
   <div class="tabs">
     <button class="tab active" data-tab="board">Leaderboard</button>
     <button class="tab" data-tab="prog">Rank Progress</button>
-    <button class="tab" data-tab="sched">Upcoming Teams</button>
     <button class="tab" data-tab="hist">Match History</button>
     <button class="tab" data-tab="cal">Calendar</button>
   </div>
@@ -175,25 +181,12 @@
       </table>
     </div>
 
-    <div class="card edit">
-      <h3>Record Weekly Result Manually</h3>
-      <form id="form">
-        <label>Player<input id="fName" list="players" required placeholder="Name"></label>
-        <datalist id="players"></datalist>
-        <label>Wins<input id="fW" type="number" min="0" max="3" value="0"></label>
-        <label>Draws<input id="fD" type="number" min="0" max="3" value="0"></label>
-        <label>Losses (auto)<input id="fL" type="number" value="3" readonly tabindex="-1"></label>
-        <button type="submit">Add</button>
-        <button type="button" class="sec" id="reset">Reset to imported standings</button>
-        <button type="button" class="sec" id="clear">Clear all</button>
-      </form>
-      <div class="msg" id="msg"></div>
-    </div>
+
 
   </section>
 
   <!-- ============ SCHEDULE ============ -->
-  <section class="panel" id="sched">
+  <section class="panel" id="sched" hidden>
     <div class="card">
       <h3>1. Who's playing this week?</h3>
       <div class="row">
@@ -266,22 +259,19 @@
 
   <!-- ============ CONFIGURATION ============ -->
   <section class="panel" id="cfg">
-    <div class="card" id="acctCard">
-      <h3>👤 Account</h3>
-      <div id="acctBody"></div>
-      <div class="msg" id="acctMsg"></div>
-    </div>
-
-    <div class="card" id="edCard" style="display:none">
-      <h3>🛡️ Editors</h3>
-      <div class="legend" style="margin:0 0 10px">People on this list can log in and update results, teams and the calendar. Admins can also manage this list. They must create an account (⚙️ → Create account) using the same email.</div>
+    <div class="card edit">
+      <h3>👥 Players</h3>
       <div class="row cal-form">
-        <label>Email<input id="edEmail" type="email" placeholder="name@example.com" style="width:260px"></label>
-        <label class="chk"><input type="checkbox" id="edAdmin"> Admin</label>
-        <button type="button" id="edAdd">Add editor</button>
+        <label>New player name<input id="npName" placeholder="e.g. Sam 🎾" maxlength="40" style="width:260px"></label>
+        <button type="button" id="npAdd">Add player</button>
+        <label>Search<input id="npFilter" placeholder="Find a player" style="width:200px"></label>
       </div>
-      <table style="margin-top:12px"><tbody id="edList"></tbody></table>
-      <div class="msg" id="edMsg"></div>
+      <div class="msg" id="npMsg"></div>
+      <div style="max-height:420px;overflow:auto;margin-top:8px">
+        <table><thead><tr><th>Rank</th><th style="text-align:left">Player</th><th>Played</th><th>Points</th><th></th></tr></thead>
+        <tbody id="npList"></tbody></table>
+      </div>
+      <div class="legend">New players start in the Qualifier Zone with 0 games. Removing a player deletes all their results and takes them off upcoming calendar weeks.</div>
     </div>
 
     <div class="card edit" id="uploadCard" style="display:none">
@@ -310,11 +300,26 @@
 
   <!-- ============ HISTORY ============ -->
   <section class="panel" id="hist">
-    <div class="card">
-      <div class="row">
-        <label>Filter by player<input id="hFilter" list="players" placeholder="All players"></label>
-        <span class="legend" id="hCount"></span>
+    <div class="hist-top">
+      <div class="card" style="flex:0 1 300px;margin:0">
+        <h3>Filter</h3>
+        <div class="row">
+          <label>Filter by player<input id="hFilter" list="players" placeholder="All players"></label>
+        </div>
+        <div class="legend" id="hCount"></div>
       </div>
+    <div class="card edit" style="flex:1 1 560px;margin:0">
+      <h3>Record Weekly Result Manually</h3>
+      <form id="form">
+        <label>Player<input id="fName" list="players" required placeholder="Name"></label>
+        <datalist id="players"></datalist>
+        <label>Wins<input id="fW" type="number" min="0" max="3" value="0"></label>
+        <label>Draws<input id="fD" type="number" min="0" max="3" value="0"></label>
+        <label>Losses (auto)<input id="fL" type="number" value="3" readonly tabindex="-1"></label>
+        <button type="submit">Add</button>
+      </form>
+      <div class="msg" id="msg"></div>
+    </div>
     </div>
     <div id="history"></div>
   </section>
@@ -332,7 +337,9 @@ const SB_KEY = 'sb_publishable_yyQeNTbbeQ_hsK63fljJPA_Xe2l7nKh';
 const CLOUD = !SNAP && !!(window.supabase && SB_URL && SB_KEY);
 const sb = CLOUD ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 let user = null, isEditor = false, isAdmin = false;
-let RO = !!SNAP || CLOUD;                            // cloud: read-only until logged in as an editor
+let synced = null, pushTimer = null, pushing = false, pushAgain = false;   // sync state (declared early: save() runs at startup)
+let RO = !!SNAP;                                     // only published snapshots are read-only
+isEditor = !SNAP;                                     // no logins: anyone with the link can edit
 // in cloud mode data comes from Supabase, never from this browser's local storage
 const load = k => SNAP ? (SNAP.data[k] ?? null) : CLOUD ? null : localStorage.getItem(k);
 const store = (k, v) => { if (!SNAP && !CLOUD) localStorage.setItem(k, v); };
@@ -488,6 +495,7 @@ function render() {
   renderHistory();
   renderProgress();
   renderCalendar();
+  renderPlayersCfg();
 }
 
 // ---------- rank progress ----------
@@ -659,6 +667,44 @@ document.querySelectorAll('th').forEach(th => th.onclick = () => {
 const syncLosses = () => { $('fL').value = GAMES_PER_WEEK - (+$('fW').value||0) - (+$('fD').value||0); };
 $('fW').oninput = $('fD').oninput = syncLosses;
 
+// ---------- players (Configuration) ----------
+function renderPlayersCfg() {
+  const f = $('npFilter').value.trim().toLowerCase();
+  const list = aggregate().filter(p => !f || p.name.toLowerCase().includes(f));
+  $('npList').innerHTML = list.map(p => `<tr><td><span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span></td>
+    <td class="name">${esc(p.name)}</td><td>${p.games}</td><td class="pts">${p.points}</td>
+    <td><button type="button" class="del" data-rmp="${esc(p.name)}">Remove</button></td></tr>`).join('')
+    || '<tr><td colspan="5" class="legend">No players found.</td></tr>';
+  $('npList').querySelectorAll('[data-rmp]').forEach(b => b.onclick = () => removePlayer(b.dataset.rmp));
+}
+function removePlayer(name) {
+  const recs = results.filter(r => r.name === name);
+  const t = today();
+  const weeks = calendar.filter(w => w.date >= t && !isSubmitted(w) && [...w.players, ...w.reserves].includes(name));
+  if (!confirm(`Remove ${name}?\n\nThis deletes ${recs.length} result record${recs.length!==1?'s':''}` +
+      `${weeks.length ? ` and takes them off ${weeks.length} upcoming calendar week${weeks.length!==1?'s':''}` : ''}.` +
+      `\nThe leaderboard will be recalculated. This cannot be undone (except from a backup).`)) return;
+  results = results.filter(r => r.name !== name);
+  roster = roster.filter(n => n !== name);
+  weeks.forEach(w => {
+    w.players = w.players.map(n => n === name ? '' : n);
+    w.reserves = w.reserves.map(n => n === name ? '' : n);
+    delete w.res;
+  });
+  save(); if (weeks.length) saveCal(); render();
+  $('npMsg').className = 'msg ok'; $('npMsg').textContent = `${name} removed.`;
+}
+$('npAdd').onclick = () => {
+  const n = $('npName').value.trim().replace(/\s+/g, ' '), m = $('npMsg'); m.className = 'msg';
+  if (!n) { m.classList.add('err'); m.textContent = 'Enter a name.'; return; }
+  const clash = aggregate().find(p => p.name.toLowerCase() === n.toLowerCase());
+  if (clash) { m.classList.add('err'); m.textContent = `${clash.name} is already a player.`; return; }
+  roster.push(n); save(); render();
+  m.classList.add('ok'); m.textContent = `${n} added to the Qualifier Zone.`; $('npName').value = '';
+};
+$('npName').onkeydown = e => { if (e.key === 'Enter') $('npAdd').click(); };
+$('npFilter').oninput = renderPlayersCfg;
+
 $('form').onsubmit = e => {
   e.preventDefault();
   const name = $('fName').value.trim();
@@ -667,13 +713,11 @@ $('form').onsubmit = e => {
   const fail = t => { msg.textContent = t; msg.classList.add('err'); };
   if (!name) return fail('Enter a player name.');
   if (w < 0 || d < 0 || l < 0) return fail(`Wins + draws cannot exceed ${GAMES_PER_WEEK} games.`);
-  const b = { id:uid(), ts:Date.now(), source:'Manual entry', games:[], by:user?.email };
+  const b = { id:uid(), ts:Date.now(), source:'Manual entry', games:[] };
   batches.push(b); results.push({ id:uid(), batch:b.id, name, w, d, l }); save(); render();
   msg.textContent = `${name}: ${w}W ${d}D ${l}L = ${w*3+d}/${MAX_WEEK} pts.`; msg.classList.add('ok');
   $('fW').value = $('fD').value = 0; syncLosses();
 };
-$('reset').onclick = () => { if (confirm('Replace ALL data and history with the original imported standings?')) { const s = baseline(); results = s.out; batches = s.bs; roster = []; save(); render(); } };
-$('clear').onclick = () => { if (confirm('Delete all results, history and players?')) { results = []; batches = []; roster = []; save(); render(); } };
 
 // ---------- tabs ----------
 $('cfgBtn').onclick = () => {
@@ -768,7 +812,7 @@ $('submitWeek').onclick = () => {
            win.forEach(n => tally[n].w++); lose.forEach(n => tally[n].l++); }
   });
   if (!confirm(`Add this week's results for ${Object.keys(tally).length} players?`)) return;
-  const bt = { id:uid(), ts:Date.now(), source:`Game schedule (${courts.length} court${courts.length>1?'s':''})`, games, by:user?.email };
+  const bt = { id:uid(), ts:Date.now(), source:`Game schedule (${courts.length} court${courts.length>1?'s':''})`, games };
   batches.push(bt);
   Object.entries(tally).forEach(([name, t]) => results.push({ id:uid(), batch:bt.id, name, ...t }));
   roster = roster.filter(n => !tally[n]);
@@ -788,6 +832,7 @@ $('calFee').onchange = () => {
   if (isNaN(v) || v < 0) { $('calFee').value = fee.toFixed(2); return; }
   fee = v; store(FKEY, String(fee)); schedulePush(); $('calFee').value = fee.toFixed(2); renderCalendar();
 };
+const resOpen = {};    // results accordion open/closed per week
 const monthOpen = {};   // user's expand/collapse choice per month; default: current & future open, past closed
 let calendar = JSON.parse(load(CKEY) || '[]');   // [{id, date, time, note, players:[12], reserves:[]}]
 const saveCal = () => { store(CKEY, JSON.stringify(calendar)); schedulePush(); };
@@ -810,10 +855,108 @@ $('calAdd').onclick = () => {
 $('calPast').onchange = () => renderCalendar();
 const fmtDate = d => new Date(d + 'T00:00').toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short', year:'numeric' });
 
+// ---- calendar → courts ----
+const isSubmitted = w => !!(w.batch && batches.some(b => b.id === w.batch));
+// Key players + reserves (in reserve order) filling any of the 12 gaps, sorted by current rank,
+// split into courts of 4 (GOAT, Camels, Snails). Locked to the submitted lineup once results are in.
+function weekLineup(w, rankOf) {
+  const r = n => rankOf[n]?.rank ?? 1e9, byRank = (a,b) => r(a) - r(b) || a.localeCompare(b);
+  const key = w.players.filter(Boolean), res = w.reserves.filter(Boolean);
+  const promoted = res.slice(0, Math.max(0, KEY_PLAYERS - key.length));
+  const spare = res.slice(promoted.length).sort(byRank);
+  if (isSubmitted(w) && w.lineup) return { courts:w.lineup, waiting:[], promoted, spare };
+  const playing = [...key, ...promoted].sort(byRank);
+  const nC = Math.min(COURT_NAMES.length, Math.floor(playing.length / PER_COURT));
+  const courts = Array.from({ length:nC }, (_, c) => playing.slice(c*PER_COURT, (c+1)*PER_COURT));
+  return { courts, waiting:playing.slice(nC*PER_COURT), promoted, spare };
+}
+function submitWeek(w) {
+  if (w.type === 'Swingers') return alert('Swingers weeks are social games – no scores are recorded.');
+  const rankOf = {}; aggregate().forEach(p => rankOf[p.name] = p);
+  const L = weekLineup(w, rankOf), res = w.res || {};
+  const missing = L.courts.flatMap((_, c) => PAIRINGS.map((_, g) => c+'-'+g)).filter(k => !res[k]);
+  if (missing.length) return alert(`Enter a result for every game first (${missing.length} missing).`);
+  if (!confirm(`Submit results for ${fmtDate(w.date)} (${L.courts.length} court${L.courts.length>1?'s':''}) to the leaderboard?`)) return;
+  const tally = {}, games = [];
+  L.courts.forEach((ps, c) => {
+    ps.forEach(n => tally[n] = { w:0, d:0, l:0 });
+    PAIRINGS.forEach(([a,b], g) => {
+      const A = a.map(i => ps[i]), B = b.map(i => ps[i]), v = res[c+'-'+g];
+      games.push({ court:c+1, a:A, b:B, res:v });
+      if (v === 'D') [...A,...B].forEach(n => tally[n].d++);
+      else { const [win, lose] = v === 'A' ? [A,B] : [B,A]; win.forEach(n => tally[n].w++); lose.forEach(n => tally[n].l++); }
+    });
+  });
+  const bt = { id:uid(), ts:Date.now(), source:`Calendar ${fmtDate(w.date)} (${L.courts.length} court${L.courts.length>1?'s':''})`, games };
+  batches.push(bt);
+  Object.entries(tally).forEach(([name, t]) => results.push({ id:uid(), batch:bt.id, name, ...t }));
+  roster = roster.filter(n => !tally[n]);
+  w.batch = bt.id; w.lineup = L.courts;
+  save(); saveCal(); render();
+}
+
 function renderCalendar() {
   const players = aggregate();                       // ranked order for the dropdown
   const showPast = $('calPast').checked, t = today();
   const list = [...calendar].sort((a,b) => a.date.localeCompare(b.date)).filter(w => showPast || w.date >= t);
+  const rankOf = {}; players.forEach(p => rankOf[p.name] = p);
+  const courtsHtml = (w, pick, reservesHtml) => {
+    const L = weekLineup(w, rankOf), done = isSubmitted(w);
+    const badge = n => { const p = rankOf[n]; return `<span class="rank sm${p ? rc(p.rank,p.qual) : ''}">${p ? p.label : '–'}</span>`; };
+    const tag = () => '';                       // no reserve marker shown on courts
+    const res = w.res || {};
+    const courts = L.courts.map((ps, c) => `
+      <div class="court">
+        <h4>${courtName(c+1)} <span class="legend" style="font-weight:400">· Court ${c+1}</span></h4>
+        <div class="plist${done ? '' : ' picks'}">${ps.map(n => done
+          ? `<div>${badge(n)}${esc(n)}${tag(n)}</div>`
+          : `<div>${badge(n)}${pick(n)}${tag(n)}</div>`).join('')}</div>
+      </div>`).join('');
+    // results for every court, shown below all the players
+    const results = L.courts.map((ps, c) => `
+      <div class="court">
+        <h4>${courtName(c+1)} <span class="legend" style="font-weight:400">· results</span></h4>
+        ${PAIRINGS.map(([a,b], g) => {
+          const A = `${esc(ps[a[0]])} and ${esc(ps[a[1]])}`, B = `${esc(ps[b[0]])} and ${esc(ps[b[1]])}`;
+          return `<div class="game"><div class="gl">Game ${g+1}</div>
+            <div class="t">${A}</div><div>vs</div><div class="t">${B}</div>
+            <select data-res="${w.id}" data-cg="${c}-${g}" ${done ? 'disabled' : ''}>
+              <option value="">– result –</option>
+              <option value="A" ${res[c+'-'+g]==='A'?'selected':''}>${A} win</option>
+              <option value="D" ${res[c+'-'+g]==='D'?'selected':''}>Draw</option>
+              <option value="B" ${res[c+'-'+g]==='B'?'selected':''}>${B} win</option>
+            </select></div>`; }).join('')}
+      </div>`).join('');
+    // players not yet on a court + empty key-player slots
+    const open = w.players.map((n, i) => n ? null : i).filter(i => i != null);
+    const waiting = done ? '' : (L.waiting.length || open.length) ? `
+      <div class="court" style="border-top-color:var(--bd)">
+        <h4>${L.waiting.length ? `⏳ Next court – needs ${PER_COURT - L.waiting.length} more` : '➕ Add players'}</h4>
+        <div class="plist picks">
+          ${L.waiting.map(n => `<div>${badge(n)}${pick(n)}${tag(n)}</div>`).join('')}
+          ${open.map(i => `<div><span class="rank sm">+</span>${pick(null, i)}</div>`).join('')}
+        </div>
+      </div>` : '';
+    const spare = '';                            // spare-reserves line removed
+    return `<h5>Key players &amp; courts – sorted by ranking${done ? ' · 🔒 lineup locked' : ''}</h5>
+      <div class="courts">${courts}${waiting}</div>
+      ${spare}
+      ${reservesHtml}
+      ${w.type === 'Swingers' && !done
+        ? `<div class="bench" style="margin-top:14px">💃 Swingers – social game, no scores recorded.</div>`
+        : L.courts.length ? (() => {
+        const total = L.courts.length * PAIRINGS.length;
+        const entered = L.courts.flatMap((_, c) => PAIRINGS.map((_, g) => res[c+'-'+g])).filter(Boolean).length;
+        return `<details class="res-acc" data-acc="${w.id}" ${resOpen[w.id] ? 'open' : ''}>
+          <summary><b>Results</b>
+            <span class="pill${entered===total ? ' full' : ''}">${entered}/${total} games entered</span>
+            ${done ? '<span class="pill full">✓ Submitted</span>' : ''}</summary>
+          <div class="courts" style="margin-top:10px">${results}</div>
+          <div class="row" style="margin-top:10px">${done
+            ? `<span class="pill full">✓ Results submitted to the leaderboard</span>`
+            : `<button type="button" class="edit" data-sub="${w.id}">Submit results to leaderboard</button>`}</div>
+        </details>`; })() : ''}`;
+  };
   const weekCard = w => {
     const used = new Set([...w.players, ...w.reserves].filter(Boolean));
     const filled = w.players.filter(Boolean).length;
@@ -821,6 +964,12 @@ function renderCalendar() {
       `<option value="${esc(p.name)}" ${p.name===cur?'selected':''} ${used.has(p.name)&&p.name!==cur?'disabled':''}>${p.label}. ${esc(p.name)}</option>`).join('');
     const slot = (arr, i, res) => `<div class="slot${res?' res':''}"><span class="n">${res?'R':''}${i+1}</span>
       <select data-w="${w.id}" data-k="${arr}" data-i="${i}">${opts(w[arr][i])}</select></div>`;
+    // dropdown bound to the slot a player occupies (key-player slot, or the reserve slot they filled in from)
+    const pick = (name, idx) => {
+      let arr = 'players', i = idx;
+      if (name != null) { i = w.players.indexOf(name); if (i < 0) { arr = 'reserves'; i = w.reserves.indexOf(name); } }
+      return `<select data-w="${w.id}" data-k="${arr}" data-i="${i}">${opts(w[arr][i])}</select>`;
+    };
     return `<div class="cw${w.date < t ? ' past' : ''}">
       <div class="cw-head">
         <div><b>📅 ${fmtDate(w.date)}</b>
@@ -828,7 +977,6 @@ function renderCalendar() {
           <span class="pill${filled===KEY_PLAYERS?' full':''}">${filled}/${KEY_PLAYERS} players</span>
           <span class="pill">${w.reserves.filter(Boolean).length} reserves</span></div>
         <div class="row">
-          <button type="button" class="sec" data-use="${w.id}" title="Tick these 12 players on the Upcoming Teams tab">Use in Upcoming Teams</button>
           <button type="button" class="del" data-delw="${w.id}">Delete week</button>
         </div>
       </div>
@@ -839,11 +987,9 @@ function renderCalendar() {
         </select></label>
         <label>Venue<input data-f="note" data-w="${w.id}" value="${esc(w.note||'')}" placeholder="Venue"></label>
       </div>
-      <h5>Key players (${KEY_PLAYERS})</h5>
-      <div class="slots">${w.players.map((_,i) => slot('players', i, false)).join('')}</div>
-      <h5>Reserves</h5>
+      ${courtsHtml(w, pick, `<h5>Reserves</h5>
       <div class="slots">${w.reserves.map((_,i) => slot('reserves', i, true)).join('')}</div>
-      <div class="row" style="margin-top:8px"><button type="button" class="sec" data-addres="${w.id}">+ Add reserve slot</button></div>
+      <div class="row" style="margin-top:8px"><button type="button" class="sec" data-addres="${w.id}">+ Add reserve slot</button></div>`)}
     </div>`;
   };
 
@@ -855,7 +1001,7 @@ function renderCalendar() {
   $('calList').innerHTML = Object.entries(months).map(([m, ws]) => {
     // games per player this month: every key-player slot = GAMES_PER_WEEK games
     const tally = {};
-    ws.forEach(w => w.players.filter(Boolean).forEach(n => {
+    ws.forEach(w => weekLineup(w, rankOf).courts.flat().forEach(n => {
       const e = tally[n] ||= { weeks:0, comp:0, swing:0 };
       e.weeks++; (w.type==='Swingers' ? e.swing++ : e.comp++);
     }));
@@ -878,8 +1024,8 @@ function renderCalendar() {
               <td title="${e.comp} Competitive · ${e.swing} Swingers">${e.weeks}</td>
               <td class="pts" title="${e.weeks} × ${money(fee)}">${money(e.weeks*fee)}</td></tr>`).join('')}</tbody>
             <tfoot><tr><td class="name">Total</td><td>${totalGames}</td><td class="pts">${money(totalGames*fee)}</td></tr></tfoot>
-          </table>` : '<div class="legend">No key players selected yet.</div>'}
-          <div class="legend">Key players only · 1 game = 1 week · ${money(fee)} per game. Reserves not counted.</div>
+          </table>` : '<div class="legend">No courts filled yet.</div>'}
+          <div class="legend">Players on a court (incl. reserves filling gaps) · 1 game = 1 week · ${money(fee)} per game.</div>
         </aside>
       </div>
     </details>`;
@@ -888,13 +1034,21 @@ function renderCalendar() {
     monthOpen[d.dataset.m] = d.open;
   });
 
+  $('calList').querySelectorAll('details.res-acc').forEach(d => d.ontoggle = () => { resOpen[d.dataset.acc] = d.open; });
   const find = id => calendar.find(w => w.id === id);
   $('calList').querySelectorAll('[data-f]').forEach(el => el.onchange = () => {
     find(el.dataset.w)[el.dataset.f] = el.dataset.f==='note' ? el.value.trim() : el.value; saveCal(); renderCalendar();
   });
   $('calList').querySelectorAll('select[data-k]').forEach(sel => sel.onchange = () => {
-    find(sel.dataset.w)[sel.dataset.k][+sel.dataset.i] = sel.value; saveCal(); renderCalendar();
+    const w = find(sel.dataset.w);
+    w[sel.dataset.k][+sel.dataset.i] = sel.value;
+    if (!isSubmitted(w)) delete w.res;          // courts may have changed – clear entered results
+    saveCal(); renderCalendar();
   });
+  $('calList').querySelectorAll('select[data-res]').forEach(sel => sel.onchange = () => {
+    const w = find(sel.dataset.res); (w.res ||= {})[sel.dataset.cg] = sel.value; saveCal();
+  });
+  $('calList').querySelectorAll('[data-sub]').forEach(btn => btn.onclick = () => submitWeek(find(btn.dataset.sub)));
   $('calList').querySelectorAll('[data-addres]').forEach(b => b.onclick = () => {
     find(b.dataset.addres).reserves.push(''); saveCal(); renderCalendar();
   });
@@ -902,16 +1056,6 @@ function renderCalendar() {
     const w = find(b.dataset.delw);
     if (!confirm(`Delete the week of ${fmtDate(w.date)}?`)) return;
     calendar = calendar.filter(x => x !== w); saveCal(); renderCalendar();
-  });
-  $('calList').querySelectorAll('[data-use]').forEach(b => b.onclick = () => {
-    const w = find(b.dataset.use), names = w.players.filter(Boolean);
-    if (!names.length) return alert('No key players selected for this week yet.');
-    selected.clear(); names.forEach(n => selected.add(n));
-    $('nCourts').value = String(Math.max(1, Math.min(3, Math.floor(names.length / PER_COURT))));
-    renderRoster();
-    document.querySelector('.tab[data-tab=sched]').click();
-    $('schedMsg').className = 'msg ok';
-    $('schedMsg').textContent = `Loaded ${names.length} players from ${fmtDate(w.date)}. Swap in reserves if needed, then generate courts.`;
   });
 }
 
@@ -986,7 +1130,6 @@ function applyMode() {
 // ---------- Supabase sync ----------
 // Every edit still updates the in-memory arrays; save()/saveCal() then call schedulePush(), which
 // diffs against the last state known to be in Supabase and only sends what changed.
-let synced = null, pushTimer = null, pushing = false, pushAgain = false;
 const syncMsg = (t, err=false) => { const e = $('syncStatus'); e.textContent = t; e.style.color = err ? '#ef4444' : ''; };
 const batchRow  = b => ({ id:b.id, ts:b.ts, source:b.source || null, games:b.games || [], created_by:b.by || null });
 const resultRow = r => ({ id:r.id, batch:r.batch, name:r.name, w:r.w, d:r.d, l:r.l });
@@ -996,7 +1139,7 @@ function snapState() {
            calendar:m(calendar,'id',w => ({ id:w.id, data:w })), roster:new Set(roster), fee };
 }
 function schedulePush() {
-  if (!CLOUD || !isEditor || !synced) return;
+  if (SNAP || !synced) return;
   syncMsg('Saving…');
   clearTimeout(pushTimer); pushTimer = setTimeout(() => { pushTimer = null; pushChanges(); }, 400);
 }
@@ -1008,7 +1151,7 @@ async function del(table, col, keys) {
   for (const c of chunks(keys, 100)) { const { error } = await sb.from(table).delete().in(col, c); if (error) throw error; }
 }
 async function pushChanges() {
-  if (!CLOUD || !isEditor || !synced) return;
+  if (SNAP || !synced) return;
   if (pushing) { pushAgain = true; return; }
   pushing = true; syncMsg('Saving…');
   try {
@@ -1016,6 +1159,7 @@ async function pushChanges() {
     const diff = (a, b) => ({ up:[...a].filter(([k,v]) => b.get(k) !== v).map(([,v]) => JSON.parse(v)),
                               del:[...b.keys()].filter(k => !a.has(k)) });
     const db = diff(cur.batches, synced.batches), dr = diff(cur.results, synced.results), dc = diff(cur.calendar, synced.calendar);
+    if (!CLOUD) { synced = cur; syncMsg(''); pushing = false; return; }   // browser-only: nothing to upload
     await up('batches', db.up);
     await up('results', dr.up);
     await del('results', 'id', dr.del);
@@ -1060,116 +1204,32 @@ async function cloudRefresh(force=false) {
   } catch (e) { syncMsg('⚠️ Offline – could not load data', true); console.error(e); }
 }
 
-// ---------- accounts ----------
-const amsg = (t, ok=true) => { $('acctMsg').className = 'msg ' + (ok?'ok':'err'); $('acctMsg').textContent = t; };
-const httpUrl = () => location.protocol.startsWith('http') ? location.href.split('#')[0].split('?')[0] : undefined;
-async function refreshAuth() {
-  const { data:{ session } } = await sb.auth.getSession();
-  user = session?.user || null; isEditor = false; isAdmin = false;
-  if (user) {
-    const { data } = await sb.from('editors').select('email,is_admin').eq('email', user.email.toLowerCase()).maybeSingle();
-    if (data) { isEditor = true; isAdmin = !!data.is_admin; }
-  }
-  RO = !isEditor;
-  renderAccount(); applyMode();
-  if (isEditor) syncMsg('✓ Saved');
-}
-function renderAccount() {
-  const body = $('acctBody');
-  if (!CLOUD) {
-    body.innerHTML = `<div class="legend">Supabase is not connected (offline or the Supabase library could not load). Data is being saved in this browser only.</div>`;
-    return;
-  }
-  if (user) {
-    const role = isAdmin ? '🛡️ Admin' : isEditor ? '✏️ Editor' : '👀 Viewer – this email is not on the editors list yet';
-    body.innerHTML = `<div class="row" style="align-items:center"><div>Signed in as <b>${esc(user.email)}</b> · ${role}</div>
-      <button type="button" class="sec" id="logoutBtn">Log out</button></div>`;
-    $('logoutBtn').onclick = async () => { await sb.auth.signOut(); amsg('Logged out.'); };
-  } else {
-    body.innerHTML = `<div class="legend" style="margin:0 0 10px">Anyone can view. Organisers log in to make changes.</div>
-      <div class="row cal-form">
-        <label>Email<input id="liEmail" type="email" autocomplete="username" style="width:240px"></label>
-        <label>Password<input id="liPass" type="password" autocomplete="current-password" style="width:200px"></label>
-        <button type="button" id="liBtn">Log in</button>
-        <button type="button" class="sec" id="suBtn">Create account</button>
-        <button type="button" class="sec" id="fpBtn">Forgot password</button>
-      </div>`;
-    const creds = () => ({ email:$('liEmail').value.trim().toLowerCase(), password:$('liPass').value });
-    $('liBtn').onclick = async () => {
-      const { error } = await sb.auth.signInWithPassword(creds());
-      error ? amsg(error.message, false) : amsg('Logged in.');
-    };
-    $('liPass').onkeydown = e => { if (e.key === 'Enter') $('liBtn').click(); };
-    $('suBtn').onclick = async () => {
-      const c = creds();
-      if (c.password.length < 8) return amsg('Choose a password of at least 8 characters.', false);
-      const { error } = await sb.auth.signUp({ ...c, options: httpUrl() ? { emailRedirectTo: httpUrl() } : {} });
-      error ? amsg(error.message, false)
-            : amsg('Account created. Check your email and click the confirmation link, then come back and log in.');
-    };
-    $('fpBtn').onclick = async () => {
-      const email = $('liEmail').value.trim().toLowerCase();
-      if (!email) return amsg('Enter your email first.', false);
-      if (!httpUrl()) return amsg('Password reset only works from the online (hosted) version of the page.', false);
-      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: httpUrl() });
-      error ? amsg(error.message, false) : amsg('Password reset email sent.');
-    };
-  }
-  // editors list (admins only)
-  $('edCard').style.display = isAdmin ? '' : 'none';
-  if (isAdmin) renderEditors();
-  // offer to upload this browser's pre-Supabase data
-  const hasLocal = localStorage.getItem(KEY) || localStorage.getItem(CKEY);
-  $('uploadCard').style.display = isEditor && hasLocal ? '' : 'none';
+// ---------- one-off upload of this browser's pre-Supabase data ----------
+$('cfgBtn').addEventListener('click', () => renderUploadCard());
+function renderUploadCard() {
+  const hasLocal = CLOUD && (localStorage.getItem(KEY) || localStorage.getItem(CKEY));
+  $('uploadCard').style.display = hasLocal ? '' : 'none';
   if (hasLocal) {
     const n = JSON.parse(localStorage.getItem(KEY) || '[]').length, w = JSON.parse(localStorage.getItem(CKEY) || '[]').length;
     $('uploadInfo').textContent = ` ${n} result records and ${w} calendar weeks found in this browser.`;
   }
 }
-async function renderEditors() {
-  const { data, error } = await sb.from('editors').select('email,is_admin').order('email');
-  if (error) { $('edMsg').className = 'msg err'; $('edMsg').textContent = error.message; return; }
-  $('edList').innerHTML = data.map(e => `<tr><td class="name">${esc(e.email)}</td><td>${e.is_admin ? '🛡️ Admin' : '✏️ Editor'}</td>
-    <td>${e.email === user.email.toLowerCase() ? '<span class="legend">you</span>' : `<button class="del" style="display:inline-block!important" data-ed="${esc(e.email)}">Remove</button>`}</td></tr>`).join('');
-  $('edList').querySelectorAll('[data-ed]').forEach(b => b.onclick = async () => {
-    if (!confirm(`Remove ${b.dataset.ed} from editors?`)) return;
-    const { error } = await sb.from('editors').delete().eq('email', b.dataset.ed);
-    if (error) { $('edMsg').className = 'msg err'; $('edMsg').textContent = error.message; } else renderEditors();
-  });
-}
+$('uploadLocal').onclick = async () => {
+  if (!confirm('Replace ALL data in Supabase with the data saved in this browser?')) return;
+  const d = {}; [KEY, BKEY, RKEY, CKEY, FKEY].forEach(k => { const v = localStorage.getItem(k); if (v != null) d[k] = v; });
+  applyData(d); render();
+  await pushChanges();
+  $('uploadMsg').className = 'msg ok'; $('uploadMsg').textContent = 'Uploaded. Everyone now sees this data.';
+};
+
+// keep everyone up to date
 if (CLOUD) {
-  $('edAdd').onclick = async () => {
-    const email = $('edEmail').value.trim().toLowerCase(), m = $('edMsg');
-    if (!/^\S+@\S+\.\S+$/.test(email)) { m.className = 'msg err'; m.textContent = 'Enter a valid email.'; return; }
-    const { error } = await sb.from('editors').insert({ email, is_admin:$('edAdmin').checked });
-    if (error) { m.className = 'msg err'; m.textContent = error.message; return; }
-    m.className = 'msg ok'; m.textContent = `${email} added. Ask them to open the page, click ⚙️ → Create account with this email.`;
-    $('edEmail').value = ''; $('edAdmin').checked = false; renderEditors();
-  };
-  $('uploadLocal').onclick = async () => {
-    if (!confirm('Replace ALL data in Supabase with the data saved in this browser?')) return;
-    const d = {}; [KEY, BKEY, RKEY, CKEY, FKEY].forEach(k => { const v = localStorage.getItem(k); if (v != null) d[k] = v; });
-    applyData(d); render();
-    await pushChanges();
-    $('uploadMsg').className = 'msg ok'; $('uploadMsg').textContent = 'Uploaded. Everyone now sees this data.';
-  };
-  sb.auth.onAuthStateChange((event) => {
-    setTimeout(async () => {
-      if (event === 'PASSWORD_RECOVERY') {
-        const pw = prompt('Enter a new password (8+ characters):');
-        if (pw && pw.length >= 8) { const { error } = await sb.auth.updateUser({ password:pw }); alert(error ? error.message : 'Password updated.'); }
-      }
-      refreshAuth();
-    }, 0);
-  });
-  // keep everyone up to date
   setInterval(() => cloudRefresh(false), 30000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) cloudRefresh(false); });
 }
 
 applyMode();
-if (CLOUD) { syncMsg('Loading…'); cloudRefresh(true).then(refreshAuth); }
-else renderAccount();
+if (CLOUD) { syncMsg('Loading…'); cloudRefresh(true); }
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if ($('prog').classList.contains('active')) renderProgress(); }, 150); });
 </script>
 </body>
