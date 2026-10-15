@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Padel Squad</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --inp:#0f172a; --bd:#475569; --sec:#475569; --txt:#e2e8f0; --mut:#94a3b8; --acc:#22c55e; --gold:#facc15; --silver:#cbd5e1; --bronze:#d97706; }
+  [data-theme=light] { --bg:#f1f5f9; --card:#ffffff; --line:#e2e8f0; --inp:#f8fafc; --bd:#cbd5e1; --sec:#e2e8f0; --txt:#0f172a; --mut:#64748b; --acc:#16a34a; --silver:#94a3b8; }
+  body { transition:background .2s, color .2s; }
+  .top-btns { position:absolute; top:20px; right:20px; display:flex; gap:8px; }
+  .theme-btn.active { background:var(--acc); color:#000; border-color:var(--acc); }
+  .theme-btn { background:var(--card); color:var(--txt); border:1px solid var(--bd); border-radius:999px; padding:8px 14px; font-weight:600; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:24px 24px 8px; text-align:center; }
+  h1 { margin:0; font-size:2rem; } h1 span { color:var(--acc); }
+  h3 { margin-top:0; }
+  .sub { color:var(--mut); margin-top:6px; font-size:.9rem; }
+  main { max-width:1100px; margin:0 auto; padding:0 16px 40px; }
+  .tabs { display:flex; gap:8px; justify-content:center; margin:16px 0 20px; }
+  .tab { background:var(--card); color:var(--mut); padding:10px 22px; border-radius:999px; border:1px solid var(--line); cursor:pointer; font-weight:600; }
+  .tab.active { background:var(--acc); color:#000; border-color:var(--acc); }
+  .panel { display:none; } .panel.active { display:block; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:20px; }
+  .stat { background:var(--card); border-radius:12px; padding:16px; }
+  .stat .v { font-size:1.5rem; font-weight:700; margin:4px 0 2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .stat .s { color:var(--mut); font-size:.8rem; }
+  @media (min-width:900px) { .stats { grid-template-columns:repeat(5,1fr); } }
+  .stat.hl { border-left:4px solid var(--acc); } .stat .l { color:var(--mut); font-size:.8rem; text-transform:uppercase; }
+  .card { background:var(--card); border-radius:12px; padding:16px; margin-bottom:20px; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { padding:10px 8px; text-align:center; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--mut); font-size:.75rem; text-transform:uppercase; cursor:pointer; user-select:none; }
+  th:hover { color:var(--txt); }
+  td.name { text-align:left; font-weight:600; }
+  .rank { display:inline-block; width:30px; height:30px; line-height:30px; border-radius:50%; background:var(--line); font-weight:700; text-align:center; }
+  .rank.sm { width:24px; height:24px; line-height:24px; font-size:.75rem; }
+  .r1 { background:var(--gold)!important; color:#000; } .r2 { background:var(--silver)!important; color:#000; } .r3 { background:var(--bronze)!important; color:#000; }
+  .qz { border:1px dashed var(--bd); }
+  .need { color:var(--mut); font-size:.75rem; font-weight:400; margin-left:6px; }
+  .w { color:#22c55e; } .d { color:#facc15; } .l { color:#ef4444; }
+  .pts { font-weight:700; font-size:1.1rem; }
+  .bar { background:var(--line); border-radius:6px; height:8px; width:100px; display:inline-block; vertical-align:middle; margin-right:6px; }
+  .bar i { display:block; height:100%; border-radius:6px; background:var(--acc); }
+  form, .row { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
+  label { display:flex; flex-direction:column; font-size:.75rem; color:var(--mut); gap:4px; }
+  input, select, button { padding:8px 10px; border-radius:8px; border:1px solid var(--bd); background:var(--inp); color:var(--txt); font-size:.9rem; }
+  input[type=number] { width:80px; }
+  button { background:var(--acc); color:#000; font-weight:700; border:none; cursor:pointer; }
+  button.sec { background:var(--sec); color:var(--txt); }
+  .msg { margin-top:10px; font-size:.85rem; min-height:1em; } .err { color:#ef4444; } .ok { color:#22c55e; }
+  .legend { color:var(--mut); font-size:.8rem; margin-top:10px; }
+  .roster { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:8px; margin:12px 0; }
+  .chk { display:flex; flex-direction:row; align-items:center; gap:8px; background:var(--inp); border:1px solid var(--line); border-radius:8px; padding:6px 10px; color:var(--txt); font-size:.9rem; cursor:pointer; }
+  .chk input { margin:0; }
+  .courts { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
+  .court { background:var(--card); border-radius:12px; padding:16px; border-top:4px solid var(--acc); }
+  .court h4 { margin:0 0 10px; font-size:1.1rem; }
+  .plist { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px; }
+  .plist div { display:flex; align-items:center; gap:8px; background:var(--inp); border-radius:8px; padding:6px 8px; font-weight:600; }
+  .game { display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center; padding:8px 0; border-top:1px solid var(--line); font-size:.85rem; }
+  .game .t { text-align:center; } .game select { width:100%; grid-column:1 / -1; }
+  .gl { color:var(--mut); font-size:.7rem; text-transform:uppercase; grid-column:1 / -1; }
+  .bench { color:var(--mut); font-size:.85rem; margin-top:12px; }
+  .hb { background:var(--card); border-radius:12px; padding:16px; margin-bottom:16px; }
+  .hb-head { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .hb-head b { font-size:1rem; } .hb-head .legend { margin:0; }
+  .hb td, .hb th { padding:6px 8px; font-size:.85rem; } .hb th { cursor:default; }
+  button.del { background:transparent; color:#ef4444; border:1px solid #ef4444; padding:4px 10px; font-size:.75rem; }
+  button.del:hover { background:#ef4444; color:#fff; }
+  details { margin-top:8px; font-size:.85rem; color:var(--mut); } summary { cursor:pointer; }
+  .rk { display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+  .mv { display:inline-block; min-width:26px; font-size:.75rem; text-align:left; }
+  .up { color:#22c55e; font-weight:700; } .down { color:#ef4444; font-weight:700; } .same { color:var(--mut); }
+  #chartWrap svg .ln { fill:none; stroke-width:3.5; opacity:.85; transition:opacity .15s, stroke-width .15s; }
+  #chartWrap svg.focus .pl { opacity:.12; } #chartWrap svg .pl.on { opacity:1 !important; } #chartWrap svg .pl.on .ln { stroke-width:5.5; }
+  #chartWrap svg text { fill:var(--txt); font-size:11px; } #chartWrap svg .ax { fill:var(--mut); }
+  #chartWrap svg .grid { stroke:var(--line); }
+  #progTable tr.on td { background:var(--line); } #progTable td.name { cursor:pointer; }
+  .gm { padding:3px 0; }
+  .cw { background:var(--card); border-radius:12px; padding:16px; margin-bottom:16px; border-left:4px solid var(--acc); }
+  .cw.past { opacity:.6; border-left-color:var(--bd); }
+  .cw-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+  .cw-head b { font-size:1.05rem; }
+  .slots { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:8px; }
+  .slot { display:flex; align-items:center; gap:8px; }
+  .slot .n { width:26px; text-align:center; color:var(--mut); font-size:.8rem; font-weight:700; flex:none; }
+  .slot select { flex:1; min-width:0; }
+  .slot.res .n { color:#facc15; }
+  .cw h5 { margin:14px 0 8px; color:var(--mut); font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; }
+  .cal-form input:not([type=checkbox]), .cal-form button, .cal-form .chk { height:38px; margin:0; }
+  .cal-form .chk { padding:0 12px; }
+  .cal-form #calNote { width:240px; }
+  .cal-form select { height:38px; }
+  .wk { margin-bottom:4px; } .wk input[data-f=note] { width:240px; }
+  .pill.cp { background:#2563eb; color:#fff; } .pill.sw { background:#db2777; color:#fff; }
+  details.month { background:var(--card); border-radius:12px; margin-bottom:16px; border:1px solid var(--line); }
+  details.month > summary { padding:14px 16px; cursor:pointer; list-style:none; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+  details.month > summary::-webkit-details-marker { display:none; }
+  details.month > summary::before { content:'▸'; margin-right:8px; color:var(--mut); transition:transform .15s; }
+  details.month[open] > summary::before { transform:rotate(90deg); }
+  details.month > summary b { font-size:1.1rem; margin-right:6px; }
+  .month-body { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:16px; padding:0 16px 16px; align-items:start; }
+  .month-weeks .cw { background:var(--bg); }
+  .month-side { background:var(--bg); border-radius:12px; padding:14px; position:sticky; top:12px; }
+  .month-side h4 { margin:0 0 8px; } .month-side td, .month-side th { padding:6px; font-size:.85rem; }
+  @media (max-width:900px) { .month-body { grid-template-columns:1fr; } .month-side { position:static; } }
+  .ro .edit, .ro .del, .ro [data-addres], .ro [data-use], .ro #addPlayer, .ro #newPlayer { display:none !important; }
+  .ro label:has(#newPlayer) { display:none; }
+  .pill { font-size:.75rem; padding:2px 8px; border-radius:999px; background:var(--line); color:var(--txt); margin-left:6px; }
+  .pill.full { background:var(--acc); color:#000; } .gm .win { color:#22c55e; font-weight:600; }
+</style>
+</head>
+<body>
+<header style="position:relative">
+  <div class="top-btns">
+    <span id="syncStatus" class="legend" style="align-self:center;margin:0"></span>
+    <button type="button" class="theme-btn" id="themeBtn"></button>
+    <button type="button" class="theme-btn" id="cfgBtn" title="Configuration / Log in" aria-label="Configuration">⚙️</button>
+  </div>
+  <h1>🎾 Padel <span>Squad</span></h1>
+  <div class="sub" id="roBanner" style="display:none;color:#facc15;font-weight:600"></div>
+  <div class="sub">All players ranked · 3 games per week · Win = 3 pts · Draw = 1 pt · Loss = 0 pts · Max 9 pts per week</div>
+</header>
+<main>
+  <div class="tabs">
+    <button class="tab active" data-tab="board">Leaderboard</button>
+    <button class="tab" data-tab="prog">Rank Progress</button>
+    <button class="tab" data-tab="sched">Upcoming Teams</button>
+    <button class="tab" data-tab="hist">Match History</button>
+    <button class="tab" data-tab="cal">Calendar</button>
+  </div>
+
+  <!-- ============ LEADERBOARD ============ -->
+  <section class="panel active" id="board">
+    <div class="stats">
+      <div class="stats" id="stats" style="display:contents"></div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th data-k="rank">Rank</th>
+            <th data-k="name" style="text-align:left">Player</th>
+            <th data-k="games">Played</th>
+            <th data-k="wins">Wins (3)</th>
+            <th data-k="draws">Draws (1)</th>
+            <th data-k="losses">Losses (0)</th>
+            <th data-k="points">Points</th>
+            <th data-k="pct">Win %</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="legend">Win % = points accumulated ÷ total available game points (games played × 3). Players are ranked by Win %; ties broken by points, then wins, then fewer games played. Players need at least 9 games to enter the leaderboard.</div>
+    </div>
+
+    <div class="card qz">
+      <h3>Qualifier Zone <span class="legend">· fewer than 9 games played · same ranking rules</span></h3>
+      <table>
+        <thead>
+          <tr>
+            <th data-k="rank">Rank</th>
+            <th data-k="name" style="text-align:left">Player</th>
+            <th data-k="games">Played</th>
+            <th data-k="wins">Wins (3)</th>
+            <th data-k="draws">Draws (1)</th>
+            <th data-k="losses">Losses (0)</th>
+            <th data-k="points">Points</th>
+            <th data-k="pct">Win %</th>
+          </tr>
+        </thead>
+        <tbody id="qbody"></tbody>
+      </table>
+    </div>
+
+    <div class="card edit">
+      <h3>Record Weekly Result Manually</h3>
+      <form id="form">
+        <label>Player<input id="fName" list="players" required placeholder="Name"></label>
+        <datalist id="players"></datalist>
+        <label>Wins<input id="fW" type="number" min="0" max="3" value="0"></label>
+        <label>Draws<input id="fD" type="number" min="0" max="3" value="0"></label>
+        <label>Losses (auto)<input id="fL" type="number" value="3" readonly tabindex="-1"></label>
+        <button type="submit">Add</button>
+        <button type="button" class="sec" id="reset">Reset to imported standings</button>
+        <button type="button" class="sec" id="clear">Clear all</button>
+      </form>
+      <div class="msg" id="msg"></div>
+    </div>
+
+  </section>
+
+  <!-- ============ SCHEDULE ============ -->
+  <section class="panel" id="sched">
+    <div class="card">
+      <h3>1. Who's playing this week?</h3>
+      <div class="row">
+        <label>Courts
+          <select id="nCourts"><option value="1">1 – GOAT</option><option value="2">2 – GOAT, Camels</option><option value="3" selected>3 – GOAT, Camels, Snails</option></select>
+        </label>
+        <label>Add new player<input id="newPlayer" placeholder="Name"></label>
+        <button type="button" class="sec" id="addPlayer">Add</button>
+        <button type="button" class="sec" id="selAll">Select all</button>
+        <button type="button" class="sec" id="selNone">Select none</button>
+      </div>
+      <div class="roster" id="roster"></div>
+      <div class="row">
+        <button type="button" id="gen">Generate courts by ranking</button>
+        <span class="legend" id="selCount"></span>
+      </div>
+      <div class="msg" id="schedMsg"></div>
+    </div>
+
+    <div id="courtsWrap" style="display:none">
+      <div class="courts" id="courts"></div>
+      <div class="bench" id="bench"></div>
+      <div class="card" style="margin-top:16px">
+        <div class="row">
+          <button type="button" class="edit" id="submitWeek">Submit results to leaderboard</button>
+          <span class="legend">Each player plays 3 games (one with each partner). Results are added as W/D/L per player.</span>
+        </div>
+        <div class="msg" id="submitMsg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RANK PROGRESS ============ -->
+  <section class="panel" id="prog">
+    <div class="card">
+      <h3>Ranking Position After Each Submitted Score</h3>
+      <div class="legend" style="margin:0 0 10px">Rank 1 at the top. Hover or click a player (chart or table) to highlight their line.</div>
+      <div class="row" style="margin-bottom:8px">
+        <button type="button" class="sec" id="showAll">Show all</button>
+        <button type="button" class="sec" id="showNone">Hide all</button>
+        <span class="legend" id="showCount" style="margin:0"></span>
+      </div>
+      <div class="roster" id="chartPlayers" style="margin-top:0"></div>
+      <div id="chartWrap" style="overflow-x:auto"></div>
+    </div>
+    <div class="card">
+      <h3>Rank Changes</h3>
+      <table id="progTable"></table>
+      <div class="legend">Change = movement since the previous submission (▲ up, ▼ down). Ranks 1–N are the main leaderboard; players below 9 games are ranked after them.</div>
+    </div>
+  </section>
+
+  <!-- ============ CALENDAR ============ -->
+  <section class="panel" id="cal">
+    <div class="card edit">
+      <h3>Add a Week</h3>
+      <div class="row cal-form">
+        <label>Date<input type="date" id="calDate"></label>
+        <label>Start time<input type="time" id="calTime" value="17:30"></label>
+        <label>Game type<select id="calType"><option>Competitive</option><option>Swingers</option></select></label>
+        <label>Venue (optional)<input id="calNote" placeholder="e.g. Padel Club Court A"></label>
+        <button type="button" id="calAdd">Add week</button>
+        <label>Fee per game (£)<input type="number" id="calFee" min="0" step="0.5" style="width:110px"></label>
+        <label class="chk"><input type="checkbox" id="calPast"> Show past weeks</label>
+      </div>
+      <div class="msg" id="calMsg"></div>
+    </div>
+    <div id="calList"></div>
+  </section>
+
+  <!-- ============ CONFIGURATION ============ -->
+  <section class="panel" id="cfg">
+    <div class="card" id="acctCard">
+      <h3>👤 Account</h3>
+      <div id="acctBody"></div>
+      <div class="msg" id="acctMsg"></div>
+    </div>
+
+    <div class="card" id="edCard" style="display:none">
+      <h3>🛡️ Editors</h3>
+      <div class="legend" style="margin:0 0 10px">People on this list can log in and update results, teams and the calendar. Admins can also manage this list. They must create an account (⚙️ → Create account) using the same email.</div>
+      <div class="row cal-form">
+        <label>Email<input id="edEmail" type="email" placeholder="name@example.com" style="width:260px"></label>
+        <label class="chk"><input type="checkbox" id="edAdmin"> Admin</label>
+        <button type="button" id="edAdd">Add editor</button>
+      </div>
+      <table style="margin-top:12px"><tbody id="edList"></tbody></table>
+      <div class="msg" id="edMsg"></div>
+    </div>
+
+    <div class="card edit" id="uploadCard" style="display:none">
+      <h3>☁️ Upload Local Data to Supabase</h3>
+      <div class="legend" style="margin:0 0 10px">This browser still has data saved from before Supabase was connected. Uploading <b>replaces everything in Supabase</b> with this browser's results, history, calendar and fee.</div>
+      <button type="button" id="uploadLocal">Upload my current data</button>
+      <span class="legend" id="uploadInfo"></span>
+      <div class="msg" id="uploadMsg"></div>
+    </div>
+    <div class="card edit">
+      <h3>💾 Backup &amp; Share</h3>
+      <div class="row">
+        <button type="button" id="exportBtn">Export backup</button>
+        <button type="button" class="sec" id="importBtn">Import backup</button>
+        <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+        <button type="button" id="publishBtn" style="background:#2563eb;color:#fff">Publish snapshot</button>
+      </div>
+      <div class="legend">
+        <b>Export backup</b> downloads all data (results, history, calendar, fee) as a .json file – keep it safe or use it to move to another computer.<br>
+        <b>Import backup</b> restores a .json backup (replaces all current data – in Supabase when connected).<br>
+        <b>Publish snapshot</b> downloads a read-only copy of this page with today's data built in – upload it to share with others.
+      </div>
+      <div class="msg" id="dataMsg"></div>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section class="panel" id="hist">
+    <div class="card">
+      <div class="row">
+        <label>Filter by player<input id="hFilter" list="players" placeholder="All players"></label>
+        <span class="legend" id="hCount"></span>
+      </div>
+    </div>
+    <div id="history"></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ---------- snapshot / storage ----------
+const PAGE_SOURCE = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;   // captured before anything renders
+const SNAP = window.PADEL_SNAPSHOT || null;          // set only in published read-only copies
+// ---- Supabase (shared online data). The publishable key is safe to include in a public page;
+//      access is enforced by Row Level Security policies in the database. ----
+const SB_URL = 'https://faeagnccwaazjphjcoke.supabase.co';
+const SB_KEY = 'sb_publishable_yyQeNTbbeQ_hsK63fljJPA_Xe2l7nKh';
+const CLOUD = !SNAP && !!(window.supabase && SB_URL && SB_KEY);
+const sb = CLOUD ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+let user = null, isEditor = false, isAdmin = false;
+let RO = !!SNAP || CLOUD;                            // cloud: read-only until logged in as an editor
+// in cloud mode data comes from Supabase, never from this browser's local storage
+const load = k => SNAP ? (SNAP.data[k] ?? null) : CLOUD ? null : localStorage.getItem(k);
+const store = (k, v) => { if (!SNAP && !CLOUD) localStorage.setItem(k, v); };
+// ---------- theme ----------
+const TKEY = 'padelTheme';
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  document.getElementById('themeBtn').textContent = t==='light' ? '🌙 Dark mode' : '☀️ Light mode';
+  localStorage.setItem(TKEY, t);
+}
+applyTheme(localStorage.getItem(TKEY) || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+document.getElementById('themeBtn').onclick = () =>
+  applyTheme(document.documentElement.dataset.theme==='light' ? 'dark' : 'light');
+
+const COURT_NAMES = ['🐐 GOAT', '🐪 Camels', '🐌 Snails'];
+const courtName = n => COURT_NAMES[n-1] || `Court ${n}`;
+const PTS = { W:3, D:1, L:0 }, MIN_GAMES = 9, MAX_WEEK = 9, GAMES_PER_WEEK = 3, PER_COURT = 4;
+const KEY = 'padelResults', RKEY = 'padelRoster', BKEY = 'padelBatches';
+const $ = id => document.getElementById(id);
+
+// ---------- data ----------
+// Current standings (Name, Played, Wins, Draws, Losses) – used as the starting point
+const BASELINE = `Jeff 🍔	99	65	2	32
+Luke 🍑👏🏻	111	70	3	38
+Miguel 🥘	45	28	2	15
+Tom 🐈🧤	96	55	2	39
+Nick	18	10	1	7
+Denys	30	16	1	13
+Jason ⛪	72	37	2	33
+Holly 🪄👋	108	55	2	51
+Hamza	24	12	1	11
+David 🥦	87	44	2	41
+Bob 🌶️	69	34	3	32
+Mariya 🍈🍈	96	48	2	46
+Jayne 🦩	12	6	0	6
+Kim	45	22	1	22
+Tommy ✨	9	4	1	4
+T Gorman 🤏	69	32	1	36
+Craig 🏴󠁧󠁢󠁳󠁣󠁴󠁿	57	26	1	30
+Rory 🥩🐕	24	10	1	13
+Callum 🍆👅	117	49	3	65
+Matt	51	21	0	30
+Gab 🌮	15	6	0	9
+Gill 💦🔫	9	3	0	6
+Kamil	45	10	1	34
+Luke L	9	2	0	7
+Dylan	33	6	1	26`;
+
+// Parse lines of "Name  Played  Wins  Draws  Losses" (tabs or spaces). Played column optional.
+function parseBulk(text) {
+  const rows = [], errors = [];
+  text.split(/\r?\n/).forEach((line, i) => {
+    if (!line.trim()) return;
+    let m = line.match(/^(.*?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*$/), name, p, w, d, l;
+    if (m) { [, name, p, w, d, l] = m; [p,w,d,l] = [p,w,d,l].map(Number); }
+    else if ((m = line.match(/^(.*?)\s+(\d+)\s+(\d+)\s+(\d+)\s*$/))) { [, name, w, d, l] = m; [w,d,l] = [w,d,l].map(Number); p = w+d+l; }
+    else return errors.push(`Line ${i+1}: couldn't read "${line.trim()}"`);
+    name = name.trim();
+    if (/^(name|player)/i.test(name)) return;                       // skip header row
+    if (w+d+l !== p) return errors.push(`Line ${i+1} (${name}): played ${p} ≠ ${w}+${d}+${l}`);
+    rows.push({ name, w, d, l });
+  });
+  return { rows, errors };
+}
+function baseline() {
+  const b = { id:uid(), ts:Date.now(), source:'Imported standings', games:[] };
+  return { out: parseBulk(BASELINE).rows.map(r => ({ id:uid(), batch:b.id, ...r })), bs:[b] };
+}
+// results: [{id, batch, name, w, d, l}]   batches: [{id, ts, source, games:[{court,a,b,res}]}]
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+let results = JSON.parse(load(KEY) || 'null');
+let batches = JSON.parse(load(BKEY) || '[]');
+// first run, or only the old random sample data → load the real standings
+if (CLOUD) results = results || [];
+else if (!results || (batches.length && batches.every(b => b.source==='Sample data'))) {
+  const s = baseline(); results = s.out; batches = s.bs; if (!SNAP) localStorage.removeItem(RKEY);
+}
+// migrate older records without id/batch
+const legacy = results.filter(r => !r.id || !r.batch);
+if (legacy.length) {
+  const b = { id:uid(), ts:Date.now(), source:'Imported (earlier records)', games:[] };
+  batches.push(b); legacy.forEach(r => { r.id = r.id || uid(); r.batch = b.id; delete r.week; });
+}
+let roster  = JSON.parse(load(RKEY) || '[]');   // players added with no results yet
+let sortKey = 'rank', sortDir = 1;
+const save = () => {
+  batches = batches.filter(b => results.some(r => r.batch===b.id));   // drop empty sessions
+  store(KEY, JSON.stringify(results));
+  store(BKEY, JSON.stringify(batches));
+  store(RKEY, JSON.stringify(roster));
+  schedulePush();
+};
+save();
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function aggregate(recs = results) {
+  const m = {};
+  const get = n => m[n] ||= { name:n, wins:0, draws:0, losses:0 };
+  roster.forEach(get);
+  recs.forEach(r => { const p = get(r.name); p.wins += r.w; p.draws += r.d; p.losses += r.l; });
+  const list = Object.values(m).map(p => {
+    p.games = p.wins + p.draws + p.losses;
+    p.points = p.wins*PTS.W + p.draws*PTS.D + p.losses*PTS.L;
+    p.pct = p.games ? p.points / (p.games*PTS.W) * 100 : 0;
+    return p;
+  });
+  list.sort((a,b) => b.pct-a.pct || b.points-a.points || b.wins-a.wins || a.games-b.games || a.name.localeCompare(b.name));
+  // players need MIN_GAMES to enter the main leaderboard; others sit in the qualifier zone
+  const main = list.filter(p => p.games >= MIN_GAMES), qual = list.filter(p => p.games < MIN_GAMES);
+  main.forEach((p,i) => { p.rank = i+1; p.label = String(i+1); p.qual = false; });
+  qual.forEach((p,i) => { p.rank = main.length+i+1; p.label = 'Q'+(i+1); p.qual = true; });
+  return [...main, ...qual];
+}
+const rc = (r, q) => !q && r<=3 ? ' r'+r : '';
+
+// ---------- leaderboard ----------
+const sorted = arr => [...arr].sort((a,b) => {
+  const x=a[sortKey], y=b[sortKey];
+  return (typeof x==='string' ? x.localeCompare(y) : x-y) * sortDir;
+});
+function render() {
+  const all = aggregate(), top = all.filter(p => !p.qual), quals = all.filter(p => p.qual);
+  // rank movement since the previous submitted score
+  const lastB = [...batches].sort((a,b) => b.ts - a.ts)[0];
+  const prevRank = {};
+  if (lastB && batches.length > 1)
+    aggregate(results.filter(r => r.batch !== lastB.id)).forEach(q => { if (q.games) prevRank[q.name] = q.rank; });
+  const move = p => {
+    const pr = prevRank[p.name];
+    if (batches.length < 2 || pr == null || !p.games)
+      return '<span class="mv same" title="No previous submission">▬</span>';
+    const d = pr - p.rank;
+    return d > 0 ? `<span class="mv up" title="Up ${d} since last submission">▲${d}</span>`
+         : d < 0 ? `<span class="mv down" title="Down ${-d} since last submission">▼${-d}</span>`
+         : '<span class="mv same" title="No change since last submission">▬</span>';
+  };
+  const row = p => `
+    <tr>
+      <td><span class="rk"><span class="rank${rc(p.rank,p.qual)}">${p.label}</span>${move(p)}</span></td>
+      <td class="name">${esc(p.name)}${p.qual ? ` <span class="need">${MIN_GAMES-p.games} to qualify</span>` : ''}</td>
+      <td>${p.games}</td>
+      <td class="w">${p.wins}</td>
+      <td class="d">${p.draws}</td>
+      <td class="l">${p.losses}</td>
+      <td class="pts">${p.points}</td>
+      <td><span class="bar"><i style="width:${p.pct}%"></i></span>${p.pct.toFixed(2)}%</td>
+    </tr>`;
+  $('tbody').innerHTML = sorted(top).map(row).join('') || '<tr><td colspan="8">No qualified players yet</td></tr>';
+  $('qbody').innerHTML = sorted(quals).map(row).join('') || '<tr><td colspan="8">No players in the qualifier zone</td></tr>';
+  renderStats(all, top, quals);
+  $('players').innerHTML = all.map(p=>`<option value="${esc(p.name)}">`).join('');
+  renderRoster();
+  renderHistory();
+  renderProgress();
+  renderCalendar();
+}
+
+// ---------- rank progress ----------
+let focusName = null;
+const HKEY = 'padelChartHidden';
+const hidden = new Set(JSON.parse(localStorage.getItem(HKEY) || '[]'));
+const saveHidden = () => localStorage.setItem(HKEY, JSON.stringify([...hidden]));
+$('showAll').onclick = () => { hidden.clear(); saveHidden(); renderProgress(); };
+$('showNone').onclick = () => { aggregate().forEach(p => hidden.add(p.name)); saveHidden(); renderProgress(); };
+function renderProgress() {
+  const bs = [...batches].sort((a,b) => a.ts - b.ts);
+  const snaps = [];                                   // [{label, date, ranks:{name:rank}}]
+  let cum = [];
+  bs.forEach((b, i) => {
+    cum = cum.concat(results.filter(r => r.batch===b.id));
+    const ranks = {}; aggregate(cum).forEach(p => { if (p.games) ranks[p.name] = p.rank; });
+    snaps.push({ label:'S'+(i+1), date:new Date(b.ts).toLocaleString(), src:b.source, ranks });
+  });
+  const current = aggregate().filter(p => p.games);
+  const names = current.map(p => p.name);
+  if (!snaps.length) { $('chartWrap').innerHTML = '<div class="legend">No submissions yet.</div>'; $('progTable').innerHTML=''; return; }
+
+  // ---- chart (SVG bump chart) ----
+  const n = names.length, L = 40, R = 170, T = 24, B = 30, row = 22;
+  // fit the chart to the card width; only scroll when there are too many submissions
+  const avail = Math.max(600, ($('chartWrap').clientWidth || $('board').clientWidth || 1000) - 4);
+  const gaps = Math.max(1, snaps.length-1);
+  const stepX = Math.max(70, (avail - L - R) / gaps);
+  const W = L + R + stepX * gaps, H = T + B + row * (n-1);
+  const x = i => L + (snaps.length===1 ? stepX/2 : i*stepX), y = r => T + (r-1)*row;
+  const color = i => `hsl(${(i*137.5)%360} 70% 55%)`;
+  let g = '';
+  for (let r = 1; r <= n; r++) g += `<line class="grid" x1="${L}" x2="${W-R+10}" y1="${y(r)}" y2="${y(r)}"/><text class="ax" x="${L-8}" y="${y(r)+4}" text-anchor="end">${r}</text>`;
+  snaps.forEach((s,i) => g += `<text class="ax" x="${x(i)}" y="${H-8}" text-anchor="middle"><title>${esc(s.date)} – ${esc(s.src)}</title>${s.label}</text>`);
+  // player toggles
+  const colorOf = {}; names.forEach((nm,k) => colorOf[nm] = color(k));
+  $('chartPlayers').innerHTML = current.map(p => `
+    <label class="chk"><input type="checkbox" data-n="${esc(p.name)}" ${hidden.has(p.name)?'':'checked'}>
+      <span style="width:12px;height:12px;border-radius:3px;background:${colorOf[p.name]};flex:none"></span>
+      <span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span>${esc(p.name)}</label>`).join('');
+  $('chartPlayers').querySelectorAll('input').forEach(cb => cb.onchange = () => {
+    cb.checked ? hidden.delete(cb.dataset.n) : hidden.add(cb.dataset.n); saveHidden(); renderProgress();
+  });
+  $('showCount').textContent = `${names.filter(nm => !hidden.has(nm)).length} of ${names.length} players shown`;
+
+  const lines = names.map((nm, k) => {
+    if (hidden.has(nm)) return '';
+    const pts = snaps.map((s,i) => s.ranks[nm] ? [x(i), y(s.ranks[nm])] : null).filter(Boolean);
+    const last = pts[pts.length-1];
+    return `<g class="pl" data-n="${esc(nm)}" style="cursor:pointer">
+      <polyline class="ln" stroke="${color(k)}" points="${pts.map(p=>p.join(',')).join(' ')}"/>
+      ${pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="${color(k)}"><title>${esc(nm)}</title></circle>`).join('')}
+      <text x="${last[0]+10}" y="${last[1]+4}">${esc(nm)}</text></g>`;
+  }).join('');
+  $('chartWrap').innerHTML = `<svg width="${W}" height="${H}" style="display:block" viewBox="0 0 ${W} ${H}">${g}${lines}</svg>`;
+  if (snaps.length === 1) $('chartWrap').insertAdjacentHTML('beforeend', '<div class="legend">Only one submission so far – lines will appear as more scores are submitted.</div>');
+
+  // ---- table ----
+  const arrow = d => d==null ? '<span class="same">● new</span>'
+    : d>0 ? `<span class="up" title="Up ${d} place${d>1?'s':''}">▲ ${d}</span>`
+    : d<0 ? `<span class="down" title="Down ${-d} place${d<-1?'s':''}">▼ ${-d}</span>`
+    : '<span class="same" title="No change">▬ 0</span>';
+  const head = `<thead><tr><th>Now</th><th style="text-align:left">Player</th><th>Change</th><th>Best</th><th>Worst</th></tr></thead>`;
+  const body = current.map(p => {
+    const hist = snaps.map(s => s.ranks[p.name]).filter(Boolean);
+    // compare latest rank with the player's rank at the previous submission they appeared in
+    const seen = snaps.map(s => s.ranks[p.name]).filter(r => r != null);
+    const now = seen[seen.length-1] ?? p.rank;
+    const ch = snaps.length === 1 ? 0 : seen.length < 2 ? null : seen[seen.length-2] - now;
+    return `<tr data-n="${esc(p.name)}"><td><span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span></td>
+      <td class="name">${esc(p.name)}</td><td>${arrow(ch)}</td>
+      <td>${Math.min(...hist)}</td><td>${Math.max(...hist)}</td></tr>`;
+  }).join('');
+  $('progTable').innerHTML = head + '<tbody>' + body + '</tbody>';
+
+  // ---- highlighting ----
+  const svg = $('chartWrap').querySelector('svg');
+  const setFocus = nm => {
+    svg.classList.toggle('focus', !!nm);
+    svg.querySelectorAll('.pl').forEach(e => e.classList.toggle('on', e.dataset.n===nm));
+    $('progTable').querySelectorAll('tbody tr').forEach(e => e.classList.toggle('on', e.dataset.n===nm));
+  };
+  const bind = el => {
+    el.onmouseenter = () => setFocus(el.dataset.n);
+    el.onmouseleave = () => setFocus(focusName);
+    el.onclick = () => { focusName = focusName===el.dataset.n ? null : el.dataset.n; setFocus(focusName); };
+  };
+  svg.querySelectorAll('.pl').forEach(bind);
+  $('progTable').querySelectorAll('tbody tr').forEach(bind);
+  setFocus(focusName);
+}
+
+// ---------- summary stats ----------
+function renderStats(all, top, quals) {
+  const played = all.filter(p => p.games);
+  const sum = k => played.reduce((s,p) => s + p[k], 0);
+  const best = k => played.length ? played.reduce((a,b) => b[k] > a[k] ? b : a) : null;
+  const pg = sum('games'), pts = sum('points');
+  const matches = Math.round(pg / PER_COURT);                    // 4 players per game
+  const draws = Math.round(sum('draws') / PER_COURT);
+  const avgPct = pg ? pts / (pg * PTS.W) * 100 : 0;
+  const mw = best('wins'), mg = best('games'), mp = best('points'), md = best('draws');
+  const over50 = top.filter(p => p.pct >= 50).length;
+  const card = (l, v, sub='', hl=false) =>
+    `<div class="stat${hl?' hl':''}"><div class="l">${l}</div><div class="v" title="${esc(String(v))}">${esc(String(v))}</div><div class="s">${sub}</div></div>`;
+  $('stats').innerHTML = [
+    card('🏆 Leader', top[0] ? top[0].name : '–', top[0] ? `${top[0].pct.toFixed(2)}% win rate` : '', true),
+    card('👥 Players', all.length, `${top.length} ranked · ${quals.length} qualifying`),
+    card('🎾 Matches Played', matches, `${pg} player-games · ${draws} drawn`),
+    card('⭐ Points Awarded', pts, `Avg win % ${avgPct.toFixed(2)}%`),
+    card('🥇 Most Wins', mw ? mw.name : '–', mw ? `${mw.wins} wins` : ''),
+    card('💯 Most Points', mp ? mp.name : '–', mp ? `${mp.points} pts` : ''),
+    card('🔁 Most Games', mg ? mg.name : '–', mg ? `${mg.games} played` : ''),
+    card('🤝 Most Draws', md && md.draws ? md.name : '–', md && md.draws ? `${md.draws} draws` : ''),
+    card('🔥 50%+ Win Rate', over50, `of ${top.length} ranked players`),
+    card('📈 Top 3 Gap', top[2] ? `${(top[0].pct - top[2].pct).toFixed(2)}%` : '–', top[2] ? `${esc(top[0].name)} → ${esc(top[2].name)}` : ''),
+  ].join('');
+}
+
+// ---------- history ----------
+function renderHistory() {
+  const f = ($('hFilter').value || '').trim().toLowerCase();
+  const list = [...batches].sort((a,b) => b.ts - a.ts);
+  let shown = 0;
+  $('history').innerHTML = list.map(b => {
+    let recs = results.filter(r => r.batch===b.id);
+    if (f) recs = recs.filter(r => r.name.toLowerCase().includes(f));
+    if (!recs.length) return '';
+    shown += recs.length;
+    const all = results.filter(r => r.batch===b.id).length;
+    const games = (b.games||[]).filter(g => !f || [...g.a,...g.b].some(n => n.toLowerCase().includes(f)));
+    const team = (t, won) => `<span class="${won?'win':''}">${t.map(esc).join(' and ')}</span>`;
+    return `<div class="hb">
+      <div class="hb-head">
+        <div><b>${new Date(b.ts).toLocaleString()}</b> <span class="legend">· ${esc(b.source)}${b.by ? ` · by ${esc(b.by)}` : ''} · ${all} record${all>1?'s':''}</span></div>
+        <button class="del" data-batch="${b.id}">Remove entire session</button>
+      </div>
+      <table><thead><tr><th style="text-align:left">Player</th><th>W</th><th>D</th><th>L</th><th>Points</th><th></th></tr></thead><tbody>
+      ${recs.map(r => `<tr><td class="name">${esc(r.name)}</td><td class="w">${r.w}</td><td class="d">${r.d}</td><td class="l">${r.l}</td>
+        <td class="pts">${r.w*PTS.W + r.d*PTS.D}</td><td><button class="del" data-rec="${r.id}">Remove</button></td></tr>`).join('')}
+      </tbody></table>
+      ${games.length ? `<details><summary>Show ${games.length} match result${games.length>1?'s':''}</summary>
+        ${games.map(g => `<div class="gm">${courtName(g.court)}: ${team(g.a, g.res==='A')} vs ${team(g.b, g.res==='B')} — ${g.res==='D'?'Draw':'Win'}</div>`).join('')}
+      </details>` : ''}
+    </div>`;
+  }).join('') || '<div class="card">No match records.</div>';
+  $('hCount').textContent = `${shown} record${shown!==1?'s':''} shown`;
+
+  $('history').querySelectorAll('[data-rec]').forEach(btn => btn.onclick = () => {
+    const r = results.find(x => x.id===btn.dataset.rec);
+    if (!confirm(`Remove ${r.name}'s record (${r.w}W ${r.d}D ${r.l}L, ${r.w*3+r.d} pts)? The leaderboard will be recalculated.`)) return;
+    results = results.filter(x => x.id!==r.id); save(); render();
+  });
+  $('history').querySelectorAll('[data-batch]').forEach(btn => btn.onclick = () => {
+    const n = results.filter(x => x.batch===btn.dataset.batch).length;
+    if (!confirm(`Remove this entire session (${n} player records)? The leaderboard will be recalculated.`)) return;
+    results = results.filter(x => x.batch!==btn.dataset.batch); save(); render();
+  });
+}
+$('hFilter').oninput = renderHistory;
+
+
+document.querySelectorAll('th').forEach(th => th.onclick = () => {
+  const k = th.dataset.k;
+  sortDir = sortKey===k ? -sortDir : (k==='rank'||k==='name' ? 1 : -1);
+  sortKey = k; render();
+});
+
+const syncLosses = () => { $('fL').value = GAMES_PER_WEEK - (+$('fW').value||0) - (+$('fD').value||0); };
+$('fW').oninput = $('fD').oninput = syncLosses;
+
+$('form').onsubmit = e => {
+  e.preventDefault();
+  const name = $('fName').value.trim();
+  const w = +$('fW').value||0, d = +$('fD').value||0, l = GAMES_PER_WEEK - w - d;
+  const msg = $('msg'); msg.className = 'msg';
+  const fail = t => { msg.textContent = t; msg.classList.add('err'); };
+  if (!name) return fail('Enter a player name.');
+  if (w < 0 || d < 0 || l < 0) return fail(`Wins + draws cannot exceed ${GAMES_PER_WEEK} games.`);
+  const b = { id:uid(), ts:Date.now(), source:'Manual entry', games:[], by:user?.email };
+  batches.push(b); results.push({ id:uid(), batch:b.id, name, w, d, l }); save(); render();
+  msg.textContent = `${name}: ${w}W ${d}D ${l}L = ${w*3+d}/${MAX_WEEK} pts.`; msg.classList.add('ok');
+  $('fW').value = $('fD').value = 0; syncLosses();
+};
+$('reset').onclick = () => { if (confirm('Replace ALL data and history with the original imported standings?')) { const s = baseline(); results = s.out; batches = s.bs; roster = []; save(); render(); } };
+$('clear').onclick = () => { if (confirm('Delete all results, history and players?')) { results = []; batches = []; roster = []; save(); render(); } };
+
+// ---------- tabs ----------
+$('cfgBtn').onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id==='cfg'));
+  $('cfgBtn').classList.add('active');
+};
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  $('cfgBtn').classList.remove('active');
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x===t));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id===t.dataset.tab));
+  if (t.dataset.tab === 'prog') renderProgress();     // re-measure width when shown
+});
+
+// ---------- schedule ----------
+const selected = new Set();       // names attending this week
+let firstRoster = true;
+let courts = [];                  // [[p1,p2,p3,p4], ...] in rank order
+
+function renderRoster() {
+  const all = aggregate();
+  if (firstRoster && all.length) { all.forEach(p => selected.add(p.name)); firstRoster = false; }
+  $('roster').innerHTML = all.map(p => `
+    <label class="chk"><input type="checkbox" data-n="${esc(p.name)}" ${selected.has(p.name)?'checked':''}>
+      <span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span>${esc(p.name)}</label>`).join('');
+  $('roster').querySelectorAll('input').forEach(cb => cb.onchange = () => {
+    cb.checked ? selected.add(cb.dataset.n) : selected.delete(cb.dataset.n); updateCount();
+  });
+  updateCount();
+}
+function updateCount() {
+  const need = +$('nCourts').value * PER_COURT;
+  $('selCount').textContent = `${selected.size} selected · ${need} needed for ${$('nCourts').value} court(s)`;
+}
+$('nCourts').onchange = updateCount;
+$('selAll').onclick = () => { aggregate().forEach(p => selected.add(p.name)); renderRoster(); };
+$('selNone').onclick = () => { selected.clear(); renderRoster(); };
+$('addPlayer').onclick = () => {
+  const n = $('newPlayer').value.trim(); if (!n) return;
+  if (aggregate().some(p => p.name.toLowerCase()===n.toLowerCase())) { $('schedMsg').className='msg err'; $('schedMsg').textContent=`${n} already exists.`; return; }
+  roster.push(n); selected.add(n); save(); $('newPlayer').value=''; render();
+};
+
+// 4 players, 3 games – everyone partners everyone once
+const PAIRINGS = [ [[0,3],[1,2]], [[0,2],[1,3]], [[0,1],[2,3]] ];
+
+$('gen').onclick = () => {
+  const nC = +$('nCourts').value, msg = $('schedMsg'); msg.className = 'msg';
+  const ranked = aggregate().filter(p => selected.has(p.name));
+  const usable = Math.min(nC, Math.floor(ranked.length / PER_COURT));
+  if (!usable) { msg.classList.add('err'); msg.textContent = `Need at least ${PER_COURT} players selected.`; return; }
+  if (usable < nC) { msg.classList.add('err'); msg.textContent = `Only enough players for ${usable} court(s).`; }
+  else msg.textContent = '';
+  courts = [];
+  for (let c = 0; c < usable; c++) courts.push(ranked.slice(c*PER_COURT, (c+1)*PER_COURT));
+  const bench = ranked.slice(usable*PER_COURT);
+
+  $('courts').innerHTML = courts.map((ps, c) => `
+    <div class="court">
+      <h4>${courtName(c+1)} <span class="legend" style="font-weight:400">· Court ${c+1}</span></h4>
+      <div class="plist">${ps.map(p => `<div><span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span>${esc(p.name)}</div>`).join('')}</div>
+      ${PAIRINGS.map(([a,b], g) => `
+        <div class="game">
+          <div class="gl">Game ${g+1}</div>
+          <div class="t">${esc(ps[a[0]].name)} and ${esc(ps[a[1]].name)}</div><div>vs</div>
+          <div class="t">${esc(ps[b[0]].name)} and ${esc(ps[b[1]].name)}</div>
+          <select data-c="${c}" data-g="${g}">
+            <option value="">– result –</option>
+            <option value="A">${esc(ps[a[0]].name)} and ${esc(ps[a[1]].name)} win</option>
+            <option value="D">Draw</option>
+            <option value="B">${esc(ps[b[0]].name)} and ${esc(ps[b[1]].name)} win</option>
+          </select>
+        </div>`).join('')}
+    </div>`).join('');
+  $('bench').textContent = bench.length ? `Not on a court: ${bench.map(p=>p.name).join(', ')}` : '';
+  $('submitMsg').textContent = '';
+  $('courtsWrap').style.display = '';
+};
+
+$('submitWeek').onclick = () => {
+  const msg = $('submitMsg'); msg.className = 'msg';
+  const sels = [...$('courts').querySelectorAll('select')];
+  if (sels.some(s => !s.value)) { msg.classList.add('err'); msg.textContent = 'Enter a result for every game first.'; return; }
+  const tally = {}, games = [];
+  courts.forEach(ps => ps.forEach(p => tally[p.name] = { w:0, d:0, l:0 }));
+  sels.forEach(s => {
+    const ps = courts[+s.dataset.c], [a,b] = PAIRINGS[+s.dataset.g];
+    const A = a.map(i => ps[i].name), B = b.map(i => ps[i].name);
+    games.push({ court:+s.dataset.c+1, a:A, b:B, res:s.value });
+    if (s.value==='D') [...A,...B].forEach(n => tally[n].d++);
+    else { const [win, lose] = s.value==='A' ? [A,B] : [B,A];
+           win.forEach(n => tally[n].w++); lose.forEach(n => tally[n].l++); }
+  });
+  if (!confirm(`Add this week's results for ${Object.keys(tally).length} players?`)) return;
+  const bt = { id:uid(), ts:Date.now(), source:`Game schedule (${courts.length} court${courts.length>1?'s':''})`, games, by:user?.email };
+  batches.push(bt);
+  Object.entries(tally).forEach(([name, t]) => results.push({ id:uid(), batch:bt.id, name, ...t }));
+  roster = roster.filter(n => !tally[n]);
+  save(); render();
+  $('courtsWrap').style.display = 'none'; courts = [];
+  document.querySelector('.tab[data-tab=board]').click();
+  $('msg').className = 'msg ok'; $('msg').textContent = 'Weekly results from the schedule were added.';
+};
+
+// ---------- calendar ----------
+const CKEY = 'padelCalendar', KEY_PLAYERS = 12, MIN_RES = 4, FKEY = 'padelFee';
+let fee = parseFloat(load(FKEY) ?? '13.5');
+const money = v => '£' + v.toFixed(2);
+$('calFee').value = fee.toFixed(2);
+$('calFee').onchange = () => {
+  const v = parseFloat($('calFee').value);
+  if (isNaN(v) || v < 0) { $('calFee').value = fee.toFixed(2); return; }
+  fee = v; store(FKEY, String(fee)); schedulePush(); $('calFee').value = fee.toFixed(2); renderCalendar();
+};
+const monthOpen = {};   // user's expand/collapse choice per month; default: current & future open, past closed
+let calendar = JSON.parse(load(CKEY) || '[]');   // [{id, date, time, note, players:[12], reserves:[]}]
+const saveCal = () => { store(CKEY, JSON.stringify(calendar)); schedulePush(); };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today = () => ymd(new Date());
+$('calDate').value = today();
+
+$('calAdd').onclick = () => {
+  const date = $('calDate').value, msg = $('calMsg'); msg.className = 'msg';
+  if (!date) { msg.classList.add('err'); msg.textContent = 'Pick a date.'; return; }
+  if (calendar.some(w => w.date === date)) { msg.classList.add('err'); msg.textContent = 'A week already exists for that date.'; return; }
+  calendar.push({ id:uid(), date, time:$('calTime').value, type:$('calType').value, note:$('calNote').value.trim(),
+                  players:Array(KEY_PLAYERS).fill(''), reserves:Array(MIN_RES).fill('') });
+  saveCal(); renderCalendar();
+  // next suggested date = +7 days
+  const d = new Date(date + 'T00:00'); d.setDate(d.getDate() + 7);
+  $('calDate').value = ymd(d); $('calNote').value = '';
+  msg.classList.add('ok'); msg.textContent = `Added week of ${fmtDate(date)}.`;
+};
+$('calPast').onchange = () => renderCalendar();
+const fmtDate = d => new Date(d + 'T00:00').toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+
+function renderCalendar() {
+  const players = aggregate();                       // ranked order for the dropdown
+  const showPast = $('calPast').checked, t = today();
+  const list = [...calendar].sort((a,b) => a.date.localeCompare(b.date)).filter(w => showPast || w.date >= t);
+  const weekCard = w => {
+    const used = new Set([...w.players, ...w.reserves].filter(Boolean));
+    const filled = w.players.filter(Boolean).length;
+    const opts = cur => '<option value="">– select player –</option>' + players.map(p =>
+      `<option value="${esc(p.name)}" ${p.name===cur?'selected':''} ${used.has(p.name)&&p.name!==cur?'disabled':''}>${p.label}. ${esc(p.name)}</option>`).join('');
+    const slot = (arr, i, res) => `<div class="slot${res?' res':''}"><span class="n">${res?'R':''}${i+1}</span>
+      <select data-w="${w.id}" data-k="${arr}" data-i="${i}">${opts(w[arr][i])}</select></div>`;
+    return `<div class="cw${w.date < t ? ' past' : ''}">
+      <div class="cw-head">
+        <div><b>📅 ${fmtDate(w.date)}</b>
+          <span class="pill ${w.type==='Swingers'?'sw':'cp'}">${w.type==='Swingers'?'💃 Swingers':'🏆 Competitive'}</span>
+          <span class="pill${filled===KEY_PLAYERS?' full':''}">${filled}/${KEY_PLAYERS} players</span>
+          <span class="pill">${w.reserves.filter(Boolean).length} reserves</span></div>
+        <div class="row">
+          <button type="button" class="sec" data-use="${w.id}" title="Tick these 12 players on the Upcoming Teams tab">Use in Upcoming Teams</button>
+          <button type="button" class="del" data-delw="${w.id}">Delete week</button>
+        </div>
+      </div>
+      <div class="row cal-form wk">
+        <label>Start time<input type="time" data-f="time" data-w="${w.id}" value="${w.time||''}"></label>
+        <label>Game type<select data-f="type" data-w="${w.id}">
+          ${['Competitive','Swingers'].map(t => `<option ${(w.type||'Competitive')===t?'selected':''}>${t}</option>`).join('')}
+        </select></label>
+        <label>Venue<input data-f="note" data-w="${w.id}" value="${esc(w.note||'')}" placeholder="Venue"></label>
+      </div>
+      <h5>Key players (${KEY_PLAYERS})</h5>
+      <div class="slots">${w.players.map((_,i) => slot('players', i, false)).join('')}</div>
+      <h5>Reserves</h5>
+      <div class="slots">${w.reserves.map((_,i) => slot('reserves', i, true)).join('')}</div>
+      <div class="row" style="margin-top:8px"><button type="button" class="sec" data-addres="${w.id}">+ Add reserve slot</button></div>
+    </div>`;
+  };
+
+  // ---- bucket by calendar month ----
+  const months = {};
+  list.forEach(w => (months[w.date.slice(0,7)] ||= []).push(w));
+  const curMonth = t.slice(0,7);
+  const monthName = m => new Date(m + '-01T00:00').toLocaleDateString(undefined, { month:'long', year:'numeric' });
+  $('calList').innerHTML = Object.entries(months).map(([m, ws]) => {
+    // games per player this month: every key-player slot = GAMES_PER_WEEK games
+    const tally = {};
+    ws.forEach(w => w.players.filter(Boolean).forEach(n => {
+      const e = tally[n] ||= { weeks:0, comp:0, swing:0 };
+      e.weeks++; (w.type==='Swingers' ? e.swing++ : e.comp++);
+    }));
+    const rows = Object.entries(tally).sort((a,b) => b[1].weeks - a[1].weeks || a[0].localeCompare(b[0]));
+    const totalGames = rows.reduce((s,[,e]) => s + e.weeks, 0);
+    const open = monthOpen[m] ?? (m >= curMonth);
+    return `<details class="month" data-m="${m}" ${open ? 'open' : ''}>
+      <summary><b>${monthName(m)}</b>
+        <span class="pill">${ws.length} week${ws.length>1?'s':''}</span>
+        <span class="pill">${rows.length} players</span>
+        <span class="pill">${totalGames} games booked</span>
+        <span class="pill">${money(totalGames*fee)} total</span></summary>
+      <div class="month-body">
+        <div class="month-weeks">${ws.map(weekCard).join('')}</div>
+        <aside class="month-side">
+          <h4>Total games by player</h4>
+          ${rows.length ? `<table>
+            <thead><tr><th style="text-align:left">Player</th><th title="Each week played counts as 1 game">Games</th><th>Cost</th></tr></thead>
+            <tbody>${rows.map(([n,e]) => `<tr><td class="name">${esc(n)}</td>
+              <td title="${e.comp} Competitive · ${e.swing} Swingers">${e.weeks}</td>
+              <td class="pts" title="${e.weeks} × ${money(fee)}">${money(e.weeks*fee)}</td></tr>`).join('')}</tbody>
+            <tfoot><tr><td class="name">Total</td><td>${totalGames}</td><td class="pts">${money(totalGames*fee)}</td></tr></tfoot>
+          </table>` : '<div class="legend">No key players selected yet.</div>'}
+          <div class="legend">Key players only · 1 game = 1 week · ${money(fee)} per game. Reserves not counted.</div>
+        </aside>
+      </div>
+    </details>`;
+  }).join('') || `<div class="card legend">No ${showPast ? '' : 'upcoming '}weeks scheduled. Add one above.</div>`;
+  $('calList').querySelectorAll('details.month').forEach(d => d.ontoggle = () => {
+    monthOpen[d.dataset.m] = d.open;
+  });
+
+  const find = id => calendar.find(w => w.id === id);
+  $('calList').querySelectorAll('[data-f]').forEach(el => el.onchange = () => {
+    find(el.dataset.w)[el.dataset.f] = el.dataset.f==='note' ? el.value.trim() : el.value; saveCal(); renderCalendar();
+  });
+  $('calList').querySelectorAll('select[data-k]').forEach(sel => sel.onchange = () => {
+    find(sel.dataset.w)[sel.dataset.k][+sel.dataset.i] = sel.value; saveCal(); renderCalendar();
+  });
+  $('calList').querySelectorAll('[data-addres]').forEach(b => b.onclick = () => {
+    find(b.dataset.addres).reserves.push(''); saveCal(); renderCalendar();
+  });
+  $('calList').querySelectorAll('[data-delw]').forEach(b => b.onclick = () => {
+    const w = find(b.dataset.delw);
+    if (!confirm(`Delete the week of ${fmtDate(w.date)}?`)) return;
+    calendar = calendar.filter(x => x !== w); saveCal(); renderCalendar();
+  });
+  $('calList').querySelectorAll('[data-use]').forEach(b => b.onclick = () => {
+    const w = find(b.dataset.use), names = w.players.filter(Boolean);
+    if (!names.length) return alert('No key players selected for this week yet.');
+    selected.clear(); names.forEach(n => selected.add(n));
+    $('nCourts').value = String(Math.max(1, Math.min(3, Math.floor(names.length / PER_COURT))));
+    renderRoster();
+    document.querySelector('.tab[data-tab=sched]').click();
+    $('schedMsg').className = 'msg ok';
+    $('schedMsg').textContent = `Loaded ${names.length} players from ${fmtDate(w.date)}. Swap in reserves if needed, then generate courts.`;
+  });
+}
+
+// ---------- backup & share ----------
+const DATA_KEYS = () => [KEY, BKEY, RKEY, CKEY, FKEY];
+function download(name, text, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+function snapshotData() {
+  return { [KEY]:JSON.stringify(results), [BKEY]:JSON.stringify(batches), [RKEY]:JSON.stringify(roster),
+           [CKEY]:JSON.stringify(calendar), [FKEY]:String(fee) };
+}
+// replace all in-memory data from a {key: jsonString} object (backup file or local storage)
+function applyData(d) {
+  results  = JSON.parse(d[KEY]  || '[]');
+  batches  = JSON.parse(d[BKEY] || '[]');
+  roster   = JSON.parse(d[RKEY] || '[]');
+  calendar = JSON.parse(d[CKEY] || '[]');
+  fee      = parseFloat(d[FKEY] ?? '13.5');
+  results.forEach(r => { r.id = r.id || uid(); });
+  batches = batches.filter(b => results.some(r => r.batch===b.id));
+  $('calFee').value = fee.toFixed(2);
+}
+const stamp = () => ymd(new Date());
+const dmsg = (t, ok=true) => { $('dataMsg').className = 'msg ' + (ok?'ok':'err'); $('dataMsg').textContent = t; };
+
+$('exportBtn').onclick = () => {
+  download(`padel-backup-${stamp()}.json`,
+    JSON.stringify({ app:'padel-leaderboard', version:1, exported:new Date().toISOString(), data:snapshotData() }, null, 2),
+    'application/json');
+  dmsg('Backup downloaded to your Downloads folder.');
+};
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').onchange = async () => {
+  const f = $('importFile').files[0]; $('importFile').value = '';
+  if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    if (j.app !== 'padel-leaderboard' || !j.data) throw new Error('Not a padel leaderboard backup file.');
+    if (!confirm(`Restore backup from ${new Date(j.exported).toLocaleString()}?\nThis replaces ALL current data${CLOUD ? ' in Supabase for everyone' : ' in this browser'}.`)) return;
+    if (CLOUD) { applyData(j.data); render(); await pushChanges(); dmsg('Backup restored to Supabase.'); return; }
+    DATA_KEYS().forEach(k => localStorage.removeItem(k));
+    Object.entries(j.data).forEach(([k, v]) => localStorage.setItem(k, v));
+    location.reload();
+  } catch (e) { dmsg('Import failed: ' + e.message, false); }
+};
+$('publishBtn').onclick = () => {
+  const payload = JSON.stringify({ published:new Date().toISOString(), data:snapshotData() }).replace(/</g, '\\u003c');
+  const html = PAGE_SOURCE.replace('<script>', `<script>window.PADEL_SNAPSHOT = ${payload};<\/script>\n<script>`);
+  download('index.html', html, 'text/html');
+  dmsg('Snapshot downloaded as index.html – upload it to share (see instructions).');
+};
+
+// ---------- read-only / editor mode ----------
+{
+  const rc0 = renderCalendar;
+  renderCalendar = function() { rc0(); if (RO) $('cal').querySelectorAll('.cw select, .cw input').forEach(e => e.disabled = true); };
+}
+function applyMode() {
+  document.body.classList.toggle('ro', RO);
+  $('cfgBtn').style.display = SNAP ? 'none' : '';
+  const ban = $('roBanner');
+  if (SNAP) { ban.style.display = ''; ban.textContent = `📢 Read-only view · last updated ${new Date(SNAP.published).toLocaleString()}`; }
+  else ban.style.display = 'none';
+  // leaving the config page open is fine; but if a viewer is on an edit-only panel nothing breaks
+  render();
+}
+
+// ---------- Supabase sync ----------
+// Every edit still updates the in-memory arrays; save()/saveCal() then call schedulePush(), which
+// diffs against the last state known to be in Supabase and only sends what changed.
+let synced = null, pushTimer = null, pushing = false, pushAgain = false;
+const syncMsg = (t, err=false) => { const e = $('syncStatus'); e.textContent = t; e.style.color = err ? '#ef4444' : ''; };
+const batchRow  = b => ({ id:b.id, ts:b.ts, source:b.source || null, games:b.games || [], created_by:b.by || null });
+const resultRow = r => ({ id:r.id, batch:r.batch, name:r.name, w:r.w, d:r.d, l:r.l });
+function snapState() {
+  const m = (arr, key, row) => new Map(arr.map(x => [x[key], JSON.stringify(row(x))]));
+  return { batches:m(batches,'id',batchRow), results:m(results,'id',resultRow),
+           calendar:m(calendar,'id',w => ({ id:w.id, data:w })), roster:new Set(roster), fee };
+}
+function schedulePush() {
+  if (!CLOUD || !isEditor || !synced) return;
+  syncMsg('Saving…');
+  clearTimeout(pushTimer); pushTimer = setTimeout(() => { pushTimer = null; pushChanges(); }, 400);
+}
+const chunks = (a, n) => Array.from({ length:Math.ceil(a.length/n) }, (_, i) => a.slice(i*n, i*n+n));
+async function up(table, rows) {
+  for (const c of chunks(rows, 500)) { const { error } = await sb.from(table).upsert(c); if (error) throw error; }
+}
+async function del(table, col, keys) {
+  for (const c of chunks(keys, 100)) { const { error } = await sb.from(table).delete().in(col, c); if (error) throw error; }
+}
+async function pushChanges() {
+  if (!CLOUD || !isEditor || !synced) return;
+  if (pushing) { pushAgain = true; return; }
+  pushing = true; syncMsg('Saving…');
+  try {
+    const cur = snapState();
+    const diff = (a, b) => ({ up:[...a].filter(([k,v]) => b.get(k) !== v).map(([,v]) => JSON.parse(v)),
+                              del:[...b.keys()].filter(k => !a.has(k)) });
+    const db = diff(cur.batches, synced.batches), dr = diff(cur.results, synced.results), dc = diff(cur.calendar, synced.calendar);
+    await up('batches', db.up);
+    await up('results', dr.up);
+    await del('results', 'id', dr.del);
+    await del('batches', 'id', db.del);
+    await up('roster', [...cur.roster].filter(n => !synced.roster.has(n)).map(name => ({ name })));
+    await del('roster', 'name', [...synced.roster].filter(n => !cur.roster.has(n)));
+    await up('calendar', dc.up);
+    await del('calendar', 'id', dc.del);
+    if (cur.fee !== synced.fee) await up('settings', [{ key:'fee', value:cur.fee }]);
+    synced = cur;
+    syncMsg('✓ Saved');
+  } catch (e) {
+    syncMsg('⚠️ Save failed', true);
+    alert('Could not save to Supabase: ' + (e.message || e) + '\nReloading the latest data.');
+    await cloudRefresh(true);
+  }
+  pushing = false;
+  if (pushAgain) { pushAgain = false; pushChanges(); }
+}
+async function fetchAll(table, cols='*') {
+  const out = [];
+  for (let i = 0; ; i += 1000) {
+    const { data, error } = await sb.from(table).select(cols).range(i, i + 999);
+    if (error) throw error;
+    out.push(...data); if (data.length < 1000) return out;
+  }
+}
+async function cloudRefresh(force=false) {
+  if (!CLOUD) return;
+  if (!force && (pushing || pushTimer)) return;              // don't clobber unsaved local edits
+  try {
+    const [b, r, ro, c, st] = await Promise.all([
+      fetchAll('batches'), fetchAll('results'), fetchAll('roster','name'), fetchAll('calendar','id,data'), fetchAll('settings')]);
+    const nb = b.map(x => ({ id:x.id, ts:Number(x.ts), source:x.source || '', games:x.games || [], ...(x.created_by ? { by:x.created_by } : {}) }));
+    const nr = r.map(x => ({ id:x.id, batch:x.batch, name:x.name, w:x.w, d:x.d, l:x.l }));
+    const nf = Number(st.find(x => x.key==='fee')?.value ?? 13.5);
+    const before = JSON.stringify([batches, results, roster, calendar, fee]);
+    batches = nb; results = nr; roster = ro.map(x => x.name); calendar = c.map(x => x.data); fee = nf;
+    synced = snapState();
+    if (force || before !== JSON.stringify([batches, results, roster, calendar, fee])) { $('calFee').value = fee.toFixed(2); render(); }
+    if (!$('syncStatus').textContent.startsWith('⚠️')) syncMsg(isEditor ? '✓ Saved' : '');
+  } catch (e) { syncMsg('⚠️ Offline – could not load data', true); console.error(e); }
+}
+
+// ---------- accounts ----------
+const amsg = (t, ok=true) => { $('acctMsg').className = 'msg ' + (ok?'ok':'err'); $('acctMsg').textContent = t; };
+const httpUrl = () => location.protocol.startsWith('http') ? location.href.split('#')[0].split('?')[0] : undefined;
+async function refreshAuth() {
+  const { data:{ session } } = await sb.auth.getSession();
+  user = session?.user || null; isEditor = false; isAdmin = false;
+  if (user) {
+    const { data } = await sb.from('editors').select('email,is_admin').eq('email', user.email.toLowerCase()).maybeSingle();
+    if (data) { isEditor = true; isAdmin = !!data.is_admin; }
+  }
+  RO = !isEditor;
+  renderAccount(); applyMode();
+  if (isEditor) syncMsg('✓ Saved');
+}
+function renderAccount() {
+  const body = $('acctBody');
+  if (!CLOUD) {
+    body.innerHTML = `<div class="legend">Supabase is not connected (offline or the Supabase library could not load). Data is being saved in this browser only.</div>`;
+    return;
+  }
+  if (user) {
+    const role = isAdmin ? '🛡️ Admin' : isEditor ? '✏️ Editor' : '👀 Viewer – this email is not on the editors list yet';
+    body.innerHTML = `<div class="row" style="align-items:center"><div>Signed in as <b>${esc(user.email)}</b> · ${role}</div>
+      <button type="button" class="sec" id="logoutBtn">Log out</button></div>`;
+    $('logoutBtn').onclick = async () => { await sb.auth.signOut(); amsg('Logged out.'); };
+  } else {
+    body.innerHTML = `<div class="legend" style="margin:0 0 10px">Anyone can view. Organisers log in to make changes.</div>
+      <div class="row cal-form">
+        <label>Email<input id="liEmail" type="email" autocomplete="username" style="width:240px"></label>
+        <label>Password<input id="liPass" type="password" autocomplete="current-password" style="width:200px"></label>
+        <button type="button" id="liBtn">Log in</button>
+        <button type="button" class="sec" id="suBtn">Create account</button>
+        <button type="button" class="sec" id="fpBtn">Forgot password</button>
+      </div>`;
+    const creds = () => ({ email:$('liEmail').value.trim().toLowerCase(), password:$('liPass').value });
+    $('liBtn').onclick = async () => {
+      const { error } = await sb.auth.signInWithPassword(creds());
+      error ? amsg(error.message, false) : amsg('Logged in.');
+    };
+    $('liPass').onkeydown = e => { if (e.key === 'Enter') $('liBtn').click(); };
+    $('suBtn').onclick = async () => {
+      const c = creds();
+      if (c.password.length < 8) return amsg('Choose a password of at least 8 characters.', false);
+      const { error } = await sb.auth.signUp({ ...c, options: httpUrl() ? { emailRedirectTo: httpUrl() } : {} });
+      error ? amsg(error.message, false)
+            : amsg('Account created. Check your email and click the confirmation link, then come back and log in.');
+    };
+    $('fpBtn').onclick = async () => {
+      const email = $('liEmail').value.trim().toLowerCase();
+      if (!email) return amsg('Enter your email first.', false);
+      if (!httpUrl()) return amsg('Password reset only works from the online (hosted) version of the page.', false);
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: httpUrl() });
+      error ? amsg(error.message, false) : amsg('Password reset email sent.');
+    };
+  }
+  // editors list (admins only)
+  $('edCard').style.display = isAdmin ? '' : 'none';
+  if (isAdmin) renderEditors();
+  // offer to upload this browser's pre-Supabase data
+  const hasLocal = localStorage.getItem(KEY) || localStorage.getItem(CKEY);
+  $('uploadCard').style.display = isEditor && hasLocal ? '' : 'none';
+  if (hasLocal) {
+    const n = JSON.parse(localStorage.getItem(KEY) || '[]').length, w = JSON.parse(localStorage.getItem(CKEY) || '[]').length;
+    $('uploadInfo').textContent = ` ${n} result records and ${w} calendar weeks found in this browser.`;
+  }
+}
+async function renderEditors() {
+  const { data, error } = await sb.from('editors').select('email,is_admin').order('email');
+  if (error) { $('edMsg').className = 'msg err'; $('edMsg').textContent = error.message; return; }
+  $('edList').innerHTML = data.map(e => `<tr><td class="name">${esc(e.email)}</td><td>${e.is_admin ? '🛡️ Admin' : '✏️ Editor'}</td>
+    <td>${e.email === user.email.toLowerCase() ? '<span class="legend">you</span>' : `<button class="del" style="display:inline-block!important" data-ed="${esc(e.email)}">Remove</button>`}</td></tr>`).join('');
+  $('edList').querySelectorAll('[data-ed]').forEach(b => b.onclick = async () => {
+    if (!confirm(`Remove ${b.dataset.ed} from editors?`)) return;
+    const { error } = await sb.from('editors').delete().eq('email', b.dataset.ed);
+    if (error) { $('edMsg').className = 'msg err'; $('edMsg').textContent = error.message; } else renderEditors();
+  });
+}
+if (CLOUD) {
+  $('edAdd').onclick = async () => {
+    const email = $('edEmail').value.trim().toLowerCase(), m = $('edMsg');
+    if (!/^\S+@\S+\.\S+$/.test(email)) { m.className = 'msg err'; m.textContent = 'Enter a valid email.'; return; }
+    const { error } = await sb.from('editors').insert({ email, is_admin:$('edAdmin').checked });
+    if (error) { m.className = 'msg err'; m.textContent = error.message; return; }
+    m.className = 'msg ok'; m.textContent = `${email} added. Ask them to open the page, click ⚙️ → Create account with this email.`;
+    $('edEmail').value = ''; $('edAdmin').checked = false; renderEditors();
+  };
+  $('uploadLocal').onclick = async () => {
+    if (!confirm('Replace ALL data in Supabase with the data saved in this browser?')) return;
+    const d = {}; [KEY, BKEY, RKEY, CKEY, FKEY].forEach(k => { const v = localStorage.getItem(k); if (v != null) d[k] = v; });
+    applyData(d); render();
+    await pushChanges();
+    $('uploadMsg').className = 'msg ok'; $('uploadMsg').textContent = 'Uploaded. Everyone now sees this data.';
+  };
+  sb.auth.onAuthStateChange((event) => {
+    setTimeout(async () => {
+      if (event === 'PASSWORD_RECOVERY') {
+        const pw = prompt('Enter a new password (8+ characters):');
+        if (pw && pw.length >= 8) { const { error } = await sb.auth.updateUser({ password:pw }); alert(error ? error.message : 'Password updated.'); }
+      }
+      refreshAuth();
+    }, 0);
+  });
+  // keep everyone up to date
+  setInterval(() => cloudRefresh(false), 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) cloudRefresh(false); });
+}
+
+applyMode();
+if (CLOUD) { syncMsg('Loading…'); cloudRefresh(true).then(refreshAuth); }
+else renderAccount();
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if ($('prog').classList.contains('active')) renderProgress(); }, 150); });
+</script>
+</body>
+</html>
