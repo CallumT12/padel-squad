@@ -94,6 +94,12 @@
   .hb-head { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
   .hb-head b { font-size:1rem; } .hb-head .legend { margin:0; }
   .hb td, .hb th { padding:6px 8px; font-size:.85rem; } .hb th { cursor:default; }
+  /* both remove buttons share the same width and right edge */
+  .hb .hb-btn { box-sizing:border-box; width:170px; height:32px; min-height:32px; padding:0 8px; margin:0;
+                 display:inline-flex; align-items:center; justify-content:center;
+                 font-size:.8rem; font-weight:700; line-height:1; border-width:1px; vertical-align:middle; }
+  .hb td.hb-act { text-align:right; padding-right:0; width:170px; }
+  .hb table { width:100%; }
   button.del { background:transparent; color:#ef4444; border:1px solid #ef4444; padding:4px 10px; font-size:.75rem; }
   button.del:hover { background:#ef4444; color:#fff; }
   details { margin-top:8px; font-size:.85rem; color:var(--mut); } summary { cursor:pointer; }
@@ -106,6 +112,17 @@
   #chartWrap svg .grid { stroke:var(--line); }
   #progTable tr.on td { background:var(--line); } #progTable td.name { cursor:pointer; }
   .gm { padding:3px 0; }
+  a.plink { color:inherit; text-decoration:none; border-bottom:1px dashed var(--bd); cursor:pointer; }
+  a.plink:hover { color:var(--acc); border-bottom-color:var(--acc); }
+  .ov { position:fixed; inset:0; background:rgba(2,6,23,.6); display:flex; align-items:flex-start; justify-content:center; z-index:50; padding:40px 16px; overflow:auto; }
+  .ov[hidden] { display:none; }
+  .ov-card { position:relative; background:var(--card); color:var(--txt); border-radius:16px; padding:24px; width:min(860px, 100%); box-shadow:0 20px 60px rgba(0,0,0,.4); }
+  .ov-x { position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background:var(--line); color:var(--txt); font-size:1.4rem; line-height:1; padding:0; }
+  .pf-head { display:flex; align-items:center; gap:14px; margin-right:40px; }
+  .pf-rec { margin:12px 0 16px; font-weight:700; display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+  .pf-stats { grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)) !important; }
+  .pf-stats .stat { background:var(--bg); } .pf-stats .v { font-size:1.2rem; }
+  @media print { .ov { display:none !important; } }
   .am-round h4 { margin-bottom:6px; }
   .ev-players { display:flex; flex-wrap:wrap; gap:6px; }
   .ev-p { background:var(--inp); border:1px solid var(--line); border-radius:999px; padding:4px 10px; font-size:.85rem; }
@@ -134,6 +151,15 @@
   details.res-acc[open] > summary::before { transform:rotate(90deg); }
   .hist-top { display:flex; flex-wrap:wrap; gap:16px; align-items:stretch; margin-bottom:20px; }
   .plist.picks { grid-template-columns:1fr; } .plist.picks select { flex:1; min-width:0; padding:4px 6px; }
+  .plist .pentry { display:flex; flex-direction:column; align-items:stretch; gap:2px; }
+  .plist .prow { display:flex; align-items:center; gap:8px; }
+  .plist select.subsel { flex:0 0 46px; width:46px; height:26px; font-size:.7rem; font-weight:700; padding:0 4px;
+                         color:var(--mut); text-align:center; text-align-last:center; cursor:pointer;
+                         -webkit-appearance:none; -moz-appearance:none; appearance:none; background-image:none; }
+  .plist .prow, .plist .subnote { background:none; padding:0; border-radius:0; }
+  .plist .subnote { display:block; padding-left:32px; }
+  td.subname, tr.paid td.subname { color:#ef4444 !important; }
+  .subnote { font-size:.72rem; font-weight:400; color:var(--mut); font-style:italic; padding-left:32px; }
   .cw { background:var(--card); border-radius:12px; padding:16px; margin-bottom:16px; border-left:4px solid var(--acc); }
   .cw.past { opacity:.6; border-left-color:var(--bd); }
   .cw-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
@@ -281,14 +307,12 @@
   <section class="panel" id="prog">
     <div class="card">
       <h3>Ranking Position</h3>
-      <div class="legend" style="margin:0 0 10px">Rank 1 at the top. Hover or click a player (chart or table) to highlight their line.</div>
+      <div id="chartWrap" style="overflow-x:auto;width:100%;margin-bottom:16px"></div>
       <div class="row" style="margin-bottom:8px">
         <button type="button" class="sec" id="showAll">Show all</button>
         <button type="button" class="sec" id="showNone">Hide all</button>
-        <span class="legend" id="showCount" style="margin:0"></span>
       </div>
       <div class="roster" id="chartPlayers" style="margin-top:0"></div>
-      <div id="chartWrap" style="overflow-x:auto"></div>
     </div>
     <div class="card">
       <h3>Rank Changes</h3>
@@ -342,7 +366,7 @@
     </div>
     <div class="card edit">
       <h3>🔒 Deletion PIN</h3>
-      <div class="legend" style="margin:0 0 10px">When set, this PIN must be entered before removing records or sessions in Match History.</div>
+      <div class="legend" style="margin:0 0 10px">When set, this PIN must be entered before removing records or sessions in Match History and before deleting Calendar weeks.</div>
       <div class="row cal-form">
         <label>Current PIN<input id="pinCur" type="password" inputmode="numeric" autocomplete="off" style="width:140px"></label>
         <label>New PIN<input id="pinNew" type="password" inputmode="numeric" autocomplete="off" style="width:140px"></label>
@@ -417,6 +441,13 @@
     </div>
   </section>
 </main>
+
+<div id="profileOverlay" class="ov" hidden>
+  <div class="ov-card" role="dialog" aria-modal="true" aria-labelledby="pfName">
+    <button type="button" class="ov-x" id="pfClose" aria-label="Close">×</button>
+    <div id="pfBody"></div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -622,7 +653,7 @@ function render() {
   const row = p => `
     <tr>
       <td><span class="rk"><span class="rank${rc(p.rank,p.qual)}">${p.label}</span>${move(p)}</span></td>
-      <td class="name">${esc(p.name)}${p.qual ? ` <span class="need">${MIN_GAMES-p.games} to qualify</span>` : ''}</td>
+      <td class="name"><a href="#" class="plink" data-player="${esc(p.name)}">${esc(p.name)}</a>${p.qual ? ` <span class="need">${MIN_GAMES-p.games} to qualify</span>` : ''}</td>
       <td>${p.games}</td>
       <td class="w">${p.wins}</td>
       <td class="d">${p.draws}</td>
@@ -633,6 +664,7 @@ function render() {
     </tr>`;
   $('tbody').innerHTML = sorted(top).map(row).join('') || '<tr><td colspan="9">No qualified players yet</td></tr>';
   $('qbody').innerHTML = sorted(quals).map(row).join('') || '<tr><td colspan="9">No players in the qualifier zone</td></tr>';
+  document.querySelectorAll('#tbody .plink, #qbody .plink').forEach(a => a.onclick = e => { e.preventDefault(); openProfile(a.dataset.player); });
   renderStats(all, top, quals);
   $('players').innerHTML = all.map(p=>`<option value="${esc(p.name)}">`).join('');
   renderRoster();
@@ -645,11 +677,123 @@ function render() {
 
 // ---------- rank progress ----------
 let focusName = null;
-const HKEY = 'padelChartHidden';
-const hidden = new Set(JSON.parse(localStorage.getItem(HKEY) || '[]'));
-const saveHidden = () => localStorage.setItem(HKEY, JSON.stringify([...hidden]));
-$('showAll').onclick = () => { hidden.clear(); saveHidden(); renderProgress(); };
-$('showNone').onclick = () => { aggregate().forEach(p => hidden.add(p.name)); saveHidden(); renderProgress(); };
+// Chart selection: null = all players shown (default). Clicking a player while all are shown
+// shows ONLY that player; further clicks add/remove players. Unticking the last one shows all again.
+let chartSel = null;
+localStorage.removeItem('padelChartHidden');                 // old saved selection no longer used
+const isHidden = nm => chartSel !== null && !chartSel.has(nm);
+$('showAll').onclick = () => { chartSel = null; renderProgress(); };
+$('showNone').onclick = () => { chartSel = new Set(); renderProgress(); };
+// ---------- player profile ----------
+// Every individual game with known teams: Calendar/schedule results (W/D/L) and Americano scores.
+function allGames() {
+  const out = [];
+  [...batches].sort((a, b) => a.ts - b.ts).forEach(b => (b.games || []).forEach(g => {
+    if (!g.a || !g.b || !g.res) return;
+    out.push({ ts:b.ts, a:g.a, b:g.b, win: g.res === 'D' ? 0 : g.res === 'A' ? 1 : -1, src:'match' });
+  }));
+  const rankOf = {}; aggregate().forEach(p => rankOf[p.name] = p);
+  calendar.filter(w => w.type === 'Americano' && w.amer).forEach(w => {
+    const L = weekLineup(w, rankOf), ps = amPlayers(w, L);
+    if (ps.length < 12) return;
+    const ts = new Date(w.date + 'T12:00').getTime();
+    americanoRounds(ps).forEach((courts, r) => courts.forEach(([A, B], c) => {
+      const v = w.amer[`${r}-${c}`]; if (!v || v[0] === '' || v[1] === '' || v[0] == null || v[1] == null) return;
+      out.push({ ts: ts + r, a:A, b:B, win: Math.sign(+v[0] - +v[1]), src:'americano' });
+    }));
+  });
+  return out.sort((x, y) => x.ts - y.ts);
+}
+function rankSnapshots() {
+  const snaps = []; let cum = [];
+  [...batches].sort((a, b) => a.ts - b.ts).forEach(b => {
+    cum = cum.concat(results.filter(r => r.batch === b.id));
+    const ranks = {}; aggregate(cum).forEach(p => { if (p.games) ranks[p.name] = p.rank; });
+    snaps.push({ ts:b.ts, ranks });
+  });
+  return snaps;
+}
+function profileStats(name) {
+  const me = aggregate().find(p => p.name === name);
+  // head-to-head, partners
+  const h2h = {}, partners = {};
+  const rec = (m, k) => m[k] ||= { played:0, w:0, d:0, l:0 };
+  allGames().forEach(g => {
+    const inA = g.a.includes(name), inB = g.b.includes(name);
+    if (!inA && !inB) return;
+    const mine = inA ? g.a : g.b, opp = inA ? g.b : g.a, r = inA ? g.win : -g.win;
+    const k = r > 0 ? 'w' : r < 0 ? 'l' : 'd';
+    opp.forEach(o => { const e = rec(h2h, o); e.played++; e[k]++; });
+    mine.filter(n => n !== name).forEach(pn => { const e = rec(partners, pn); e.played++; e[k]++; });
+  });
+  const list = m => Object.entries(m).map(([n, e]) => ({ name:n, ...e }));
+  const pick = (arr, f) => arr.length ? arr.reduce((a, b) => f(b, a) > 0 ? b : a) : null;
+  const opps = list(h2h), pals = list(partners);
+  const rival  = pick(opps, (a, b) => a.played - b.played || Math.abs(b.w - b.l) - Math.abs(a.w - a.l));
+  const victim = pick(opps.filter(o => o.w), (a, b) => a.w - b.w || b.played - a.played);
+  const nemesis = pick(opps.filter(o => o.l), (a, b) => a.l - b.l || b.played - a.played);
+  const partner = pick(pals.filter(o => o.w), (a, b) => a.w - b.w || (a.w / a.played) - (b.w / b.played));
+  // streaks from game-by-game sequence
+  const seq = formStreaks()[name] || [];
+  let best = 0, run = 0; seq.forEach(r => { run = r === 'W' ? run + 1 : 0; best = Math.max(best, run); });
+  let cur = 0; const last = seq[seq.length - 1]; for (let i = seq.length - 1; i >= 0 && seq[i] === last; i--) cur++;
+  // ranking jumps
+  const snaps = rankSnapshots(); let jump = null, drop = null, bestRank = null, worstRank = null, prev = null;
+  snaps.forEach(sn => {
+    const r = sn.ranks[name]; if (r == null) return;
+    bestRank = bestRank == null ? r : Math.min(bestRank, r); worstRank = worstRank == null ? r : Math.max(worstRank, r);
+    if (prev != null) {
+      const d = prev - r;
+      if (d > 0 && (!jump || d > jump.n)) jump = { n:d, ts:sn.ts, from:prev, to:r };
+      if (d < 0 && (!drop || -d > drop.n)) drop = { n:-d, ts:sn.ts, from:prev, to:r };
+    }
+    prev = r;
+  });
+  return { me, opps:opps.sort((a, b) => b.played - a.played || b.w - a.w), rival, victim, nemesis, partner,
+           bestStreak:best, cur: last ? { t:last, n:cur } : null, jump, drop, bestRank, worstRank, games:seq.length };
+}
+function openProfile(name) {
+  const st = profileStats(name), p = st.me; if (!p) return;
+  const d = ts => new Date(ts).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' });
+  const recStr = e => `${e.w}W ${e.d}D ${e.l}L`;
+  const card = (label, val, sub = '') => `<div class="stat"><div class="l">${label}</div><div class="v">${val}</div><div class="s">${sub}</div></div>`;
+  const who = e => e ? esc(e.name) : '–';
+  $('pfBody').innerHTML = `
+    <div class="pf-head">
+      <span class="rank${rc(p.rank, p.qual)}" style="width:44px;height:44px;line-height:44px;font-size:1.1rem">${p.label}</span>
+      <div><h2 id="pfName" style="margin:0">${esc(p.name)}</h2>
+        <div class="legend" style="margin:2px 0 0">${p.qual ? `Qualifier Zone · ${MIN_GAMES - p.games} games to qualify` : `Rank ${p.rank}`} · ${p.games} games · ${p.points} pts</div></div>
+      <div style="margin-left:auto;text-align:right"><div style="font-size:1.6rem;font-weight:800;color:var(--acc)">${p.pct.toFixed(2)}%</div><div class="legend" style="margin:0">Win %</div></div>
+    </div>
+    <div class="pf-rec"><span class="w">${p.wins} W</span> · <span class="d">${p.draws} D</span> · <span class="l">${p.losses} L</span>
+      <span style="margin-left:12px">${formHtml({ form:(formStreaks()[name] || []).slice(-5) })}</span></div>
+    <div class="stats pf-stats">
+      ${card('🔥 Longest win streak', st.bestStreak || '–', st.games ? 'from weekly results' : 'no weekly results yet')}
+      ${card('📍 Current streak', st.cur ? `${st.cur.t}${st.cur.n}` : '–', st.cur ? (st.cur.t === 'W' ? 'wins in a row' : st.cur.t === 'L' ? 'losses in a row' : 'draws in a row') : '')}
+      ${card('🚀 Biggest ranking jump', st.jump ? `▲ ${st.jump.n}` : '–', st.jump ? `${st.jump.from} → ${st.jump.to} · ${d(st.jump.ts)}` : 'no climb yet')}
+      ${card('📉 Biggest ranking drop', st.drop ? `▼ ${st.drop.n}` : '–', st.drop ? `${st.drop.from} → ${st.drop.to} · ${d(st.drop.ts)}` : 'no drop yet')}
+      ${card('🏅 Best / worst rank', st.bestRank != null ? `${st.bestRank} / ${st.worstRank}` : '–', 'across all submissions')}
+      ${card('⚔️ Biggest rival', who(st.rival), st.rival ? `faced ${st.rival.played}× · ${recStr(st.rival)}` : 'no head-to-head games yet')}
+      ${card('🎯 Biggest victim', who(st.victim), st.victim ? `beaten ${st.victim.w}× · ${recStr(st.victim)}` : '–')}
+      ${card('😈 Nemesis', who(st.nemesis), st.nemesis ? `lost to ${st.nemesis.l}× · ${recStr(st.nemesis)}` : '–')}
+      ${card('🤝 Best partner', who(st.partner), st.partner ? `${st.partner.w} wins together · ${recStr(st.partner)}` : '–')}
+    </div>
+    <h3 style="margin:18px 0 6px">Head-to-head</h3>
+    ${st.opps.length ? `<div style="max-height:320px;overflow:auto"><table>
+      <thead><tr><th style="text-align:left">Opponent</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>Win %</th></tr></thead>
+      <tbody>${st.opps.map(o => `<tr><td class="name"><a href="#" class="plink" data-player="${esc(o.name)}">${esc(o.name)}</a></td><td>${o.played}</td>
+        <td class="w">${o.w}</td><td class="d">${o.d}</td><td class="l">${o.l}</td><td>${((o.w * 3 + o.d) / (o.played * 3) * 100).toFixed(0)}%</td></tr>`).join('')}</tbody>
+    </table></div>` : '<div class="legend">No head-to-head games recorded yet.</div>'}
+    <div class="legend" style="margin-top:8px">Head-to-head, rivals and partners use games with known teams (Calendar results and Americano scores). Imported season totals and manual entries only count towards the totals above.</div>`;
+  $('pfBody').querySelectorAll('.plink').forEach(a => a.onclick = e => { e.preventDefault(); openProfile(a.dataset.player); });
+  $('profileOverlay').hidden = false; document.body.style.overflow = 'hidden';
+  $('pfClose').focus();
+}
+function closeProfile() { $('profileOverlay').hidden = true; document.body.style.overflow = ''; }
+$('pfClose').onclick = closeProfile;
+$('profileOverlay').onclick = e => { if (e.target.id === 'profileOverlay') closeProfile(); };
+addEventListener('keydown', e => { if (e.key === 'Escape' && !$('profileOverlay').hidden) closeProfile(); });
+
 function renderProgress() {
   const bs = [...batches].sort((a,b) => a.ts - b.ts);
   const snaps = [];                                   // [{label, date, ranks:{name:rank}}]
@@ -664,30 +808,35 @@ function renderProgress() {
   if (!snaps.length) { $('chartWrap').innerHTML = '<div class="legend">No submissions yet.</div>'; $('progTable').innerHTML=''; return; }
 
   // ---- chart (SVG bump chart) ----
-  const n = names.length, L = 40, R = 170, T = 24, B = 30, row = 22;
+  const n = names.length, L = 105, R = 105, T = 24, B = 30, row = 22;   // equal left/right margins → centred plot
   // fit the chart to the card width; only scroll when there are too many submissions
-  const avail = Math.max(600, ($('chartWrap').clientWidth || $('board').clientWidth || 1000) - 4);
+  const avail = Math.max(600, ($('chartWrap').clientWidth || $('board').clientWidth || 1000) - 2);   // full card width
   const gaps = Math.max(1, snaps.length-1);
   const stepX = Math.max(70, (avail - L - R) / gaps);
   const W = L + R + stepX * gaps, H = T + B + row * (n-1);
-  const x = i => L + (snaps.length===1 ? stepX/2 : i*stepX), y = r => T + (r-1)*row;
+  const x = i => L + (snaps.length===1 ? (W-L-R)/2 : i*stepX), y = r => T + (r-1)*row;
   const color = i => `hsl(${(i*137.5)%360} 70% 55%)`;
   let g = '';
-  for (let r = 1; r <= n; r++) g += `<line class="grid" x1="${L}" x2="${W-R+10}" y1="${y(r)}" y2="${y(r)}"/><text class="ax" x="${L-8}" y="${y(r)+4}" text-anchor="end">${r}</text>`;
+  for (let r = 1; r <= n; r++) g += `<line class="grid" x1="${L}" x2="${W-R}" y1="${y(r)}" y2="${y(r)}"/><text class="ax" x="${L-10}" y="${y(r)+4}" text-anchor="end">${r}</text>`;
   snaps.forEach((s,i) => g += `<text class="ax" x="${x(i)}" y="${H-8}" text-anchor="middle"><title>${esc(s.date)} – ${esc(s.src)}</title>${s.label}</text>`);
   // player toggles
   const colorOf = {}; names.forEach((nm,k) => colorOf[nm] = color(k));
   $('chartPlayers').innerHTML = current.map(p => `
-    <label class="chk"><input type="checkbox" data-n="${esc(p.name)}" ${hidden.has(p.name)?'':'checked'}>
+    <label class="chk"><input type="checkbox" data-n="${esc(p.name)}" ${isHidden(p.name)?'':'checked'}>
       <span style="width:12px;height:12px;border-radius:3px;background:${colorOf[p.name]};flex:none"></span>
       <span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span>${esc(p.name)}</label>`).join('');
   $('chartPlayers').querySelectorAll('input').forEach(cb => cb.onchange = () => {
-    cb.checked ? hidden.delete(cb.dataset.n) : hidden.add(cb.dataset.n); saveHidden(); renderProgress();
+    const nm = cb.dataset.n;
+    if (chartSel === null) chartSel = new Set([nm]);          // first pick: show only this player
+    else {
+      chartSel.has(nm) ? chartSel.delete(nm) : chartSel.add(nm);
+      if (!chartSel.size) chartSel = null;                    // nothing left selected → show everyone
+    }
+    renderProgress();
   });
-  $('showCount').textContent = `${names.filter(nm => !hidden.has(nm)).length} of ${names.length} players shown`;
 
   const lines = names.map((nm, k) => {
-    if (hidden.has(nm)) return '';
+    if (isHidden(nm)) return '';
     const pts = snaps.map((s,i) => s.ranks[nm] ? [x(i), y(s.ranks[nm])] : null).filter(Boolean);
     const last = pts[pts.length-1];
     return `<g class="pl" data-n="${esc(nm)}" style="cursor:pointer">
@@ -776,11 +925,11 @@ function renderHistory() {
     return `<div class="hb">
       <div class="hb-head">
         <div><b>${new Date(b.ts).toLocaleString()}</b> <span class="legend">· ${esc(b.source)}${b.by ? ` · by ${esc(b.by)}` : ''} · ${all} record${all>1?'s':''}</span></div>
-        <button class="del" data-batch="${b.id}">Remove entire session</button>
+        <button class="del hb-btn" data-batch="${b.id}">Remove entire session</button>
       </div>
       <table><thead><tr><th style="text-align:left">Player</th><th>W</th><th>D</th><th>L</th><th>Points</th><th></th></tr></thead><tbody>
       ${recs.map(r => `<tr><td class="name">${esc(r.name)}</td><td class="w">${r.w}</td><td class="d">${r.d}</td><td class="l">${r.l}</td>
-        <td class="pts">${r.w*PTS.W + r.d*PTS.D}</td><td><button class="del" data-rec="${r.id}">Remove</button></td></tr>`).join('')}
+        <td class="pts">${r.w*PTS.W + r.d*PTS.D}</td><td class="hb-act"><button class="del hb-btn" data-rec="${r.id}">Remove</button></td></tr>`).join('')}
       </tbody></table>
       ${games.length ? `<details><summary>Show ${games.length} match result${games.length>1?'s':''}</summary>
         ${games.map(g => `<div class="gm">${courtName(g.court)}: ${team(g.a, g.res==='A')} vs ${team(g.b, g.res==='B')} — ${g.res==='D'?'Draw':'Win'}</div>`).join('')}
@@ -979,7 +1128,7 @@ $('submitWeek').onclick = () => {
 };
 
 // ---------- calendar ----------
-const CKEY = 'padelCalendar', KEY_PLAYERS = 12, MIN_RES = 4, FKEY = 'padelFee';
+const CKEY = 'padelCalendar', KEY_PLAYERS = 12, MIN_RES = 3, FKEY = 'padelFee';
 let fee = parseFloat(load(FKEY) ?? '13.5');
 const PINKEY = 'padelPinHash';
 let pinHash = load(PINKEY) || '';                      // SHA-256 of the deletion PIN ('' = no PIN set)
@@ -1065,14 +1214,16 @@ const isSubmitted = w => !!(w.batch && batches.some(b => b.id === w.batch));
 //  • ranking is then applied among the key players when courts are built
 function normalizeWeek(w) {
   if (isSubmitted(w)) return false;
-  const before = JSON.stringify([w.players, w.reserves]);
-  const len = Math.max(MIN_RES, w.reserves.length);
+  const before = JSON.stringify([w.players, w.reserves, w.subs]);
   const res = w.reserves.filter(Boolean);
+  const len = Math.max(MIN_RES, +w.resSlots || MIN_RES, res.length);   // 3 slots unless more were added
   let moved = false;
   w.players = w.players.map(n => { if (n || !res.length) return n; moved = true; return res.shift(); });
   w.reserves = [...res, ...Array(Math.max(0, len - res.length)).fill('')];
   if (moved) delete w.res;                              // courts changed – clear entered results
-  return before !== JSON.stringify([w.players, w.reserves]);
+  // drop substitute notes for players no longer in the key players
+  if (w.subs) { Object.keys(w.subs).forEach(n => { if (!w.players.includes(n)) delete w.subs[n]; }); if (!Object.keys(w.subs).length) delete w.subs; }
+  return before !== JSON.stringify([w.players, w.reserves, w.subs]);
 }
 function setCourts(w, n) {
   w.courts = String(n);
@@ -1110,6 +1261,13 @@ function americanoRounds(ps) {
     return Array.from({ length:n / 4 }, (_, c) => { const q = seq.slice(c*4, c*4 + 4); return [[q[0], q[1]], [q[2], q[3]]].map(t => t.map(i => ps[i-1])); });
   });
 }
+// Americano player order (P1…Pn): ranking order, frozen once the first score is entered so later
+// ranking changes don't reshuffle the rounds.
+function amPlayers(w, L) {
+  const live = L.courts.flat();
+  if (w.amOrder && w.amOrder.length === live.length && [...w.amOrder].sort().join('|') === [...live].sort().join('|')) return w.amOrder;
+  return live;
+}
 const amMax = w => { const n = parseInt(w.maxPts, 10); return n > 0 ? n : 16; };
 function americanoTable(w, rounds) {
   const t = {}, sc = w.amer || {};
@@ -1123,7 +1281,7 @@ function americanoTable(w, rounds) {
   return Object.values(t).sort((x, y) => y.pts - x.pts || (y.pts - y.against) - (x.pts - x.against) || y.won - x.won || x.name.localeCompare(y.name));
 }
 function americanoHtml(w, L, rankOf) {
-  const ps = L.courts.flat();
+  const ps = amPlayers(w, L);
   if (nCourts(w) < 3)
     return `<div class="bench" style="margin-top:14px">🔄 Americano needs 3 courts (12 players) or 4 courts (16 players). Change the courts for this week in the Calendar.</div>`;
   const need = capOf(w);
@@ -1175,7 +1333,7 @@ function renderEvent() {
   const w = weeks.find(x => x.id === evSel), body = $('evBody');
   if (!w) { body.innerHTML = '<div class="legend">No Americano events yet. Add a week in the Calendar and set its game type to <b>Americano</b>.</div>'; return; }
   const rankOf = {}; aggregate().forEach(p => rankOf[p.name] = p);
-  const L = weekLineup(w, rankOf), ps = L.courts.flat();
+  const L = weekLineup(w, rankOf), ps = amPlayers(w, L);
   body.innerHTML = `<h3 style="margin:0 0 4px">Players (by ranking)</h3>
     <div class="legend" style="margin:0 0 10px">To change players, edit the week in the Calendar tab.</div>
     <div class="ev-players">${ps.map((n, i) => `<span class="ev-p"><b>P${i+1}</b> ${esc(n)}</span>`).join('') || '<span class="legend">No players yet.</span>'}</div>
@@ -1187,6 +1345,7 @@ function renderEvent() {
   });
   body.querySelectorAll('input[data-am]').forEach(inp => inp.onchange = () => {
     const wk = find(inp.dataset.am), max = amMax(wk), side = +inp.dataset.side;
+    if (!wk.amOrder) wk.amOrder = ps.slice();              // lock P1…Pn once scoring starts
     const sc = (wk.amer ||= {}), cur = sc[inp.dataset.rc] || ['', ''];
     if (inp.value === '') cur[side] = '';
     else { const v = Math.max(0, Math.min(max, parseInt(inp.value, 10) || 0)); cur[side] = v; cur[1 - side] = max - v; }
@@ -1228,7 +1387,7 @@ function renderCalendar() {
   const showPast = $('calPast').checked, t = today();
   const list = [...calendar].sort((a,b) => a.date.localeCompare(b.date)).filter(w => showPast || w.date >= t);
   const rankOf = {}; players.forEach(p => rankOf[p.name] = p);
-  const courtsHtml = (w, pick, reservesHtml) => {
+  const courtsHtml = (w, pick, reservesHtml, subSel, subNote) => {
     const L = weekLineup(w, rankOf), done = isSubmitted(w);
     const badge = n => { const p = rankOf[n]; return `<span class="rank sm${p ? rc(p.rank,p.qual) : ''}">${p ? p.label : '–'}</span>`; };
     const tag = () => '';                       // no reserve marker shown on courts
@@ -1237,8 +1396,8 @@ function renderCalendar() {
       <div class="court">
         <h4>${courtName(c+1)} <span class="legend" style="font-weight:400">· Court ${c+1}</span></h4>
         <div class="plist${done ? '' : ' picks'}">${ps.map(n => done
-          ? `<div>${badge(n)}${esc(n)}${tag(n)}</div>`
-          : `<div>${badge(n)}${pick(n)}${tag(n)}</div>`).join('')}</div>
+          ? `<div class="pentry"><div class="prow">${badge(n)}${esc(n)}</div>${subNote(n)}</div>`
+          : `<div class="pentry"><div class="prow">${badge(n)}${pick(n)}${subSel(n)}</div>${subNote(n)}</div>`).join('')}</div>
       </div>`).join('');
     // results for every court, shown below all the players
     const results = L.courts.map((ps, c) => `
@@ -1292,10 +1451,22 @@ function renderCalendar() {
     const used = new Set([...w.players, ...w.reserves].filter(Boolean));
     const filled = w.players.filter(Boolean).length;
     const opts = cur => '<option value="">– select player –</option>' + players.map(p =>
-      `<option value="${esc(p.name)}" ${p.name===cur?'selected':''} ${used.has(p.name)&&p.name!==cur?'disabled':''}>${p.label}. ${esc(p.name)}</option>`).join('');
+      `<option value="${esc(p.name)}" ${p.name===cur?'selected':''} ${used.has(p.name)&&p.name!==cur?'disabled':''}>${esc(p.name)}</option>`).join('');
     const slot = (arr, i, res) => `<div class="slot${res?' res':''}"><span class="n">${res?'R':''}${i+1}</span>
       <select data-w="${w.id}" data-k="${arr}" data-i="${i}">${opts(w[arr][i])}</select></div>`;
     // dropdown bound to the slot a player occupies (key-player slot, or the reserve slot they filled in from)
+    // substitutes: swap a key player for a reserve (or any player not in this week)
+    const subNote = n => w.subs?.[n] ? `<div class="subnote">Substitute for ${esc(w.subs[n])}</div>` : '';
+    const subSel = n => {
+      const inWeek = new Set([...w.players, ...w.reserves].filter(Boolean));
+      const resv = w.reserves.filter(Boolean), others = players.filter(p => !inWeek.has(p.name)).map(p => p.name);
+      if (!resv.length && !others.length) return '';
+      return `<select class="subsel edit" data-subw="${w.id}" data-subof="${esc(n)}" title="Substitute ${esc(n)}">
+        <option value="">Sub</option>
+        ${resv.length ? `<optgroup label="Reserves">${resv.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('')}</optgroup>` : ''}
+        ${others.length ? `<optgroup label="Other players">${others.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('')}</optgroup>` : ''}
+      </select>`;
+    };
     const pick = (name, idx) => {
       let arr = 'players', i = idx;
       if (name != null) { i = w.players.indexOf(name); if (i < 0) { arr = 'reserves'; i = w.reserves.indexOf(name); } }
@@ -1323,7 +1494,7 @@ function renderCalendar() {
       </div>
       ${courtsHtml(w, pick, `<h5>Reserves</h5>
       <div class="slots">${w.reserves.map((_,i) => slot('reserves', i, true)).join('')}</div>
-      <div class="row" style="margin-top:8px"><button type="button" class="sec" data-addres="${w.id}">+ Add reserve slot</button></div>`)}
+      <div class="row" style="margin-top:8px"><button type="button" class="sec" data-addres="${w.id}">+ Add reserve slot</button></div>`, subSel, subNote)}
     </div>`;
   };
 
@@ -1336,8 +1507,9 @@ function renderCalendar() {
     // games per player this month: every key-player slot = GAMES_PER_WEEK games
     const tally = {};
     ws.forEach(w => weekLineup(w, rankOf).courts.flat().forEach(n => {
-      const e = tally[n] ||= { weeks:0, comp:0, swing:0 };
+      const e = tally[n] ||= { weeks:0, comp:0, swing:0, subFor:[] };
       e.weeks++; (w.type==='Swingers' ? e.swing++ : e.comp++);
+      if (w.subs?.[n]) e.subFor.push(w.subs[n]);           // played as a substitute this week
     }));
     const rows = Object.entries(tally).sort((a,b) => b[1].weeks - a[1].weeks || a[0].localeCompare(b[0]));
     const totalGames = rows.reduce((s,[,e]) => s + e.weeks, 0);
@@ -1354,7 +1526,7 @@ function renderCalendar() {
           <h4>Total games by player</h4>
           ${rows.length ? `<table>
             <thead><tr><th style="text-align:left">Player</th><th title="Each week played counts as 1 game">Games</th><th>Cost</th><th title="Tick when paid">Paid</th></tr></thead>
-            <tbody>${rows.map(([n,e]) => { const pd = !!paid[m]?.[n]; return `<tr class="${pd ? 'paid' : ''}"><td class="name">${esc(n)}</td>
+            <tbody>${rows.map(([n,e]) => { const pd = !!paid[m]?.[n]; return `<tr class="${pd ? 'paid' : ''}"><td class="name${e.subFor.length ? ' subname' : ''}"${e.subFor.length ? ` title="Substitute for ${esc(e.subFor.join(', '))}"` : ''}>${esc(n)}</td>
               <td title="${e.comp} Competitive · ${e.swing} Swingers">${e.weeks}</td>
               <td class="pts" title="${e.weeks} × ${money(fee)}">${money(e.weeks*fee)}</td>
               <td><input type="checkbox" class="paidchk" data-pm="${m}" data-pn="${esc(n)}" ${pd ? 'checked' : ''}></td></tr>`; }).join('')}</tbody>
@@ -1363,7 +1535,7 @@ function renderCalendar() {
                 return `<tr><td class="name" colspan="2">Paid</td><td class="pts w">${money(pg*fee)}</td><td></td></tr>
                         <tr><td class="name" colspan="2">Outstanding</td><td class="pts l">${money((totalGames-pg)*fee)}</td><td></td></tr>`; })()}</tfoot>
           </table>` : '<div class="legend">No courts filled yet.</div>'}
-          <div class="legend">Players on a court (incl. reserves filling gaps) · 1 game = 1 week · ${money(fee)} per game.</div>
+          <div class="legend">Players on a court (incl. substitutes)<br>1 game = 1 week<br>${money(fee)} per game</div>
         </aside>
       </div>
     </details>`;
@@ -1397,6 +1569,19 @@ function renderCalendar() {
     else w[el.dataset.f] = el.dataset.f==='note' ? el.value.trim() : el.value;
     saveCal(); renderCalendar();
   });
+  $('calList').querySelectorAll('select[data-subw]').forEach(sel => sel.onchange = () => {
+    const w = find(sel.dataset.subw), orig = sel.dataset.subof, sub = sel.value;
+    if (!sub) return;
+    if (!confirm(`Substitute ${orig} with ${sub}?`)) { sel.value = ''; return; }
+    const i = w.players.indexOf(orig); if (i < 0) return;
+    w.players[i] = sub;                                       // substitute takes the key-player slot
+    w.reserves = w.reserves.map(n => n === sub ? '' : n);     // leaves the reserve list (if a reserve)
+    const first = w.subs?.[orig] || orig;                     // keep the original name if subbing a sub
+    w.subs = { ...(w.subs || {}) }; delete w.subs[orig]; w.subs[sub] = first;
+    if (w.amOrder) w.amOrder = w.amOrder.map(n => n === orig ? sub : n);   // substitute keeps the Americano slot
+    delete w.res;                                             // courts change – clear entered results
+    saveCal(); renderCalendar();
+  });
   $('calList').querySelectorAll('select[data-k]').forEach(sel => sel.onchange = () => {
     const w = find(sel.dataset.w);
     w[sel.dataset.k][+sel.dataset.i] = sel.value;
@@ -1425,11 +1610,12 @@ function renderCalendar() {
   });
   $('calList').querySelectorAll('[data-sub]').forEach(btn => btn.onclick = () => submitWeek(find(btn.dataset.sub)));
   $('calList').querySelectorAll('[data-addres]').forEach(b => b.onclick = () => {
-    find(b.dataset.addres).reserves.push(''); saveCal(); renderCalendar();
+    const w = find(b.dataset.addres); w.reserves.push(''); w.resSlots = Math.max(+w.resSlots || MIN_RES, w.reserves.length); saveCal(); renderCalendar();
   });
-  $('calList').querySelectorAll('[data-delw]').forEach(b => b.onclick = () => {
+  $('calList').querySelectorAll('[data-delw]').forEach(b => b.onclick = async () => {
     const w = find(b.dataset.delw);
     if (!confirm(`Delete the week of ${fmtDate(w.date)}?`)) return;
+    if (!(await checkPin())) return;
     calendar = calendar.filter(x => x !== w); saveCal(); renderCalendar();
   });
 }
