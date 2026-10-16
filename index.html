@@ -17,7 +17,7 @@
     @page { size:A4 portrait; margin:12mm; }
     body.printing { background:#fff !important; color:#000 !important; }
     body.printing * { color:#000 !important; box-shadow:none !important; }
-    body.printing header, body.printing .tabs, body.printing .stats, body.printing .panel:not(#board),
+    body.printing header, body.printing .tabs, body.printing .stats, body.printing .panel:not(#board):not(#hist),
     body.printing #board > :not(.print-keep), body.printing .bar, body.printing .mv { display:none !important; }
     body.printing .print-head { display:block; margin:0 0 8px; }
     body.printing .card { background:#fff !important; border:1px solid #ccc !important; padding:8px; margin:0 0 10px; break-inside:auto; }
@@ -28,6 +28,12 @@
     body.printing .fd { -webkit-print-color-adjust:exact; print-color-adjust:exact; color:#fff !important; }
     body.printing .fd.fD { color:#000 !important; }
     body.printing main { max-width:none; padding:0; }
+    body.printing #hist { display:block !important; break-before:page; }
+    body.printing #hist > :not(.print-keep):not(#history) { display:none !important; }
+    body.printing #history button, body.printing #history summary { display:none !important; }
+    body.printing .hb { background:#fff !important; border:1px solid #ccc; padding:8px; margin:0 0 8px; break-inside:avoid; }
+    body.printing .hb-head { margin-bottom:4px; }
+    body.printing .gm { font-size:8.5pt; padding:1px 0; }
   }
   * { box-sizing:border-box; }
   body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
@@ -148,7 +154,7 @@
 <header style="position:relative">
   <div class="top-btns">
     <span id="syncStatus" class="legend" style="align-self:center;margin:0"></span>
-    <button type="button" class="theme-btn" id="pdfBtn" title="Export leaderboard as PDF" aria-label="Export leaderboard as PDF">📄</button>
+    <button type="button" class="theme-btn" id="pdfBtn" title="Export leaderboard and match history as PDF" aria-label="Export leaderboard and match history as PDF">📄</button>
     <button type="button" class="theme-btn" id="themeBtn"></button>
     <button type="button" class="theme-btn" id="cfgBtn" title="Configuration" aria-label="Configuration">⚙️</button>
   </div>
@@ -348,6 +354,7 @@
 
   <!-- ============ HISTORY ============ -->
   <section class="panel" id="hist">
+    <div class="print-head print-keep"><h2 style="margin:0">🎾 Padel Squad – Match History</h2></div>
     <div class="hist-top">
       <div class="card" style="flex:0 1 300px;margin:0">
         <h3>Filter</h3>
@@ -1465,10 +1472,17 @@ $('cfgBtn').addEventListener('click', () => renderBackups());
 $('pdfBtn').onclick = () => {
   document.querySelector('.tab[data-tab=board]').click();
   $('printDate').textContent = 'Exported ' + new Date().toLocaleString() + ' · ranked by Win % · players need 9 games to qualify';
+  // include the full, unfiltered match history with every match result expanded
+  const hf = $('hFilter').value; $('hFilter').value = ''; renderHistory();
+  const closed = [...document.querySelectorAll('#history details:not([open])')];
+  closed.forEach(d => d.open = true);
   document.body.classList.add('printing');
-  const t = document.title; document.title = `Padel Squad Leaderboard ${ymd(new Date())}`;   // default PDF file name
+  const t = document.title; document.title = `Padel Squad Leaderboard and Match History ${ymd(new Date())}`;   // default PDF file name
   setTimeout(() => { window.print(); }, 50);
-  const done = () => { document.body.classList.remove('printing'); document.title = t; removeEventListener('afterprint', done); };
+  const done = () => {
+    document.body.classList.remove('printing'); document.title = t; removeEventListener('afterprint', done);
+    closed.forEach(d => d.open = false); $('hFilter').value = hf; renderHistory();
+  };
   addEventListener('afterprint', done);
 };
 
