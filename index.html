@@ -163,13 +163,12 @@
             <th data-k="losses">Losses (0)</th>
             <th data-k="points">Points</th>
             <th data-k="pct">Win %</th>
-            <th data-k="formPts" title="Last 5 games, newest on the right">Form</th>
-            <th data-k="streakVal" title="Current run of results">Streak</th>
+            <th data-k="formPts" title="Newest on the right">Last 5 Matches</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
       </table>
-      <div class="legend">Form = last 5 games (newest on the right) · Streak = current run (🔥 = 3+ wins in a row; hover for longest) – from weekly results only.<br>Win % = points accumulated ÷ total available game points (games played × 3). Players are ranked by Win %; ties broken by points, then wins, then fewer games played. Players need at least 9 games to enter the leaderboard.</div>
+      <div class="legend">Last 5 Matches = most recent results, newest on the right (from weekly results only).<br>Win % = points accumulated ÷ total available game points (games played × 3). Players are ranked by Win %; ties broken by points, then wins, then fewer games played. Players need at least 9 games to enter the leaderboard.</div>
     </div>
 
     <div class="card qz">
@@ -185,8 +184,7 @@
             <th data-k="losses">Losses (0)</th>
             <th data-k="points">Points</th>
             <th data-k="pct">Win %</th>
-            <th data-k="formPts" title="Last 5 games, newest on the right">Form</th>
-            <th data-k="streakVal" title="Current run of results">Streak</th>
+            <th data-k="formPts" title="Newest on the right">Last 5 Matches</th>
           </tr>
         </thead>
         <tbody id="qbody"></tbody>
@@ -272,13 +270,6 @@
   <!-- ============ CONFIGURATION ============ -->
   <section class="panel" id="cfg">
     <div class="card edit">
-      <h3>🗄️ Automatic Weekly Backups</h3>
-      <div class="legend" style="margin:0 0 10px">A full backup (scores, history, calendar, fee, payments) is saved automatically once a week when anyone opens the site. Download or restore any of them below.</div>
-      <div class="row"><button type="button" class="sec" id="abNow">Back up now</button><span class="legend" id="abInfo" style="margin:0"></span></div>
-      <div style="max-height:300px;overflow:auto;margin-top:8px"><table><tbody id="abList"></tbody></table></div>
-      <div class="msg" id="abMsg"></div>
-    </div>
-    <div class="card edit">
       <h3>👥 Players</h3>
       <div class="row cal-form">
         <label>New player name<input id="npName" placeholder="e.g. Sam 🎾" maxlength="40" style="width:260px"></label>
@@ -301,18 +292,36 @@
       <div class="msg" id="uploadMsg"></div>
     </div>
     <div class="card edit">
-      <h3>💾 Backup &amp; Share</h3>
+      <h3>🔒 Deletion PIN</h3>
+      <div class="legend" style="margin:0 0 10px">When set, this PIN must be entered before removing records or sessions in Match History.</div>
+      <div class="row cal-form">
+        <label>Current PIN<input id="pinCur" type="password" inputmode="numeric" autocomplete="off" style="width:140px"></label>
+        <label>New PIN<input id="pinNew" type="password" inputmode="numeric" autocomplete="off" style="width:140px"></label>
+        <label>Confirm new PIN<input id="pinNew2" type="password" inputmode="numeric" autocomplete="off" style="width:140px"></label>
+        <button type="button" id="pinSave">Save PIN</button>
+        <button type="button" class="sec" id="pinClear">Remove PIN</button>
+      </div>
+      <div class="legend" id="pinState"></div>
+      <div class="msg" id="pinMsg"></div>
+    </div>
+
+    <div class="card edit">
+      <h3>🗄️ Backups</h3>
+      <div class="legend" style="margin:0 0 10px">A full backup (scores, history, calendar, fee, payments) is saved automatically once a week when anyone opens the site. Only the latest <b>3</b> backups are kept – older ones are deleted automatically.</div>
       <div class="row">
-        <button type="button" id="exportBtn">Export backup</button>
-        <button type="button" class="sec" id="importBtn">Import backup</button>
+        <button type="button" id="abNow">Back up now</button>
+        <button type="button" class="sec" id="exportBtn">Export to file</button>
+        <button type="button" class="sec" id="importBtn">Import from file</button>
         <input type="file" id="importFile" accept=".json,application/json" style="display:none">
-        <button type="button" id="publishBtn" style="background:#2563eb;color:#fff">Publish snapshot</button>
+        <span class="legend" id="abInfo" style="margin:0"></span>
       </div>
+      <div style="max-height:300px;overflow:auto;margin-top:8px"><table><tbody id="abList"></tbody></table></div>
       <div class="legend">
-        <b>Export backup</b> downloads all data (results, history, calendar, fee) as a .json file – keep it safe or use it to move to another computer.<br>
-        <b>Import backup</b> restores a .json backup (replaces all current data – in Supabase when connected).<br>
-        <b>Publish snapshot</b> downloads a read-only copy of this page with today's data built in – upload it to share with others.
+        <b>Back up now</b> saves a backup online (counts towards the 3 kept).<br>
+        <b>Export to file</b> downloads all data as a .json file to keep on your computer.<br>
+        <b>Import from file</b> restores a .json file (replaces all current data for everyone).
       </div>
+      <div class="msg" id="abMsg"></div>
       <div class="msg" id="dataMsg"></div>
     </div>
   </section>
@@ -547,10 +556,9 @@ function render() {
       <td class="pts">${p.points}</td>
       <td><span class="bar"><i style="width:${p.pct}%"></i></span>${p.pct.toFixed(2)}%</td>
       <td class="form">${formHtml(p)}</td>
-      <td>${streakHtml(p)}</td>
     </tr>`;
-  $('tbody').innerHTML = sorted(top).map(row).join('') || '<tr><td colspan="10">No qualified players yet</td></tr>';
-  $('qbody').innerHTML = sorted(quals).map(row).join('') || '<tr><td colspan="10">No players in the qualifier zone</td></tr>';
+  $('tbody').innerHTML = sorted(top).map(row).join('') || '<tr><td colspan="9">No qualified players yet</td></tr>';
+  $('qbody').innerHTML = sorted(quals).map(row).join('') || '<tr><td colspan="9">No players in the qualifier zone</td></tr>';
   renderStats(all, top, quals);
   $('players').innerHTML = all.map(p=>`<option value="${esc(p.name)}">`).join('');
   renderRoster();
@@ -706,14 +714,16 @@ function renderHistory() {
   }).join('') || '<div class="card">No match records.</div>';
   $('hCount').textContent = `${shown} record${shown!==1?'s':''} shown`;
 
-  $('history').querySelectorAll('[data-rec]').forEach(btn => btn.onclick = () => {
+  $('history').querySelectorAll('[data-rec]').forEach(btn => btn.onclick = async () => {
     const r = results.find(x => x.id===btn.dataset.rec);
     if (!confirm(`Remove ${r.name}'s record (${r.w}W ${r.d}D ${r.l}L, ${r.w*3+r.d} pts)? The leaderboard will be recalculated.`)) return;
+    if (!(await checkPin())) return;
     results = results.filter(x => x.id!==r.id); save(); render();
   });
-  $('history').querySelectorAll('[data-batch]').forEach(btn => btn.onclick = () => {
+  $('history').querySelectorAll('[data-batch]').forEach(btn => btn.onclick = async () => {
     const n = results.filter(x => x.batch===btn.dataset.batch).length;
     if (!confirm(`Remove this entire session (${n} player records)? The leaderboard will be recalculated.`)) return;
+    if (!(await checkPin())) return;
     results = results.filter(x => x.batch!==btn.dataset.batch); save(); render();
   });
 }
@@ -895,6 +905,21 @@ $('submitWeek').onclick = () => {
 // ---------- calendar ----------
 const CKEY = 'padelCalendar', KEY_PLAYERS = 12, MIN_RES = 4, FKEY = 'padelFee';
 let fee = parseFloat(load(FKEY) ?? '13.5');
+const PINKEY = 'padelPinHash';
+let pinHash = load(PINKEY) || '';                      // SHA-256 of the deletion PIN ('' = no PIN set)
+async function hashPin(pin) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('padel-squad:' + pin));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function checkPin() {
+  if (!pinHash) return true;                             // no PIN set yet
+  const pin = prompt('Enter the PIN to delete:');
+  if (pin == null) return false;
+  if (await hashPin(pin.trim()) === pinHash) return true;
+  alert('Incorrect PIN – nothing was deleted.');
+  return false;
+}
+const savePin = () => { store(PINKEY, pinHash); schedulePush(); };
 const PKEY = 'padelPaid';
 let paid = JSON.parse(load(PKEY) || '{}');            // { 'YYYY-MM': { playerName: true } }
 const savePaid = () => { store(PKEY, JSON.stringify(paid)); schedulePush(); };
@@ -1189,12 +1214,6 @@ $('importFile').onchange = async () => {
     location.reload();
   } catch (e) { dmsg('Import failed: ' + e.message, false); }
 };
-$('publishBtn').onclick = () => {
-  const payload = JSON.stringify({ published:new Date().toISOString(), data:snapshotData() }).replace(/</g, '\\u003c');
-  const html = PAGE_SOURCE.replace('<script>', `<script>window.PADEL_SNAPSHOT = ${payload};<\/script>\n<script>`);
-  download('index.html', html, 'text/html');
-  dmsg('Snapshot downloaded as index.html – upload it to share (see instructions).');
-};
 
 // ---------- read-only / editor mode ----------
 {
@@ -1220,7 +1239,7 @@ const resultRow = r => ({ id:r.id, batch:r.batch, name:r.name, w:r.w, d:r.d, l:r
 function snapState() {
   const m = (arr, key, row) => new Map(arr.map(x => [x[key], JSON.stringify(row(x))]));
   return { batches:m(batches,'id',batchRow), results:m(results,'id',resultRow),
-           calendar:m(calendar,'id',w => ({ id:w.id, data:w })), roster:new Set(roster), fee, paid:JSON.stringify(paid) };
+           calendar:m(calendar,'id',w => ({ id:w.id, data:w })), roster:new Set(roster), fee, paid:JSON.stringify(paid), pinHash };
 }
 function schedulePush() {
   if (SNAP || !synced) return;
@@ -1254,6 +1273,7 @@ async function pushChanges() {
     await del('calendar', 'id', dc.del);
     if (cur.fee !== synced.fee) await up('settings', [{ key:'fee', value:cur.fee }]);
     if (cur.paid !== synced.paid) await up('settings', [{ key:'paid', value:JSON.parse(cur.paid) }]);
+    if (cur.pinHash !== synced.pinHash) await up('settings', [{ key:'pinHash', value:cur.pinHash }]);
     synced = cur;
     syncMsg('✓ Saved');
   } catch (e) {
@@ -1282,6 +1302,7 @@ async function cloudRefresh(force=false) {
     const nr = r.map(x => ({ id:x.id, batch:x.batch, name:x.name, w:x.w, d:x.d, l:x.l }));
     const nf = Number(st.find(x => x.key==='fee')?.value ?? 13.5);
     const np = st.find(x => x.key==='paid')?.value || {};
+    pinHash = st.find(x => x.key==='pinHash')?.value || '';
     const before = JSON.stringify([batches, results, roster, calendar, fee, paid]);
     batches = nb; results = nr; roster = ro.map(x => x.name); calendar = c.map(x => x.data); fee = nf; paid = np;
     synced = snapState();
@@ -1318,7 +1339,7 @@ if (CLOUD) {
 const AB_LOCAL = 'padelAutoBackups', WEEK_MS = 7 * 864e5;
 async function listBackups() {
   if (CLOUD) {
-    const { data, error } = await sb.from('backups').select('id,at,kind').order('at', { ascending:false }).limit(30);
+    const { data, error } = await sb.from('backups').select('id,at,kind').order('at', { ascending:false }).limit(AB_MAX);
     if (error) throw error;
     return data;
   }
@@ -1328,12 +1349,25 @@ async function getBackup(id) {
   if (CLOUD) { const { data, error } = await sb.from('backups').select('data').eq('id', id).single(); if (error) throw error; return data.data; }
   return JSON.parse(localStorage.getItem(AB_LOCAL) || '[]')[id].data;
 }
+const AB_MAX = 3;
+async function deleteBackup(id) {
+  if (CLOUD) { const { error } = await sb.from('backups').delete().eq('id', id); if (error) throw error; return; }
+  const all = JSON.parse(localStorage.getItem(AB_LOCAL) || '[]'); all.splice(id, 1);
+  localStorage.setItem(AB_LOCAL, JSON.stringify(all));
+}
+async function pruneBackups() {                       // keep only the newest AB_MAX
+  if (!CLOUD) return;
+  const { data, error } = await sb.from('backups').select('id').order('at', { ascending:false });
+  if (error) throw error;
+  const old = data.slice(AB_MAX).map(b => b.id);
+  if (old.length) { const r = await sb.from('backups').delete().in('id', old); if (r.error) console.warn('Could not prune backups:', r.error.message); }
+}
 async function makeBackup(kind) {
   const row = { kind, data:snapshotData() };
-  if (CLOUD) { const { error } = await sb.from('backups').insert(row); if (error) throw error; return; }
+  if (CLOUD) { const { error } = await sb.from('backups').insert(row); if (error) throw error; await pruneBackups(); return; }
   const all = JSON.parse(localStorage.getItem(AB_LOCAL) || '[]');
   all.push({ ...row, at:new Date().toISOString() });
-  localStorage.setItem(AB_LOCAL, JSON.stringify(all.slice(-8)));        // keep the last 8 in this browser
+  localStorage.setItem(AB_LOCAL, JSON.stringify(all.slice(-AB_MAX)));    // keep the last 3 in this browser
 }
 async function autoBackup() {
   if (SNAP) return;
@@ -1351,7 +1385,13 @@ async function renderBackups() {
     $('abList').innerHTML = list.map(b => `<tr><td class="name" style="text-align:left">${new Date(b.at).toLocaleString()}</td>
       <td><span class="pill">${b.kind === 'manual' ? 'Manual' : 'Weekly'}</span></td>
       <td><button type="button" class="sec" data-abdl="${b.id}">Download</button></td>
-      <td><button type="button" class="del" style="display:inline-block!important" data-abrs="${b.id}">Restore</button></td></tr>`).join('');
+      <td><button type="button" class="sec" data-abrs="${b.id}">Restore</button></td>
+      <td><button type="button" class="del" style="display:inline-block!important" data-abdel="${b.id}">Delete</button></td></tr>`).join('');
+    $('abList').querySelectorAll('[data-abdel]').forEach(btn => btn.onclick = async () => {
+      if (!confirm(`Delete the backup from ${btn.closest('tr').cells[0].textContent}?`)) return;
+      try { await deleteBackup(btn.dataset.abdel); renderBackups(); }
+      catch (e) { m.className = 'msg err'; m.textContent = 'Delete failed: ' + (e.message || e) + ' – run supabase-backups.sql again to allow deleting.'; }
+    });
     $('abList').querySelectorAll('[data-abdl]').forEach(btn => btn.onclick = async () => {
       const d = await getBackup(btn.dataset.abdl);
       download(`padel-auto-backup-${btn.closest('tr').cells[0].textContent.replace(/[^0-9]+/g,'-')}.json`,
@@ -1377,6 +1417,36 @@ $('abNow').onclick = async () => {
   catch (e) { $('abMsg').className = 'msg err'; $('abMsg').textContent = 'Backup failed: ' + (e.message || e); }
 };
 $('cfgBtn').addEventListener('click', () => renderBackups());
+
+// ---------- deletion PIN settings ----------
+function renderPinState() {
+  $('pinState').textContent = pinHash ? '🔒 A PIN is set.' : '🔓 No PIN set – deletions only ask for confirmation.';
+  $('pinCur').parentElement.style.display = pinHash ? '' : 'none';
+  $('pinClear').style.display = pinHash ? '' : 'none';
+}
+const pmsg = (t, ok=true) => { $('pinMsg').className = 'msg ' + (ok ? 'ok' : 'err'); $('pinMsg').textContent = t; };
+async function pinCurrentOk() {
+  if (!pinHash) return true;
+  if (await hashPin($('pinCur').value.trim()) === pinHash) return true;
+  pmsg('Current PIN is incorrect.', false); return false;
+}
+$('pinSave').onclick = async () => {
+  const a = $('pinNew').value.trim(), b = $('pinNew2').value.trim();
+  if (!/^\d{4,8}$/.test(a)) return pmsg('PIN must be 4–8 digits.', false);
+  if (a !== b) return pmsg('New PINs do not match.', false);
+  if (!(await pinCurrentOk())) return;
+  pinHash = await hashPin(a); savePin();
+  ['pinCur','pinNew','pinNew2'].forEach(id => $(id).value = '');
+  pmsg('PIN saved.'); renderPinState();
+};
+$('pinClear').onclick = async () => {
+  if (!(await pinCurrentOk())) return;
+  if (!confirm('Remove the deletion PIN?')) return;
+  pinHash = ''; savePin(); $('pinCur').value = '';
+  pmsg('PIN removed.'); renderPinState();
+};
+$('cfgBtn').addEventListener('click', renderPinState);
+renderPinState();
 
 applyMode();
 if (CLOUD) { syncMsg('Loading…'); cloudRefresh(true).then(autoBackup); }
