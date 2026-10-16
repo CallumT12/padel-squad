@@ -10,7 +10,25 @@
   body { transition:background .2s, color .2s; }
   .top-btns { position:absolute; top:20px; right:20px; display:flex; gap:8px; }
   .theme-btn.active { background:var(--acc); color:#000; border-color:var(--acc); }
-  .theme-btn { background:var(--card); color:var(--txt); border:1px solid var(--bd); border-radius:999px; padding:8px 14px; font-weight:600; }
+  .theme-btn { width:44px; height:44px; padding:0; display:inline-flex; align-items:center; justify-content:center; font-size:1.2rem;
+               background:var(--card); color:var(--txt); border:1px solid var(--bd); border-radius:50%; font-weight:600; }
+  .print-head { display:none; }
+  @media print {
+    @page { size:A4 portrait; margin:12mm; }
+    body.printing { background:#fff !important; color:#000 !important; }
+    body.printing * { color:#000 !important; box-shadow:none !important; }
+    body.printing header, body.printing .tabs, body.printing .stats, body.printing .panel:not(#board),
+    body.printing #board > :not(.print-keep), body.printing .bar, body.printing .mv { display:none !important; }
+    body.printing .print-head { display:block; margin:0 0 8px; }
+    body.printing .card { background:#fff !important; border:1px solid #ccc !important; padding:8px; margin:0 0 10px; break-inside:auto; }
+    body.printing th, body.printing td { padding:4px 6px; font-size:9pt; border-bottom:1px solid #ddd; }
+    body.printing tr { break-inside:avoid; }
+    body.printing .rank { background:#eee !important; width:22px; height:22px; line-height:22px; font-size:8pt; }
+    body.printing .r1 { background:#facc15 !important; } body.printing .r2 { background:#cbd5e1 !important; } body.printing .r3 { background:#d97706 !important; }
+    body.printing .fd { -webkit-print-color-adjust:exact; print-color-adjust:exact; color:#fff !important; }
+    body.printing .fd.fD { color:#000 !important; }
+    body.printing main { max-width:none; padding:0; }
+  }
   * { box-sizing:border-box; }
   body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
   header { padding:24px 24px 8px; text-align:center; }
@@ -130,6 +148,7 @@
 <header style="position:relative">
   <div class="top-btns">
     <span id="syncStatus" class="legend" style="align-self:center;margin:0"></span>
+    <button type="button" class="theme-btn" id="pdfBtn" title="Export leaderboard as PDF" aria-label="Export leaderboard as PDF">📄</button>
     <button type="button" class="theme-btn" id="themeBtn"></button>
     <button type="button" class="theme-btn" id="cfgBtn" title="Configuration" aria-label="Configuration">⚙️</button>
   </div>
@@ -147,11 +166,12 @@
 
   <!-- ============ LEADERBOARD ============ -->
   <section class="panel active" id="board">
+    <div class="print-head print-keep"><h2 style="margin:0">🎾 Padel Squad – Leaderboard</h2><div id="printDate" style="font-size:9pt"></div></div>
     <div class="stats">
       <div class="stats" id="stats" style="display:contents"></div>
     </div>
 
-    <div class="card">
+    <div class="card print-keep">
       <table>
         <thead>
           <tr>
@@ -171,7 +191,7 @@
       <div class="legend">Last 5 Matches = most recent results, newest on the right (from weekly results only).<br>Win % = points accumulated ÷ total available game points (games played × 3). Players are ranked by Win %; ties broken by points, then wins, then fewer games played. Players need at least 9 games to enter the leaderboard.</div>
     </div>
 
-    <div class="card qz">
+    <div class="card qz print-keep">
       <h3>Qualifier Zone <span class="legend">· fewer than 9 games played · same ranking rules</span></h3>
       <table>
         <thead>
@@ -350,6 +370,9 @@
     </div>
     </div>
     <div id="history"></div>
+    <div class="edit" style="display:flex;justify-content:center;margin-top:8px">
+      <button type="button" class="del" id="masterDel" style="height:38px;padding:0 18px">🗑️ Master delete</button>
+    </div>
   </section>
 </main>
 
@@ -375,7 +398,9 @@ const store = (k, v) => { if (!SNAP && !CLOUD) localStorage.setItem(k, v); };
 const TKEY = 'padelTheme';
 function applyTheme(t) {
   document.documentElement.dataset.theme = t;
-  document.getElementById('themeBtn').textContent = t==='light' ? '🌙 Dark mode' : '☀️ Light mode';
+  const tb = document.getElementById('themeBtn');
+  tb.textContent = t==='light' ? '🌙' : '☀️';
+  tb.title = tb.ariaLabel = t==='light' ? 'Switch to dark mode' : 'Switch to light mode';
   localStorage.setItem(TKEY, t);
 }
 applyTheme(localStorage.getItem(TKEY) || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
@@ -728,6 +753,7 @@ function renderHistory() {
   });
 }
 $('hFilter').oninput = renderHistory;
+$('masterDel').onclick = masterDelete;
 
 
 document.querySelectorAll('th').forEach(th => th.onclick = () => {
@@ -910,6 +936,23 @@ let pinHash = load(PINKEY) || '';                      // SHA-256 of the deletio
 async function hashPin(pin) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('padel-squad:' + pin));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+// Delete ALL match history (requires the deletion PIN). Players are kept with 0 games.
+async function masterDelete() {
+  if (!pinHash) return alert('Set a deletion PIN first (⚙️ → 🔒 Deletion PIN). Master delete always requires a PIN.');
+  const n = results.length, sessions = batches.length;
+  if (!n) return alert('There is no match history to delete.');
+  if (!confirm(`MASTER DELETE\n\nThis deletes ALL match history for everyone:\n• ${sessions} sessions\n• ${n} result records\n\nPlayers are kept (with 0 games). Calendar weeks are kept.\nA backup is saved first.\n\nContinue?`)) return;
+  if ((prompt('Type DELETE to confirm:') || '').trim().toUpperCase() !== 'DELETE') return alert('Cancelled – nothing was deleted.');
+  if (!(await checkPin())) return;
+  try { await makeBackup('manual'); }
+  catch (e) { if (!confirm('Could not save a backup first (' + (e.message || e) + '). Delete anyway?')) return; }
+  const keep = new Set([...roster, ...results.map(r => r.name)]);
+  roster = [...keep];                                   // keep every player on the list
+  results = []; batches = [];
+  calendar.forEach(w => { if (w.batch) { delete w.batch; delete w.lineup; } });
+  save(); saveCal(); render();
+  alert(`All match history deleted (${sessions} sessions, ${n} records). You can restore it from ⚙️ → Backups.`);
 }
 async function checkPin() {
   if (!pinHash) return true;                             // no PIN set yet
@@ -1417,6 +1460,17 @@ $('abNow').onclick = async () => {
   catch (e) { $('abMsg').className = 'msg err'; $('abMsg').textContent = 'Backup failed: ' + (e.message || e); }
 };
 $('cfgBtn').addEventListener('click', () => renderBackups());
+
+// ---------- PDF export (uses the browser's "Save as PDF") ----------
+$('pdfBtn').onclick = () => {
+  document.querySelector('.tab[data-tab=board]').click();
+  $('printDate').textContent = 'Exported ' + new Date().toLocaleString() + ' · ranked by Win % · players need 9 games to qualify';
+  document.body.classList.add('printing');
+  const t = document.title; document.title = `Padel Squad Leaderboard ${ymd(new Date())}`;   // default PDF file name
+  setTimeout(() => { window.print(); }, 50);
+  const done = () => { document.body.classList.remove('printing'); document.title = t; removeEventListener('afterprint', done); };
+  addEventListener('afterprint', done);
+};
 
 // ---------- deletion PIN settings ----------
 function renderPinState() {
