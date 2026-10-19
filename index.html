@@ -112,6 +112,13 @@
   #chartWrap svg .grid { stroke:var(--line); }
   #progTable tr.on td { background:var(--line); } #progTable td.name { cursor:pointer; }
   .gm { padding:3px 0; }
+  /* Players list: same row height/placement in view and edit mode */
+  table.np-table { table-layout:fixed; width:100%; }
+  #npList td { height:44px; vertical-align:middle; overflow:hidden; }
+  #npList td:last-child { text-align:right; }
+  #npList .rn-btn { box-sizing:border-box; height:30px; min-width:76px; padding:0 10px; margin:0 0 0 4px; font-size:.8rem; font-weight:700; line-height:1; vertical-align:middle; }
+  #npList select.rn-emoji { width:96px; min-width:96px; padding:0 6px; }
+  #npList input.rn-in { box-sizing:border-box; width:100%; max-width:240px; height:30px; padding:0 8px; margin:0; font:inherit; font-weight:600; }
   input.court-label { width:92px; height:26px; padding:2px 6px; margin-left:6px; font-size:.8rem; font-weight:400;
                       color:var(--mut); background:transparent; border:1px dashed var(--bd); border-radius:6px; vertical-align:middle; }
   input.court-label:hover, input.court-label:focus { color:var(--txt); border-style:solid; background:var(--inp); }
@@ -354,7 +361,7 @@
       </div>
       <div class="msg" id="npMsg"></div>
       <div style="max-height:420px;overflow:auto;margin-top:8px">
-        <table><thead><tr><th>Rank</th><th style="text-align:left">Player</th><th>Played</th><th>Points</th><th></th></tr></thead>
+        <table class="np-table"><colgroup><col style="width:64px"><col><col style="width:80px"><col style="width:80px"><col style="width:290px"></colgroup><thead><tr><th>Rank</th><th style="text-align:left">Player</th><th>Played</th><th>Points</th><th></th></tr></thead>
         <tbody id="npList"></tbody></table>
       </div>
       <div class="legend">New players start in the Qualifier Zone with 0 games. Removing a player deletes all their results and takes them off upcoming calendar weeks.</div>
@@ -702,7 +709,7 @@ function allGames() {
     const L = weekLineup(w, rankOf), ps = amPlayers(w, L);
     if (ps.length < 12) return;
     const ts = new Date(w.date + 'T12:00').getTime();
-    americanoRounds(ps).forEach((courts, r) => courts.forEach(([A, B], c) => {
+    americanoRounds(ps, w.amSeed, amRoundCount(w, ps.length)).forEach((courts, r) => courts.forEach(([A, B], c) => {
       const v = w.amer[`${r}-${c}`]; if (!v || v[0] === '' || v[1] === '' || v[0] == null || v[1] == null) return;
       out.push({ ts: ts + r, a:A, b:B, win: Math.sign(+v[0] - +v[1]), src:'americano' });
     }));
@@ -978,14 +985,56 @@ $('fW').onchange = $('fD').onchange = syncLosses;
 syncLosses();
 
 // ---------- players (Configuration) ----------
+const EMOJI_GROUPS = {"Sport": ["🎾", "🏓", "🏸", "⚽", "🏀", "🏈", "⚾", "🏐", "🏉", "🥎", "🏆", "🥇", "🥈", "🥉", "🏅", "🎯", "🥅", "⛳", "🏋️", "🤸", "🏃", "🚴", "🧗", "🤾"], "Mood": ["🔥", "⚡", "💪", "👑", "⭐", "🌟", "✨", "💫", "🚀", "💥", "💯", "🎉", "🥳", "😎", "🤘", "🤙", "👊", "✌️", "👏", "🙌", "🫡", "😈", "👻", "🤖", "👽", "🧠", "💀", "🥶", "🥵", "😤", "🤓", "🤠", "🥷", "🦸", "🧙"], "Animals": ["🐐", "🐪", "🐌", "🦈", "🐙", "🦁", "🐯", "🐻", "🐼", "🦊", "🐺", "🦅", "🦉", "🐝", "🦋", "🐬", "🐳", "🦖", "🐉", "🦄", "🐸", "🐵", "🦍", "🦒", "🦓", "🦘", "🐧", "🦩", "🐈", "🐕", "🐎", "🐂", "🦬", "🐊", "🐢", "🦀", "🦞", "🦑"], "Food": ["🍔", "🌮", "🌯", "🍕", "🍟", "🌭", "🥪", "🍣", "🍜", "🥘", "🍝", "🥩", "🍗", "🥓", "🌶️", "🥦", "🍆", "🥑", "🍑", "🍈", "🍉", "🍋", "🍓", "🍒", "🍍", "🥥", "🍌", "🍎", "🥕", "🌽", "🧀", "🥐", "🍩", "🍪", "🎂", "🍫", "🍿", "☕", "🍺", "🍷", "🍸", "🥂", "🧃"], "Other": ["⛪", "🪄", "🤏", "💦", "🔫", "🧤", "🍀", "🌈", "🌊", "☀️", "🌙", "❄️", "🎸", "🎧", "🎮", "🎲", "♟️", "💎", "💰", "🧲", "🔮", "🛸", "🏎️", "⚓", "🗿"]};
+const EMOJIS = Object.values(EMOJI_GROUPS).flat();
+let editingPlayer = null;
 function renderPlayersCfg() {
   const f = $('npFilter').value.trim().toLowerCase();
+  const typing = editingPlayer && $('rnName') ? $('rnName').value : null;   // keep text if data refreshes mid-edit
   const list = aggregate().filter(p => !f || p.name.toLowerCase().includes(f));
-  $('npList').innerHTML = list.map(p => `<tr><td><span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span></td>
+  $('npList').innerHTML = list.map(p => p.name === editingPlayer
+    ? `<tr><td><span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span></td>
+    <td class="name"><input id="rnName" class="rn-in" value="${esc(p.name)}" maxlength="40"></td><td>${p.games}</td><td class="pts">${p.points}</td>
+    <td style="white-space:nowrap"><select id="rnEmoji" class="rn-btn rn-emoji" title="Add an emoji to the name">
+        <option value="">+ Emoji</option>${Object.entries(EMOJI_GROUPS).map(([g, list]) => `<optgroup label="${g}">${list.map(e => `<option>${e}</option>`).join('')}</optgroup>`).join('')}</select>
+      <button type="button" id="rnSave" class="rn-btn">Save</button>
+      <button type="button" class="sec rn-btn" id="rnCancel">Cancel</button></td></tr>`
+    : `<tr><td><span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span></td>
     <td class="name">${esc(p.name)}</td><td>${p.games}</td><td class="pts">${p.points}</td>
-    <td><button type="button" class="del" data-rmp="${esc(p.name)}">Remove</button></td></tr>`).join('')
+    <td style="white-space:nowrap"><button type="button" class="sec rn-btn" data-edp="${esc(p.name)}">Edit</button>
+      <button type="button" class="del rn-btn" data-rmp="${esc(p.name)}">Remove</button></td></tr>`).join('')
     || '<tr><td colspan="5" class="legend">No players found.</td></tr>';
   $('npList').querySelectorAll('[data-rmp]').forEach(b => b.onclick = () => removePlayer(b.dataset.rmp));
+  $('npList').querySelectorAll('[data-edp]').forEach(b => b.onclick = () => { editingPlayer = b.dataset.edp; renderPlayersCfg(); $('rnName').focus(); });
+  if (editingPlayer && $('rnName')) {
+    if (typing != null) $('rnName').value = typing;
+    $('rnEmoji').onchange = () => { if ($('rnEmoji').value) { $('rnName').value = $('rnName').value.trim() + ' ' + $('rnEmoji').value; $('rnEmoji').value = ''; $('rnName').focus(); } };
+    $('rnCancel').onclick = () => { editingPlayer = null; renderPlayersCfg(); };
+    $('rnSave').onclick = () => renamePlayer(editingPlayer, $('rnName').value);
+    $('rnName').onkeydown = e => { if (e.key === 'Enter') $('rnSave').click(); if (e.key === 'Escape') $('rnCancel').click(); };
+  }
+}
+// Rename a player everywhere: results, players list, calendar weeks, match details, payments.
+function renamePlayer(oldName, newName) {
+  const n = newName.trim().replace(/\s+/g, ' '), m = $('npMsg'); m.className = 'msg';
+  if (!n) { m.classList.add('err'); m.textContent = 'Enter a name.'; return; }
+  if (n === oldName) { editingPlayer = null; renderPlayersCfg(); return; }
+  const clash = aggregate().find(p => p.name !== oldName && p.name.toLowerCase() === n.toLowerCase());
+  if (clash) { m.classList.add('err'); m.textContent = `${clash.name} is already a player.`; return; }
+  const sw = x => x === oldName ? n : x;
+  results.forEach(r => { if (r.name === oldName) r.name = n; });
+  roster = roster.map(sw);
+  batches.forEach(b => (b.games || []).forEach(g => { if (g.a) g.a = g.a.map(sw); if (g.b) g.b = g.b.map(sw); }));
+  calendar.forEach(w => {
+    w.players = w.players.map(sw); w.reserves = w.reserves.map(sw);
+    if (w.amOrder) w.amOrder = w.amOrder.map(sw);
+    if (w.lineup) w.lineup = w.lineup.map(ct => ct.map(sw));
+    if (w.subs) { const s2 = {}; Object.entries(w.subs).forEach(([k, v]) => s2[sw(k)] = sw(v)); w.subs = s2; }
+  });
+  Object.values(paid).forEach(mo => { if (mo[oldName]) { mo[n] = mo[oldName]; delete mo[oldName]; } });
+  editingPlayer = null;
+  save(); saveCal(); savePaid(); render();
+  m.classList.add('ok'); m.textContent = `${oldName} renamed to ${n}.`;
 }
 function removePlayer(name) {
   const recs = results.filter(r => r.name === name);
@@ -1257,15 +1306,32 @@ function weekLineup(w, rankOf) {
 // n players (12 or 16; P1 = best ranked … Pn), n−1 rounds × n/4 courts. P1 stays fixed, the others
 // rotate, so every pair of players partners exactly once.
 //   4 → 3 rounds × 1 court · 8 → 7 × 2 · 12 → 11 × 3 · 16 → 15 × 4
-function americanoRounds(ps) {
+// seed → stable random numbers, so the shuffled schedule stays the same for everyone
+function seededRandom(seed) {
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+const shuffled = (arr, rnd) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+// Round-robin partner schedule: n−1 rounds in which every pair of players partners exactly once.
+// With a seed the players, round order, partner pairings on court and courts are randomised
+// (still never the same partners twice). `k` limits the number of rounds played.
+function americanoRounds(ps, seed, k) {
   const n = ps.length, m = n - 1;
   const base = [n]; for (let lo = 2, hi = n - 1; lo <= hi; lo++, hi--) { base.push(lo); if (hi !== lo) base.push(hi); }
-  const shift = (p, k) => ((p - 2 - k) % m + m) % m + 2;
-  return Array.from({ length:m }, (_, r) => {
+  const shift = (p, x) => ((p - 2 - x) % m + m) % m + 2;
+  const rnd = seed ? seededRandom(seed) : null;
+  const who = rnd ? shuffled(ps, rnd) : ps;
+  let rounds = Array.from({ length:m }, (_, r) => {
     const seq = [1, ...base.map(p => shift(p, r))];
-    return Array.from({ length:n / 4 }, (_, c) => { const q = seq.slice(c*4, c*4 + 4); return [[q[0], q[1]], [q[2], q[3]]].map(t => t.map(i => ps[i-1])); });
+    let pairs = Array.from({ length:n / 2 }, (_, i) => [seq[2*i], seq[2*i + 1]].map(x => who[x-1]));
+    if (rnd) pairs = shuffled(pairs, rnd);
+    return Array.from({ length:n / 4 }, (_, c) => [pairs[2*c], pairs[2*c + 1]]);
   });
+  if (rnd) rounds = shuffled(rounds, rnd);
+  return rounds.slice(0, Math.max(1, Math.min(m, k || m)));
 }
+const amRoundCount = (w, n) => Math.max(1, Math.min(n - 1, parseInt(w.amRounds, 10) || n - 1));
+const amHasScores = w => Object.values(w.amer || {}).some(v => v && v[0] !== '' && v[0] != null);
 // Americano player order (P1…Pn): ranking order, frozen once the first score is entered so later
 // ranking changes don't reshuffle the rounds.
 function amPlayers(w, L) {
@@ -1292,7 +1358,7 @@ function americanoHtml(w, L, rankOf) {
   const need = capOf(w);
   if (L.courts.length < nCourts(w) || ps.length < need)
     return `<div class="bench" style="margin-top:14px">🔄 Americano needs ${need} players across ${nCourts(w)} courts (${ps.length}/${need} so far).</div>`;
-  const rounds = americanoRounds(ps), sc = w.amer || {}, max = amMax(w);
+  const rounds = americanoRounds(ps, w.amSeed, amRoundCount(w, ps.length)), sc = w.amer || {}, max = amMax(w);
   const pn = n => `<span title="P${ps.indexOf(n)+1}">${esc(n)}</span>`;
   const scored = rounds.reduce((t, cs, r) => t + cs.filter((_, c) => { const v = sc[`${r}-${c}`]; return v && v[0] !== '' && v[1] !== '' && v[0] != null && v[1] != null; }).length, 0);
   const key = w.id + '-am', open = resOpen[key] ?? true;
@@ -1315,6 +1381,11 @@ ${inp(r, c, 1)}<span class="am-team">${B.map(pn).join('<br>')}</span></div>
       <div class="row" style="margin:10px 0">
         <label style="flex-direction:row;align-items:center;gap:8px;font-size:.9rem;color:var(--txt)">Points per match
           <input type="number" min="1" max="99" data-f="maxPts" data-w="${w.id}" value="${max}" style="width:80px;height:38px"></label>
+        <label style="flex-direction:row;align-items:center;gap:8px;font-size:.9rem;color:var(--txt);margin-left:16px">Number of rounds
+          <select data-f="amRounds" data-w="${w.id}" style="height:38px;width:80px">
+            ${Array.from({ length:ps.length - 1 }, (_, i) => i + 1).map(k => `<option value="${k}" ${k === rounds.length ? 'selected' : ''}>${k}</option>`).join('')}
+          </select></label>
+        <button type="button" class="sec edit" data-amshuffle="${w.id}" style="height:38px;margin-left:16px">🔀 Reshuffle pairs</button>
       </div>
       <div class="courts">${roundsHtml}</div>
     </div>
@@ -1337,6 +1408,7 @@ function renderEvent() {
     : '<option value="">No Americano events yet</option>';
   const w = weeks.find(x => x.id === evSel), body = $('evBody');
   if (!w) { body.innerHTML = '<div class="legend">No Americano events yet. Add a week in the Calendar and set its game type to <b>Americano</b>.</div>'; return; }
+  if (!w.amSeed && !amHasScores(w)) { w.amSeed = 1 + Math.floor(Math.random() * 2e9); saveCal(); }   // randomise pairs
   const rankOf = {}; aggregate().forEach(p => rankOf[p.name] = p);
   const L = weekLineup(w, rankOf), ps = amPlayers(w, L);
   body.innerHTML = `<h3 style="margin:0 0 4px">Players (by ranking)</h3>
@@ -1347,6 +1419,12 @@ function renderEvent() {
   body.querySelectorAll('details.res-acc').forEach(d => d.ontoggle = () => { resOpen[d.dataset.acc] = d.open; });
   body.querySelectorAll('[data-f]').forEach(el => el.onchange = () => {
     find(el.dataset.w)[el.dataset.f] = el.value; saveCal(); renderEvent();
+  });
+  body.querySelectorAll('[data-amshuffle]').forEach(b => b.onclick = () => {
+    const wk = find(b.dataset.amshuffle);
+    if (amHasScores(wk) && !confirm('Reshuffling creates new pairs and clears all scores entered for this Americano. Continue?')) return;
+    wk.amSeed = 1 + Math.floor(Math.random() * 2e9); delete wk.amer; delete wk.amOrder;
+    saveCal(); renderEvent();
   });
   body.querySelectorAll('input[data-am]').forEach(inp => inp.onchange = () => {
     const wk = find(inp.dataset.am), max = amMax(wk), side = +inp.dataset.side;
