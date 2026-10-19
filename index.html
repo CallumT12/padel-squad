@@ -4,9 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Padel Squad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --inp:#0f172a; --bd:#475569; --sec:#475569; --txt:#e2e8f0; --mut:#94a3b8; --acc:#22c55e; --gold:#facc15; --silver:#cbd5e1; --bronze:#d97706; }
-  [data-theme=light] { --bg:#f1f5f9; --card:#ffffff; --line:#e2e8f0; --inp:#f8fafc; --bd:#cbd5e1; --sec:#e2e8f0; --txt:#0f172a; --mut:#64748b; --acc:#16a34a; --silver:#94a3b8; }
+  /* ===== Design tokens (brand palette) ===== */
+  :root, [data-theme=light] {
+    --page:#ffffff; --section:#f5f8f5; --surface:#ffffff; --border:#e2e9e3;
+    --text:#202820; --muted:#68736b;
+    --primary:#246b4a; --primary-hover:#1b563b; --selected:#e8f1ea;
+    --danger:#a44e4e; --focus:#73a987;
+    --radius-control:8px; --radius-card:12px;
+    --win:#246b4a; --draw:#b7862b; --loss:#a44e4e;
+    /* legacy names used throughout the app → mapped to the brand palette */
+    --bg:var(--page); --card:var(--surface); --line:var(--border); --inp:#ffffff; --bd:#d3ddd5; --sec:var(--surface);
+    --txt:var(--text); --mut:var(--muted); --acc:var(--primary);
+    --gold:#d4a72c; --silver:#a9b4ac; --bronze:#b07a43;
+  }
+  [data-theme=dark] {
+    --page:#111814; --section:#18211b; --surface:#1a241e; --border:#2b3830;
+    --text:#e6ede8; --muted:#9aa79e;
+    --primary:#4e9e74; --primary-hover:#5fb386; --selected:#21352a;
+    --danger:#c97272; --focus:#73a987;
+    --win:#5fb386; --draw:#d4a72c; --loss:#c97272;
+    --bg:var(--page); --card:var(--surface); --line:var(--border); --inp:#141d17; --bd:#35453a; --sec:#223028;
+    --txt:var(--text); --mut:var(--muted); --acc:var(--primary);
+  }
   body { transition:background .2s, color .2s; }
   .top-btns { position:absolute; top:20px; right:20px; display:flex; gap:8px; }
   .theme-btn.active { background:var(--acc); color:#000; border-color:var(--acc); }
@@ -234,6 +257,195 @@
   .ro label:has(#newPlayer) { display:none; }
   .pill { font-size:.75rem; padding:2px 8px; border-radius:999px; background:var(--line); color:var(--txt); margin-left:6px; }
   .pill.full { background:var(--acc); color:#000; } .gm .win { color:#22c55e; font-weight:600; }
+
+  /* ===================== Brand design layer ===================== */
+  body { margin:0; background:var(--page); color:var(--text); line-height:1.5;
+         font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  h1 span { color:var(--primary); }
+  .card, .stat, .hb, details.month, .cw, .court, .month-side, .pf-stats .stat, .ov-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-card); box-shadow:none; }
+  .card { padding:20px; }
+  .card.qz { border-style:dashed; }
+  .section-muted, .month-weeks .cw, .month-side, .plist div, .chk, .ev-p, .pf-stats .stat { background:var(--section); }
+  .court { border-top:3px solid var(--primary); }
+  .stat.hl { border-left:4px solid var(--primary); }
+
+  /* controls */
+  button, input, select { font:inherit; }
+  button { min-height:42px; padding:0 16px; border:1px solid var(--primary); border-radius:var(--radius-control);
+           background:var(--primary); color:#fff; font-weight:600; cursor:pointer; }
+  button:hover { background:var(--primary-hover); border-color:var(--primary-hover); }
+  button.primary { border-color:var(--primary); background:var(--primary); color:#fff; font-weight:600; }
+  button.primary:hover { background:var(--primary-hover); }
+  button.sec, button.secondary { background:var(--surface); color:var(--text); border:1px solid var(--border); font-weight:600; }
+  button.sec:hover, button.secondary:hover { background:var(--selected); border-color:var(--focus); }
+  button.del { background:var(--surface); color:var(--danger); border:1px solid var(--danger); font-weight:600; }
+  button.del:hover { background:var(--danger); color:#fff; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  input, select { min-height:42px; padding:0 12px; border:1px solid var(--bd); border-radius:var(--radius-control);
+                  background:var(--inp); color:var(--text); }
+  input[type=checkbox], input[type=radio] { min-height:0; padding:0; accent-color:var(--primary); }
+  textarea { font:inherit; border:1px solid var(--bd); border-radius:var(--radius-control); background:var(--inp); color:var(--text); }
+  button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, summary:focus-visible {
+    outline:3px solid var(--focus); outline-offset:2px; }
+  label { color:var(--muted); }
+
+  /* compact controls keep their own size */
+  .am-row input.am-in, .game select.wdl, .plist select.subsel, input.court-label, #npList .rn-btn, #npList input.rn-in,
+  .hb .hb-btn, .theme-btn, .ov-x, .calendar-toolbar button, .pf-edit, .promote, .planner-tab, .plist.picks select, .slot select {
+    min-height:0; }
+  .plist.picks select, .slot select { min-height:36px; }
+  .theme-btn, .ov-x { background:var(--surface); color:var(--text); border:1px solid var(--border); font-weight:600; }
+  .theme-btn:hover, .ov-x:hover { background:var(--selected); }
+  .theme-btn.active { background:var(--selected); color:var(--primary); border-color:var(--primary); }
+
+  /* navigation tabs */
+  .tab { background:var(--surface); color:var(--muted); border:1px solid var(--border); border-radius:var(--radius-control); font-weight:600; }
+  .tab:hover { background:var(--section); border-color:var(--border); color:var(--text); }
+  .tab.active, nav button.active { border-color:transparent; background:var(--selected); color:var(--primary); font-weight:600; }
+
+  /* badges / pills */
+  .badge, .pill { display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px;
+                  background:var(--selected); color:var(--primary); font-size:.85rem; font-weight:600; }
+  .pill.full { background:var(--primary); color:#fff; }
+  .pill.cp { background:#dfe9f5; color:#2d5b8a; } .pill.sw { background:#f6e3ea; color:#9b3d5d; } .pill.am { background:#ebe5f5; color:#5b4590; }
+  details.month[open] > summary .pill { background:rgba(255,255,255,.2); color:#fff; }
+
+  /* tables */
+  table { width:100%; border-collapse:collapse; }
+  th, td { padding:12px 14px; border-bottom:1px solid var(--border); text-align:left; }
+  th { background:var(--section); color:var(--muted); font-size:.85rem; font-weight:600; text-transform:none; letter-spacing:0; }
+  .hb td, .hb th, .am-table td, .am-table th { padding:8px 10px; }
+  .month-side td, .month-side th { padding:7px 6px; } .month-side td:last-child, .month-side th:last-child { text-align:center; }
+  td.hb-act, #npList td:last-child { text-align:right; }
+
+  /* results colours */
+  .w, .up { color:var(--win); } .d { color:var(--draw); } .l, .down { color:var(--loss); }
+  .fd.fW { background:var(--win); } .fd.fD { background:var(--draw); color:#fff; } .fd.fL { background:var(--loss); }
+  .bar i { background:var(--primary); }
+  .msg.ok, .ok { color:var(--primary); } .msg.err, .err { color:var(--danger); }
+  a.plink:hover { color:var(--primary); border-bottom-color:var(--primary); }
+  .game select.wdl-W { border-color:var(--win); color:var(--win); } .game select.wdl-D { border-color:var(--draw); color:var(--draw); }
+  .game select.wdl-L { border-color:var(--loss); color:var(--loss); }
+  td.subname, tr.paid td.subname { color:var(--danger) !important; }
+
+  /* calendar month accordion */
+  details.month { border-left:6px solid var(--primary); }
+  details.month > summary { background:var(--section); }
+  details.month > summary:hover { background:var(--selected); }
+  details.month[open] > summary { background:var(--primary); }
+
+  @media (max-width:640px) {
+    .card { padding:16px; }
+    .table-wrap, .card { overflow-x:auto; }
+  }
+
+  /* typography */
+  body { font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  h1, h2, h3, button { font-weight:600; }
+
+  /* player profile overlay – same look as the Calendar */
+  .ov-card { padding:24px; }
+  .pf-head { padding-bottom:12px; border-bottom:1px solid var(--border); }
+  #pfEditBox input, #pfEditBox select { min-height:42px; }
+  #pfEditBox button { min-height:42px; }
+  .pf-sec { margin:20px 0 0; } .pf-sec h3 { margin:0 0 10px; }
+  details.month.pf-sec > summary { grid-template-columns:40px 1fr auto auto; }
+  details.month.pf-sec > summary b { font-size:1.15rem; }
+  details.month.pf-sec .pf-sec-body { padding:16px; }
+  .pf-stats .stat { background:var(--section); border:1px solid var(--border); border-radius:var(--radius-card); }
+  .pf-stats .stat .l { color:var(--muted); font-size:.75rem; font-weight:600; }
+  .pf-stats .stat .v { color:var(--text); }
+  @media (max-width:640px) { details.month.pf-sec > summary { grid-template-columns:40px 1fr; } }
+  .stat.hl { border-left:1px solid var(--border); }   /* no green accent on the Leader card */
+
+  /* one consistent size for all form controls (compact controls keep their own class-level sizes) */
+  input, select, textarea, button { font-size:.9rem; }
+  label > input, label > select { font-size:.9rem; color:var(--text); }
+  .tab { font-size:1rem; }
+
+  /* Americano partner swimlanes */
+  .lanes-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-card); }
+  .lanes { display:grid; min-width:max-content; }
+  .lane { display:grid; grid-template-columns:170px repeat(var(--rounds), minmax(112px, 1fr)); border-bottom:1px solid var(--border); }
+  .lane:last-child { border-bottom:0; }
+  .lane:nth-child(even):not(.lane-head) { background:var(--section); }
+  .lane-head { background:var(--section); color:var(--muted); font-size:.8rem; font-weight:600; position:sticky; top:0; }
+  .lane-name { position:sticky; left:0; z-index:1; background:inherit; padding:10px 12px; font-weight:600; white-space:nowrap;
+               overflow:hidden; text-overflow:ellipsis; border-right:1px solid var(--border); background-color:var(--surface); }
+  .lane:nth-child(even):not(.lane-head) .lane-name, .lane-head .lane-name { background-color:var(--section); }
+  .lane-name b { color:var(--primary); margin-right:4px; }
+  .lane-h { padding:10px 8px; text-align:center; }
+  .lane-cell { padding:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+               border-left:1px solid var(--border); font-size:.85rem; text-align:center; min-width:0; }
+  .lane-p { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .lane-c { font-size:.7rem; color:var(--muted); white-space:nowrap; }
+  @media print { .lanes-wrap { overflow:visible; } }
+
+  /* ranking playback */
+  .rp-controls { display:flex; align-items:center; gap:12px; margin:0 0 12px; flex-wrap:wrap; }
+  .rp-controls button { min-width:110px; }
+  .rp-controls input[type=range] { flex:1; min-width:180px; min-height:0; padding:0; accent-color:var(--primary); border:0; background:transparent; }
+  #chartWrap .rp-head { stroke:var(--primary); stroke-width:2; stroke-dasharray:4 4; }
+  #chartWrap svg.rp-anim .pl text { opacity:0; }
+  #chartWrap svg .pl text { transition:opacity .3s; }
+
+  /* Availability sheet */
+  .av-wrap { overflow:auto; max-height:70vh; border:1px solid var(--border); border-radius:var(--radius-card); }
+  .av-table { min-width:max-content; }
+  .av-table th, .av-table td { padding:8px 10px; text-align:center; border-bottom:1px solid var(--border); border-left:1px solid var(--border); }
+  .av-table thead th { position:sticky; top:0; z-index:2; background:var(--section); vertical-align:top; }
+  .av-table .av-name { position:sticky; left:0; z-index:1; background:var(--surface); text-align:left; font-weight:600; white-space:nowrap; border-left:0; min-width:150px; }
+  .av-table thead .av-name { z-index:3; background:var(--section); }
+  .av-wk { min-width:130px; font-weight:600; color:var(--text) !important; }
+  .av-wk .pill { margin-top:4px; font-size:.75rem; padding:2px 8px; }
+  .av-cell label { display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:.8rem; color:var(--muted); }
+  .av-cell input { width:18px; height:18px; }
+  .av-cell.av-conf { background:var(--selected); } .av-cell.av-conf label { color:var(--primary); font-weight:600; }
+  .av-cell.av-res { background:#fbf3e3; } .av-cell.av-res label { color:#8a6418; font-weight:600; }
+  [data-theme=dark] .av-cell.av-res { background:#3a3020; } [data-theme=dark] .av-cell.av-res label { color:#e0b860; }
+  /* Matches: confirmed names + reserve list */
+  .pname { flex:1; min-width:0; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .res-list { display:flex; flex-wrap:wrap; gap:8px; }
+  .res-item { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border:1px solid var(--border); border-radius:999px; background:var(--section); font-weight:600; }
+  .res-n { color:#b7862b; font-size:.75rem; font-weight:700; }
+
+  /* Availability: fixed player column + always 5 equal week columns */
+  .av-table.av-fixed { table-layout:fixed; width:100% !important; min-width:860px; }
+  .av-fixed col.av-col-name { width:180px; } .av-fixed col.av-col-wk { width:auto; }
+  .av-fixed .av-name { width:180px; max-width:180px; overflow:hidden; text-overflow:ellipsis; }
+  .av-fixed .av-wk { min-width:0; }
+  .av-fixed th.av-empty { color:var(--muted) !important; background:var(--section); }
+  .av-fixed td.av-none { color:var(--border); background:var(--section); }
+  .av-fixed td.av-cell { height:56px; }
+  .av-fixed td.av-new { background:var(--section); }
+  .av-fixed td.av-new input { opacity:.75; }
+  .av-fixed th.av-search { vertical-align:top; }
+  .av-fixed th.av-search input { width:100%; min-height:34px; height:34px; padding:0 8px; font-size:.8rem; font-weight:400; }
+  .av-toolbar { display:flex; align-items:center; gap:10px; }
+  .av-toolbar label { margin:0; font-size:.9rem; color:var(--muted); }
+  .av-toolbar select, .av-toolbar button { height:42px; min-height:42px; margin:0; box-sizing:border-box; }
+  .av-toolbar select { width:200px; }
+
+  /* Matches week card alignment */
+  .cw-head { align-items:center; }
+  .cw-head > div:first-child { display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+  .cw-head > div:first-child b { margin-right:4px; }
+  .cw-head .pill { margin:0; }
+  .cw-head .row { margin:0; }
+  .cw-head button.del { min-height:34px; height:34px; padding:0 14px; }
+  .cal-form.wk { display:grid; grid-template-columns:140px minmax(0,1fr) minmax(0,1.3fr) minmax(0,1.4fr); gap:12px; align-items:end; width:100%; margin:4px 0 8px; }
+  .cal-form.wk label { min-width:0; }
+  .cal-form.wk input, .cal-form.wk select, .cal-form.wk input[data-f=note] { width:100% !important; height:42px; min-height:42px; }
+  /* courts sit side by side in equal columns (2×2 for 4 courts) */
+  .wk-courts { grid-template-columns:repeat(min(var(--nc), 3), minmax(0, 1fr)) !important; align-items:stretch; }
+  .wk-courts[style*="--nc:4"] { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; }
+  .wk-courts .court { min-width:0; }
+  .wk-courts .court h4 { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; white-space:nowrap; min-height:30px; }
+  .wk-courts .court h4 input.court-label { width:72px; min-width:0; flex:0 1 72px; margin-left:auto; }
+  .plist .pentry { min-height:48px; justify-content:center; }
+  @media (max-width:900px) { .wk-courts, .wk-courts[style*="--nc:4"] { grid-template-columns:1fr !important; }
+                             .cal-form.wk { grid-template-columns:1fr 1fr; } }
 </style>
 </head>
 <body>
@@ -250,7 +462,8 @@
 <main>
   <div class="tabs">
     <button class="tab active" data-tab="board">Leaderboard</button>
-    <button class="tab" data-tab="cal">Calendar</button>
+    <button class="tab" data-tab="avail">Availability</button>
+    <button class="tab" data-tab="cal">Matches</button>
     <button class="tab" data-tab="event">Americano</button>
     <button class="tab" data-tab="hist">Match History</button>
   </div>
@@ -279,7 +492,6 @@
         </thead>
         <tbody id="tbody"></tbody>
       </table>
-      <div class="legend">Last 5 Matches = most recent results, newest on the right (from weekly results only).<br>Win % = points accumulated ÷ total available game points (games played × 3). Players are ranked by Win %; ties broken by points, then wins, then fewer games played. Players need at least 9 games to enter the leaderboard.</div>
     </div>
 
     <div class="card qz print-keep">
@@ -306,6 +518,11 @@
 
     <div class="card">
       <h3>Ranking Position</h3>
+      <div class="rp-controls">
+        <button type="button" class="primary" id="rpPlay" aria-label="Play ranking animation">▶ Play</button>
+        <input type="range" id="rpSlider" min="0" max="1000" value="1000" aria-label="Scrub through time">
+        <span class="legend" id="rpLabel" style="margin:0"></span>
+      </div>
       <div id="chartWrap" style="overflow-x:auto;width:100%;margin-bottom:16px"></div>
       <div class="row" style="margin-bottom:8px">
         <button type="button" class="sec" id="showAll">Show all</button>
@@ -352,7 +569,22 @@
 
   <!-- ============ RANK PROGRESS ============ -->
 
-  <!-- ============ CALENDAR ============ -->
+  <!-- ============ AVAILABILITY ============ -->
+  <section class="panel" id="avail">
+    <div class="card">
+      <h3 style="margin-top:0">Availability</h3>
+      <div class="row" style="margin-bottom:12px">
+        <div class="av-toolbar">
+          <label for="avMonth">Month</label>
+          <select id="avMonth"></select>
+          <button type="button" class="sec" id="avAddMonth" title="Add the next calendar month">+ Add month</button>
+        </div>
+      </div>
+      <div id="avSheet"></div>
+    </div>
+  </section>
+
+  <!-- ============ MATCHES (formerly Calendar) ============ -->
   <section class="panel" id="cal">
     <div class="card edit">
       <h3>Add a Week</h3>
@@ -507,7 +739,7 @@ function applyTheme(t) {
   tb.title = tb.ariaLabel = t==='light' ? 'Switch to dark mode' : 'Switch to light mode';
   localStorage.setItem(TKEY, t);
 }
-applyTheme(localStorage.getItem(TKEY) || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+applyTheme(localStorage.getItem(TKEY) || 'light');                // brand design is light by default
 document.getElementById('themeBtn').onclick = () =>
   applyTheme(document.documentElement.dataset.theme==='light' ? 'dark' : 'light');
 
@@ -706,6 +938,7 @@ function render() {
   renderCalendar();
   renderPlayersCfg();
   renderEvent();
+  renderAvailability();
 }
 
 // ---------- rank progress ----------
@@ -797,12 +1030,12 @@ function openProfile(name) {
       <div><h2 id="pfName" style="margin:0;display:flex;align-items:center;gap:8px">${esc(p.name)}
           <a href="#" class="edit pf-edit" id="pfEdit" title="Edit name / add emoji">Edit</a></h2>
         <div id="pfEditBox" class="row" hidden style="gap:6px;align-items:center;margin:4px 0">
-          <input id="pfNameIn" value="${esc(p.name)}" maxlength="40" style="width:220px;height:34px">
-          <select id="pfEmoji" style="height:34px;width:100px" title="Add an emoji">
+          <input id="pfNameIn" value="${esc(p.name)}" maxlength="40" style="width:240px">
+          <select id="pfEmoji" style="width:120px" title="Add an emoji">
             <option value="">+ Emoji</option>${Object.entries(EMOJI_GROUPS).map(([g, list]) => `<optgroup label="${g}">${list.map(e => `<option>${e}</option>`).join('')}</optgroup>`).join('')}
           </select>
-          <button type="button" id="pfSave" style="height:34px">Save</button>
-          <button type="button" class="sec" id="pfCancel" style="height:34px">Cancel</button>
+          <button type="button" class="primary" id="pfSave">Save</button>
+          <button type="button" class="sec" id="pfCancel">Cancel</button>
           <span class="l" id="pfErr" style="font-size:.8rem"></span>
         </div>
         <div class="legend" style="margin:2px 0 0">${p.qual ? `Qualifier Zone · ${MIN_GAMES - p.games} games to qualify` : `Rank ${p.rank}`} · ${p.games} games · ${p.points} pts</div></div>
@@ -810,6 +1043,8 @@ function openProfile(name) {
     </div>
     <div class="pf-rec"><span class="w">${p.wins} W</span> · <span class="d">${p.draws} D</span> · <span class="l">${p.losses} L</span>
       <span style="margin-left:12px">${formHtml({ form:(formStreaks()[name] || []).slice(-5) })}</span></div>
+    <div class="pf-sec">
+      <h3>Player stats</h3>
     <div class="stats pf-stats">
       ${card('🔥 Longest win streak', st.bestStreak || '–', st.games ? 'from weekly results' : 'no weekly results yet')}
       ${card('📍 Current streak', st.cur ? `${st.cur.t}${st.cur.n}` : '–', st.cur ? (st.cur.t === 'W' ? 'wins in a row' : st.cur.t === 'L' ? 'losses in a row' : 'draws in a row') : '')}
@@ -821,13 +1056,16 @@ function openProfile(name) {
       ${card('😈 Nemesis', who(st.nemesis), st.nemesis ? `lost to ${st.nemesis.l}× · ${recStr(st.nemesis)}` : '–')}
       ${card('🤝 Best partner', who(st.partner), st.partner ? `${st.partner.w} wins together · ${recStr(st.partner)}` : '–')}
     </div>
-    <h3 style="margin:18px 0 6px">Head-to-head</h3>
+    </div>
+    <div class="pf-sec">
+      <h3>Head-to-head</h3>
     ${st.opps.length ? `<div style="max-height:320px;overflow:auto"><table>
       <thead><tr><th style="text-align:left">Opponent</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>Win %</th></tr></thead>
       <tbody>${st.opps.map(o => `<tr><td class="name"><a href="#" class="plink" data-player="${esc(o.name)}">${esc(o.name)}</a></td><td>${o.played}</td>
         <td class="w">${o.w}</td><td class="d">${o.d}</td><td class="l">${o.l}</td><td>${((o.w * 3 + o.d) / (o.played * 3) * 100).toFixed(0)}%</td></tr>`).join('')}</tbody>
     </table></div>` : '<div class="legend">No head-to-head games recorded yet.</div>'}
-    <div class="legend" style="margin-top:8px">Head-to-head, rivals and partners use games with known teams (Calendar results and Americano scores). Imported season totals and manual entries only count towards the totals above.</div>`;
+    <div class="legend" style="margin-top:8px">Head-to-head, rivals and partners use games with known teams (Calendar results and Americano scores). Imported season totals and manual entries only count towards the totals above.</div>
+    </div>`;
   $('pfBody').querySelectorAll('.plink').forEach(a => a.onclick = e => { e.preventDefault(); openProfile(a.dataset.player); });
   const showEdit = on => { $('pfEditBox').hidden = !on; $('pfName').hidden = on; if (on) { $('pfNameIn').focus(); $('pfErr').textContent = ''; } };
   $('pfEdit').onclick = e => { e.preventDefault(); showEdit(true); };
@@ -898,7 +1136,11 @@ function renderProgress() {
       ${pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="${color(k)}"><title>${esc(nm)}</title></circle>`).join('')}
       <text x="${last[0]+10}" y="${last[1]+4}">${esc(nm)}</text></g>`;
   }).join('');
-  $('chartWrap').innerHTML = `<svg width="${W}" height="${H}" style="display:block" viewBox="0 0 ${W} ${H}">${g}${lines}</svg>`;
+  $('chartWrap').innerHTML = `<svg width="${W}" height="${H}" style="display:block" viewBox="0 0 ${W} ${H}">
+    <defs><clipPath id="rpClip"><rect id="rpClipRect" x="0" y="0" width="${W}" height="${H}"/></clipPath></defs>
+    ${g}<g clip-path="url(#rpClip)">${lines}</g>
+    <line id="rpHead" class="rp-head" x1="0" x2="0" y1="${T - 12}" y2="${H - B + 6}" style="display:none"/></svg>`;
+  rpSetup({ snaps, x, L, W, H, xEnd: x(snaps.length - 1) });
   if (snaps.length === 1) $('chartWrap').insertAdjacentHTML('beforeend', '<div class="legend">Only one submission so far – lines will appear as more scores are submitted.</div>');
 
   // ---- table ----
@@ -935,6 +1177,43 @@ function renderProgress() {
   $('progTable').querySelectorAll('tbody tr').forEach(bind);
   setFocus(focusName);
 }
+
+// ---------- animated ranking playback ----------
+// Reveals each player's line left→right over the submissions, with a playhead showing the date.
+let rp = { geo:null, p:1, playing:false, raf:0, last:0 };
+function rpFrame(p) {
+  const g = rp.geo; if (!g) return;
+  rp.p = Math.max(0, Math.min(1, p));
+  const n = g.snaps.length, svg = $('chartWrap').querySelector('svg'); if (!svg) return;
+  const xh = n === 1 ? g.xEnd : g.L + rp.p * (g.xEnd - g.L);
+  $('rpClipRect').setAttribute('width', rp.p >= 1 ? g.W : xh + 7);
+  const head = $('rpHead');
+  head.style.display = rp.p >= 1 ? 'none' : ''; head.setAttribute('x1', xh); head.setAttribute('x2', xh);
+  svg.classList.toggle('rp-anim', rp.p < 1);
+  const i = Math.min(n - 1, Math.round(rp.p * (n - 1)));
+  const sn = g.snaps[i];
+  $('rpLabel').textContent = `${sn.label} · ${sn.date.split(',')[0]}${rp.p >= 1 ? ' (latest)' : ''}`;
+  $('rpSlider').value = Math.round(rp.p * 1000);
+}
+function rpSetup(geo) { rp.geo = geo; rpFrame(rp.playing ? rp.p : rp.p); }
+function rpStop() { rp.playing = false; cancelAnimationFrame(rp.raf); $('rpPlay').textContent = '▶ Play'; }
+function rpPlay() {
+  if (!rp.geo) return;
+  if (rp.playing) return rpStop();
+  if (rp.p >= 1) rp.p = 0;
+  rp.playing = true; $('rpPlay').textContent = '⏸ Pause';
+  const dur = Math.max(3000, 1400 * Math.max(1, rp.geo.snaps.length - 1));   // ~1.4 s per submission
+  rp.last = performance.now();
+  const step = now => {
+    if (!rp.playing) return;
+    rpFrame(rp.p + (now - rp.last) / dur); rp.last = now;
+    if (rp.p >= 1) { rpStop(); return; }
+    rp.raf = requestAnimationFrame(step);
+  };
+  rp.raf = requestAnimationFrame(step);
+}
+$('rpPlay').onclick = rpPlay;
+$('rpSlider').oninput = () => { rpStop(); rpFrame(+$('rpSlider').value / 1000); };
 
 // ---------- summary stats ----------
 function renderStats(all, top, quals) {
@@ -1262,6 +1541,9 @@ const savePin = () => { store(PINKEY, pinHash); schedulePush(); };
 const PKEY = 'padelPaid';
 let paid = JSON.parse(load(PKEY) || '{}');            // { 'YYYY-MM': { playerName: true } }
 const savePaid = () => { store(PKEY, JSON.stringify(paid)); schedulePush(); };
+const AMKEY = 'padelAvMonths';
+let avMonths = JSON.parse(load(AMKEY) || '[]');          // extra months added on the Availability tab ('YYYY-MM')
+const saveAvMonths = () => { store(AMKEY, JSON.stringify(avMonths)); schedulePush(); };
 const money = v => '£' + v.toFixed(2);
 $('calFee').value = fee.toFixed(2);
 $('calFee').onchange = () => {
@@ -1318,8 +1600,8 @@ function normalizeWeek(w) {
   w.players = w.players.map(n => { if (n || !res.length) return n; moved = true; return res.shift(); });
   w.reserves = [...res, ...Array(Math.max(0, len - res.length)).fill('')];
   if (moved) delete w.res;                              // courts changed – clear entered results
-  // drop substitute notes for players no longer in the key players
-  if (w.subs) { Object.keys(w.subs).forEach(n => { if (!w.players.includes(n)) delete w.subs[n]; }); if (!Object.keys(w.subs).length) delete w.subs; }
+  // drop substitute notes for players no longer in the key players (or pointing at themselves after a rename)
+  if (w.subs) { Object.keys(w.subs).forEach(n => { if (!w.players.includes(n) || w.subs[n] === n) delete w.subs[n]; }); if (!Object.keys(w.subs).length) delete w.subs; }
   return before !== JSON.stringify([w.players, w.reserves, w.subs]);
 }
 function setCourts(w, n) {
@@ -1382,6 +1664,22 @@ function amPlayers(w, L) {
   if (w.amOrder && w.amOrder.length === live.length && [...w.amOrder].sort().join('|') === [...live].sort().join('|')) return w.amOrder;
   return live;
 }
+// one swimlane per player: their partner (and court) in each round
+function partnerLanes(ps, rounds) {
+  const info = {};                                            // name → [{partner, court}] per round
+  rounds.forEach((courts, r) => courts.forEach((match, c) => match.forEach(pair => pair.forEach((n, k) => {
+    (info[n] ||= [])[r] = { partner:pair[1 - k], court:c + 1 };
+  }))));
+  const head = rounds.map((_, r) => `<div class="lane-h">R${r + 1}</div>`).join('');
+  const lanes = ps.map((n, i) => `<div class="lane">
+      <div class="lane-name"><b>P${i + 1}</b> ${esc(n)}</div>
+      ${rounds.map((_, r) => { const x = info[n]?.[r];
+        return `<div class="lane-cell" title="${x ? `Round ${r + 1} · ${COURT_NAMES[x.court - 1] || 'Court ' + x.court}` : ''}">
+          ${x ? `<span class="lane-p">${esc(x.partner)}</span><span class="lane-c">${esc(COURT_NAMES[x.court - 1] || 'Court ' + x.court)}</span>` : '–'}</div>`; }).join('')}
+    </div>`).join('');
+  return `<div class="lanes-wrap"><div class="lanes" style="--rounds:${rounds.length}">
+      <div class="lane lane-head"><div class="lane-name">Player</div>${head}</div>${lanes}</div></div>`;
+}
 const amMax = w => { const n = parseInt(w.maxPts, 10); return n > 0 ? n : 16; };
 function americanoTable(w, rounds) {
   const t = {}, sc = w.amer || {};
@@ -1432,6 +1730,9 @@ ${inp(r, c, 1)}<span class="am-team">${B.map(pn).join('<br>')}</span></div>
       </div>
       <div class="courts">${roundsHtml}</div>
     </div>
+    <h3 style="margin:22px 0 8px">Partner Schedule</h3>
+    <div class="legend" style="margin:0 0 8px">Each player's partner and court in every round.</div>
+    ${partnerLanes(ps, rounds)}
     <h3 style="margin:22px 0 8px">Americano Leaderboard</h3>
     <table class="am-table"><thead><tr><th>#</th><th style="text-align:left">Player</th><th>Played</th><th>Won</th><th>Drawn</th><th>Points</th><th>+/−</th></tr></thead>
       <tbody>${table.map((e, i) => `<tr><td><span class="rank sm${i < 3 ? ' r' + (i+1) : ''}">${i+1}</span></td>
@@ -1507,6 +1808,135 @@ function submitWeek(w) {
   save(); saveCal(); render();
 }
 
+// ---------- Availability sheet ----------
+// Ticking a week adds the player to that week: a free key place if there is one, otherwise the
+// end of the reserves. Unticking removes them; normalizeWeek() then moves the next reserve up.
+function setAvailable(w, name, on) {
+  if (isSubmitted(w)) return;
+  const inKey = w.players.includes(name), inRes = w.reserves.includes(name);
+  if (on && !inKey && !inRes) {
+    const free = w.players.indexOf('');
+    if (free >= 0) w.players[free] = name;
+    else { const r = w.reserves.filter(Boolean); r.push(name); w.reserves = r; w.resSlots = Math.max(+w.resSlots || MIN_RES, r.length); }
+    delete w.res;
+  }
+  if (!on && (inKey || inRes)) {
+    w.players = w.players.map(n => n === name ? '' : n);
+    w.reserves = w.reserves.map(n => n === name ? '' : n);
+    if (w.subs) { delete w.subs[name]; }
+    delete w.res;
+  }
+  normalizeWeek(w);
+}
+function renderAvailability() {
+  if (!$('avSheet')) return;
+  const t = today(), f0 = avSearch, f = avSearch.trim().toLowerCase();
+  // months: this month + the next 5, plus any later month that already has sessions (no "All months")
+  const cur = t.slice(0, 7), set = new Set();
+  set.add(cur); avMonths.forEach(m => { if (m >= cur) set.add(m); });
+  calendar.forEach(w => { if (w.date.slice(0, 7) >= cur) set.add(w.date.slice(0, 7)); });
+  const months = [...set].sort();
+  const mName = m => new Date(m + '-01T00:00').toLocaleDateString(undefined, { month:'long', year:'numeric' });
+  let msel = $('avMonth').value;
+  if (!months.includes(msel)) msel = cur;
+  $('avMonth').innerHTML = months.map(m => `<option value="${m}" ${m === msel ? 'selected' : ''}>${mName(m)}</option>`).join('');
+  // always 5 week columns: days 1–7, 8–14, 15–21, 22–28, 29–end
+  const [yy, mm] = msel.split('-').map(Number), daysIn = new Date(yy, mm, 0).getDate();
+  const slots = Array.from({ length:5 }, (_, i) => {
+    const from = i * 7 + 1, to = Math.min(daysIn, from + 6);
+    const ws = calendar.filter(w => w.date.startsWith(msel) && +w.date.slice(8) >= from && +w.date.slice(8) <= to)
+                       .sort((a, b) => a.date.localeCompare(b.date));
+    return { i, from, to, w: ws[0] || null, extra: ws.length - 1 };
+  });
+  const names = aggregate().map(p => p.name).sort((a, b) => a.localeCompare(b)).filter(n => !f || n.toLowerCase().includes(f));
+  const short = d => new Date(d + 'T00:00').toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short' });
+  const range = sl => sl.from > daysIn ? '–' : `${sl.from}${sl.to > sl.from ? '–' + sl.to : ''} ${new Date(yy, mm - 1, 1).toLocaleDateString(undefined, { month:'short' })}`;
+  const locked = w => w.date < t || isSubmitted(w);
+  const head = slots.map(sl => {
+    if (!sl.w) {
+      const d = sl.from <= daysIn ? autoSessionDate(yy, mm, sl.from, sl.to) : null;
+      return `<th class="av-wk av-empty"><div>${d ? short(d) : `Week ${sl.i + 1}`}</div><div class="legend" style="margin:0">${d ? 'No session yet' : range(sl)}</div>
+        <span class="legend" style="margin:0">${d && d >= t ? 'Tick to create' : '–'}</span></th>`;
+    }
+    const w = sl.w, conf = w.players.filter(Boolean).length, res = w.reserves.filter(Boolean).length;
+    return `<th class="av-wk"><div>${short(w.date)}</div><div class="legend" style="margin:0">${w.time || ''} · ${esc(w.type || 'Competitive')}</div>
+      <span class="pill${conf === capOf(w) ? ' full' : ''}">${conf}/${capOf(w)}</span>${res ? ` <span class="pill">+${res} R</span>` : ''}
+      ${locked(w) ? '<div class="legend" style="margin:2px 0 0">🔒 closed</div>' : ''}${sl.extra > 0 ? `<div class="legend" style="margin:2px 0 0">+${sl.extra} more this week (see Matches)</div>` : ''}</th>`;
+  }).join('');
+  const rows = names.map(n => `<tr><td class="av-name" title="${esc(n)}">${esc(n)}</td>${slots.map(sl => {
+      if (!sl.w) {
+        const d = sl.from <= daysIn ? autoSessionDate(yy, mm, sl.from, sl.to) : null;
+        return d && d >= t
+          ? `<td class="av-cell av-new"><label><input type="checkbox" data-avnew="${d}" data-avn="${esc(n)}"></label></td>`
+          : '<td class="av-cell av-none">–</td>';
+      }
+      const w = sl.w, k = w.players.indexOf(n), r = w.reserves.filter(Boolean).indexOf(n), on = k >= 0 || r >= 0;
+      return `<td class="av-cell${on ? (k >= 0 ? ' av-conf' : ' av-res') : ''}">
+        <label><input type="checkbox" data-avw="${w.id}" data-avn="${esc(n)}" ${on ? 'checked' : ''} ${locked(w) ? 'disabled' : ''}>
+        <span>${k >= 0 ? 'Confirmed' : r >= 0 ? `Reserve R${r + 1}` : ''}</span></label></td>`; }).join('')}</tr>`).join('');
+  $('avSheet').innerHTML = `<div class="av-wrap"><table class="av-table av-fixed"><colgroup><col class="av-col-name">${'<col class="av-col-wk">'.repeat(5)}</colgroup>
+    <thead><tr><th class="av-name av-search"><div style="margin-bottom:6px">Player</div>
+      <input id="avFilter" placeholder="Search name" value="${esc(f0)}" autocomplete="off"></th>${head}</tr></thead><tbody>${rows ||
+    '<tr><td class="av-name">No players match</td><td colspan="5"></td></tr>'}</tbody></table></div>`;
+  $('avSheet').querySelectorAll('input[data-avw]').forEach(cb => cb.onchange = () => keepAvPosition(cb, () => {
+    const w = calendar.find(x => x.id === cb.dataset.avw);
+    setAvailable(w, cb.dataset.avn, cb.checked);
+    saveCal(); render();
+  }));
+  // first tick in an empty week creates the session in Matches, then adds the player
+  $('avSheet').querySelectorAll('input[data-avnew]').forEach(cb => cb.onchange = () => keepAvPosition(cb, () => {
+    if (!cb.checked) return;
+    const w = calendar.find(x => x.date === cb.dataset.avnew) || createAutoSession(cb.dataset.avnew);
+    setAvailable(w, cb.dataset.avn, true);
+    saveCal(); render();
+  }));
+}
+// Re-rendering the sheet after a tick must not move the page: keep the page scroll, the sheet's own
+// scroll and keyboard focus on the same player's cell.
+function keepAvPosition(cb, fn) {
+  const wrap = document.querySelector('#avSheet .av-wrap');
+  const pos = { x:scrollX, y:scrollY, top:wrap?.scrollTop || 0, left:wrap?.scrollLeft || 0 };
+  const name = cb.dataset.avn, col = cb.closest('td')?.cellIndex;
+  fn();
+  const w2 = document.querySelector('#avSheet .av-wrap');
+  if (w2) { w2.scrollTop = pos.top; w2.scrollLeft = pos.left; }
+  scrollTo(pos.x, pos.y);
+  const row = [...document.querySelectorAll('#avSheet tbody tr')].find(r => r.querySelector(`[data-avn="${CSS.escape(name)}"]`));
+  const target = row?.cells[col]?.querySelector('input');
+  if (target) target.focus({ preventScroll:true });
+}
+// The usual session day = weekday of the most recent session (Wednesday if none yet).
+function autoSessionDate(yy, mm, from, to) {
+  const last = [...calendar].sort((a, b) => b.date.localeCompare(a.date))[0];
+  const wd = last ? new Date(last.date + 'T00:00').getDay() : 3;
+  for (let d = from; d <= to; d++) { const dt = new Date(yy, mm - 1, d); if (dt.getDay() === wd) return ymd(dt); }
+  return null;                                              // that weekday doesn't fall in this part of the month
+}
+// New session with the same settings as the most recent one (time, venue, courts), Competitive by default.
+function createAutoSession(date) {
+  const last = [...calendar].sort((a, b) => b.date.localeCompare(a.date))[0] || {};
+  const courts = String(last.courts || 3);
+  const w = { id:uid(), date, time:last.time || '17:30', type:'Competitive', courts, note:last.note || '',
+              players:Array(+courts * 4).fill(''), reserves:Array(MIN_RES).fill(''), auto:true };
+  calendar.push(w);
+  return w;
+}
+// search lives inside the table header, so keep its text/focus across re-renders
+let avSearch = '';
+document.addEventListener('input', e => {
+  if (e.target.id !== 'avFilter') return;
+  avSearch = e.target.value; const pos = e.target.selectionStart;
+  renderAvailability();
+  const i = $('avFilter'); i.focus(); i.setSelectionRange(pos, pos);
+});
+$('avMonth').onchange = renderAvailability;
+$('avAddMonth').onclick = () => {
+  const opts = [...$('avMonth').options].map(o => o.value).sort(), last = opts[opts.length - 1] || today().slice(0, 7);
+  const d = new Date(+last.slice(0, 4), +last.slice(5, 7), 1), next = ymd(d).slice(0, 7);
+  if (!avMonths.includes(next)) { avMonths.push(next); avMonths.sort(); saveAvMonths(); }
+  renderAvailability(); $('avMonth').value = next; renderAvailability();
+};
+
 function renderCalendar() {
   if (calendar.map(normalizeWeek).some(Boolean)) saveCal();   // apply reserve rules
   const players = aggregate();                       // ranked order for the dropdown
@@ -1524,7 +1954,7 @@ function renderCalendar() {
           value="${esc(courtLabel(w, c))}" placeholder="Court ${c+1}" title="Court number at the venue – click to edit"></h4>
         <div class="plist${done ? '' : ' picks'}">${ps.map(n => done
           ? `<div class="pentry"><div class="prow">${badge(n)}${esc(n)}</div>${subNote(n)}</div>`
-          : `<div class="pentry"><div class="prow">${badge(n)}${pick(n)}${subSel(n)}</div>${subNote(n)}</div>`).join('')}</div>
+          : `<div class="pentry"><div class="prow">${badge(n)}<span class="pname">${esc(n)}</span>${subSel(n)}</div>${subNote(n)}</div>`).join('')}</div>
       </div>`).join('');
     // results for every court, shown below all the players
     const results = L.courts.map((ps, c) => `
@@ -1546,15 +1976,15 @@ function renderCalendar() {
     const open = w.players.map((n, i) => n ? null : i).filter(i => i != null);
     const waiting = done ? '' : (L.waiting.length || open.length) ? `
       <div class="court" style="border-top-color:var(--bd)">
-        <h4>${L.waiting.length ? `⏳ Next court – needs ${PER_COURT - L.waiting.length} more` : '➕ Add players'}</h4>
+        <h4>${L.waiting.length ? `⏳ Next court – needs ${PER_COURT - L.waiting.length} more` : 'Open places'}</h4>
         <div class="plist picks">
-          ${L.waiting.map(n => `<div>${badge(n)}${pick(n)}${tag(n)}</div>`).join('')}
-          ${open.map(i => `<div><span class="rank sm">+</span>${pick(null, i)}</div>`).join('')}
+          ${L.waiting.map(n => `<div class="pentry"><div class="prow">${badge(n)}<span class="pname">${esc(n)}</span></div></div>`).join('')}
+          ${open.length ? `<div class="legend" style="margin:4px 0 0;background:none">${open.length} open place${open.length > 1 ? 's' : ''} – players can tick this week on the Availability tab.</div>` : ''}
         </div>
       </div>` : '';
     const spare = '';                            // spare-reserves line removed
     return `<h5>Key players &amp; courts – sorted by ranking${done ? ' · 🔒 lineup locked' : ''}</h5>
-      <div class="courts">${courts}${waiting}</div>
+      <div class="courts wk-courts" style="--nc:${Math.max(1, L.courts.length + (waiting ? 1 : 0))}">${courts}${waiting}</div>
       ${spare}
       ${reservesHtml}
       ${w.type === 'Americano' && !done ? `<div class="bench" style="margin-top:14px">🔄 Americano – rounds, scores and leaderboard are on the <a href="#" data-openev="${w.id}">Americano</a> tab.</div>`
@@ -1568,7 +1998,7 @@ function renderCalendar() {
             <span class="pill${entered===total ? ' full' : ''}">${entered}/${total} games entered</span>
             ${done ? '<span class="pill full">✓ Submitted</span>' : ''}</summary>
           <div class="legend" style="margin:10px 0 0">All players ranked · 3 games per week · Win = 3 pts · Draw = 1 pt · Loss = 0 pts · Max 9 pts per week</div>
-          <div class="courts" style="margin-top:10px">${results}</div>
+          <div class="courts wk-courts" style="margin-top:10px;--nc:${Math.max(1, L.courts.length)}">${results}</div>
           <div class="row" style="margin-top:10px">${done
             ? `<span class="pill full">✓ Results submitted to the leaderboard</span>`
             : `<button type="button" class="edit" data-sub="${w.id}">Submit results to leaderboard</button>`}</div>
@@ -1603,8 +2033,8 @@ function renderCalendar() {
       <div class="cw-head">
         <div><b>📅 ${fmtDate(w.date)}</b>
           <span class="pill ${w.type==='Swingers'?'sw':w.type==='Americano'?'am':'cp'}">${w.type==='Swingers'?'💃 Swingers':w.type==='Americano'?'🔄 Americano':'🏆 Competitive'}</span>
-          <span class="pill${filled===capOf(w)?' full':''}">${filled}/${capOf(w)} players</span>
-          <span class="pill">${w.reserves.filter(Boolean).length} reserves</span></div>
+          <span class="pill${filled===capOf(w)?' full':''}">${filled}/${capOf(w)} confirmed</span>
+          <span class="pill">${w.reserves.filter(Boolean).length} reserve${w.reserves.filter(Boolean).length === 1 ? '' : 's'}</span></div>
         <div class="row">
           <button type="button" class="del" data-delw="${w.id}">Delete week</button>
         </div>
@@ -1620,8 +2050,9 @@ function renderCalendar() {
         <label>Venue<input data-f="note" data-w="${w.id}" value="${esc(w.note||'')}" placeholder="Venue"></label>
       </div>
       ${courtsHtml(w, pick, `<h5>Reserves</h5>
-      <div class="slots">${w.reserves.map((_,i) => slot('reserves', i, true)).join('')}</div>
-      <div class="row" style="margin-top:8px"><button type="button" class="sec" data-addres="${w.id}">+ Add reserve slot</button></div>`, subSel, subNote)}
+      ${w.reserves.filter(Boolean).length
+        ? `<div class="res-list">${w.reserves.filter(Boolean).map((n, i) => `<div class="res-item"><span class="res-n">R${i + 1}</span>${esc(n)}</div>`).join('')}</div>`
+        : '<div class="legend" style="margin:0">No reserves yet.</div>'}`, subSel, subNote)}
     </div>`;
   };
 
@@ -1755,7 +2186,7 @@ function renderCalendar() {
 }
 
 // ---------- backup & share ----------
-const DATA_KEYS = () => [KEY, BKEY, RKEY, CKEY, FKEY, PKEY];
+const DATA_KEYS = () => [KEY, BKEY, RKEY, CKEY, FKEY, PKEY, AMKEY];
 function download(name, text, type) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([text], { type }));
@@ -1764,7 +2195,7 @@ function download(name, text, type) {
 }
 function snapshotData() {
   return { [KEY]:JSON.stringify(results), [BKEY]:JSON.stringify(batches), [RKEY]:JSON.stringify(roster),
-           [CKEY]:JSON.stringify(calendar), [FKEY]:String(fee), [PKEY]:JSON.stringify(paid) };
+           [CKEY]:JSON.stringify(calendar), [FKEY]:String(fee), [PKEY]:JSON.stringify(paid), [AMKEY]:JSON.stringify(avMonths) };
 }
 // replace all in-memory data from a {key: jsonString} object (backup file or local storage)
 function applyData(d) {
@@ -1774,6 +2205,7 @@ function applyData(d) {
   calendar = JSON.parse(d[CKEY] || '[]');
   fee      = parseFloat(d[FKEY] ?? '13.5');
   paid     = JSON.parse(d[PKEY] || '{}');
+  if (d[AMKEY]) avMonths = JSON.parse(d[AMKEY]);
   results.forEach(r => { r.id = r.id || uid(); });
   batches = batches.filter(b => results.some(r => r.batch===b.id));
   $('calFee').value = fee.toFixed(2);
@@ -1826,7 +2258,7 @@ const resultRow = r => ({ id:r.id, batch:r.batch, name:r.name, w:r.w, d:r.d, l:r
 function snapState() {
   const m = (arr, key, row) => new Map(arr.map(x => [x[key], JSON.stringify(row(x))]));
   return { batches:m(batches,'id',batchRow), results:m(results,'id',resultRow),
-           calendar:m(calendar,'id',w => ({ id:w.id, data:w })), roster:new Set(roster), fee, paid:JSON.stringify(paid), pinHash };
+           calendar:m(calendar,'id',w => ({ id:w.id, data:w })), roster:new Set(roster), fee, paid:JSON.stringify(paid), pinHash, avMonths:JSON.stringify(avMonths) };
 }
 function schedulePush() {
   if (SNAP || !synced) return;
@@ -1861,6 +2293,7 @@ async function pushChanges() {
     if (cur.fee !== synced.fee) await up('settings', [{ key:'fee', value:cur.fee }]);
     if (cur.paid !== synced.paid) await up('settings', [{ key:'paid', value:JSON.parse(cur.paid) }]);
     if (cur.pinHash !== synced.pinHash) await up('settings', [{ key:'pinHash', value:cur.pinHash }]);
+    if (cur.avMonths !== synced.avMonths) await up('settings', [{ key:'avMonths', value:JSON.parse(cur.avMonths) }]);
     synced = cur;
     syncMsg('✓ Saved');
   } catch (e) {
@@ -1890,6 +2323,7 @@ async function cloudRefresh(force=false) {
     const nf = Number(st.find(x => x.key==='fee')?.value ?? 13.5);
     const np = st.find(x => x.key==='paid')?.value || {};
     pinHash = st.find(x => x.key==='pinHash')?.value || '';
+    avMonths = st.find(x => x.key==='avMonths')?.value || [];
     const before = JSON.stringify([batches, results, roster, calendar, fee, paid]);
     batches = nb; results = nr; roster = ro.map(x => x.name); calendar = c.map(x => x.data); fee = nf; paid = np;
     synced = snapState();
