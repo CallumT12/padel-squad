@@ -128,6 +128,9 @@
   .ov[hidden] { display:none; }
   .ov-card { position:relative; background:var(--card); color:var(--txt); border-radius:16px; padding:24px; width:min(860px, 100%); box-shadow:0 20px 60px rgba(0,0,0,.4); }
   .ov-x { position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background:var(--line); color:var(--txt); font-size:1.4rem; line-height:1; padding:0; }
+  #pfEditBox[hidden], #pfName[hidden] { display:none !important; }   /* .row's flex was overriding [hidden] */
+  a.pf-edit { font-size:.85rem; font-weight:600; color:var(--acc); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+  a.pf-edit:hover { filter:brightness(.85); }
   .pf-head { display:flex; align-items:center; gap:14px; margin-right:40px; }
   .pf-rec { margin:12px 0 16px; font-weight:700; display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
   .pf-stats { grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)) !important; }
@@ -197,6 +200,31 @@
   details.month > summary::before { margin-right:0; }
   details.month > summary .pill { margin:0; text-align:center; padding:4px 8px; white-space:nowrap; }
   @media (max-width:700px) { details.month > summary { grid-template-columns:18px 1fr 1fr; } }
+  /* more prominent month accordion */
+  details.month { border:1px solid var(--bd); border-left:6px solid var(--acc); overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  details.month > summary { padding:16px 18px; background:var(--line); transition:background .15s; grid-template-columns:34px minmax(170px, 1.4fr) repeat(4, minmax(110px, 1fr)); }
+  details.month > summary:hover { background:var(--bd); }
+  details.month[open] > summary { background:var(--acc); color:#fff; border-bottom:1px solid var(--bd); }
+  details.month[open] > summary .pill { background:rgba(255,255,255,.22); color:#fff; }
+  details.month > summary b { font-size:1.35rem; font-weight:800; color:var(--txt); }
+  details.month[open] > summary b { color:#fff; }
+  details.month > summary::before { content:'▸'; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center;
+    border-radius:50%; background:var(--card); color:var(--acc); font-size:1.25rem; font-weight:900; line-height:1; }
+  details.month[open] > summary::before { background:#fff; color:var(--acc); }
+  /* clearer expand/collapse button: solid chevron in a circle, rotates down when open */
+  details.month > summary { grid-template-columns:40px minmax(170px, 1.4fr) repeat(4, minmax(110px, 1fr)); }
+  details.month > summary::before { content:''; width:34px; height:34px; border-radius:50%;
+    background:var(--acc) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 5 16 12 9 19'/></svg>") center / 20px no-repeat; box-shadow:0 2px 6px rgba(0,0,0,.25);
+    transition:transform .2s ease; }
+  details.month[open] > summary::before { background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316a34a' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 5 16 12 9 19'/></svg>") center / 20px no-repeat; transform:rotate(90deg); }
+  details.month > summary:hover::before { transform:scale(1.1); }
+  details.month[open] > summary:hover::before { transform:rotate(90deg) scale(1.1); }
+  details.month > summary:focus-visible { outline:3px solid var(--acc); outline-offset:-3px; }
+  @media (max-width:700px) { details.month > summary { grid-template-columns:40px 1fr 1fr; } }
+  details.month > summary .pill { font-size:.85rem; font-weight:700; padding:6px 10px; background:var(--card); color:var(--txt); border:1px solid var(--bd); }
+  details.month[open] > summary .pill { border-color:rgba(255,255,255,.35); }
+  details.month[open] > .month-body { padding-top:16px; }
+  @media (max-width:700px) { details.month > summary { grid-template-columns:34px 1fr 1fr; } }
   .month-body { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:16px; padding:0 16px 16px; align-items:start; }
   .month-weeks .cw { background:var(--bg); }
   .month-side { background:var(--bg); border-radius:12px; padding:14px; position:sticky; top:12px; }
@@ -222,7 +250,6 @@
 <main>
   <div class="tabs">
     <button class="tab active" data-tab="board">Leaderboard</button>
-    <button class="tab" data-tab="prog">Rank Progress</button>
     <button class="tab" data-tab="cal">Calendar</button>
     <button class="tab" data-tab="event">Americano</button>
     <button class="tab" data-tab="hist">Match History</button>
@@ -277,6 +304,16 @@
 
 
 
+    <div class="card">
+      <h3>Ranking Position</h3>
+      <div id="chartWrap" style="overflow-x:auto;width:100%;margin-bottom:16px"></div>
+      <div class="row" style="margin-bottom:8px">
+        <button type="button" class="sec" id="showAll">Show all</button>
+        <button type="button" class="sec" id="showNone">Hide all</button>
+      </div>
+      <div class="roster" id="chartPlayers" style="margin-top:0"></div>
+    </div>
+    <table id="progTable" hidden></table>  <!-- Rank Changes table removed from view; kept hidden so the graph code is unchanged -->
   </section>
 
   <!-- ============ SCHEDULE ============ -->
@@ -314,22 +351,6 @@
   </section>
 
   <!-- ============ RANK PROGRESS ============ -->
-  <section class="panel" id="prog">
-    <div class="card">
-      <h3>Ranking Position</h3>
-      <div id="chartWrap" style="overflow-x:auto;width:100%;margin-bottom:16px"></div>
-      <div class="row" style="margin-bottom:8px">
-        <button type="button" class="sec" id="showAll">Show all</button>
-        <button type="button" class="sec" id="showNone">Hide all</button>
-      </div>
-      <div class="roster" id="chartPlayers" style="margin-top:0"></div>
-    </div>
-    <div class="card">
-      <h3>Rank Changes</h3>
-      <table id="progTable"></table>
-      <div class="legend">Change = movement since the previous submission (▲ up, ▼ down). Ranks 1–N are the main leaderboard; players below 9 games are ranked after them.</div>
-    </div>
-  </section>
 
   <!-- ============ CALENDAR ============ -->
   <section class="panel" id="cal">
@@ -773,7 +794,17 @@ function openProfile(name) {
   $('pfBody').innerHTML = `
     <div class="pf-head">
       <span class="rank${rc(p.rank, p.qual)}" style="width:44px;height:44px;line-height:44px;font-size:1.1rem">${p.label}</span>
-      <div><h2 id="pfName" style="margin:0">${esc(p.name)}</h2>
+      <div><h2 id="pfName" style="margin:0;display:flex;align-items:center;gap:8px">${esc(p.name)}
+          <a href="#" class="edit pf-edit" id="pfEdit" title="Edit name / add emoji">Edit</a></h2>
+        <div id="pfEditBox" class="row" hidden style="gap:6px;align-items:center;margin:4px 0">
+          <input id="pfNameIn" value="${esc(p.name)}" maxlength="40" style="width:220px;height:34px">
+          <select id="pfEmoji" style="height:34px;width:100px" title="Add an emoji">
+            <option value="">+ Emoji</option>${Object.entries(EMOJI_GROUPS).map(([g, list]) => `<optgroup label="${g}">${list.map(e => `<option>${e}</option>`).join('')}</optgroup>`).join('')}
+          </select>
+          <button type="button" id="pfSave" style="height:34px">Save</button>
+          <button type="button" class="sec" id="pfCancel" style="height:34px">Cancel</button>
+          <span class="l" id="pfErr" style="font-size:.8rem"></span>
+        </div>
         <div class="legend" style="margin:2px 0 0">${p.qual ? `Qualifier Zone · ${MIN_GAMES - p.games} games to qualify` : `Rank ${p.rank}`} · ${p.games} games · ${p.points} pts</div></div>
       <div style="margin-left:auto;text-align:right"><div style="font-size:1.6rem;font-weight:800;color:var(--acc)">${p.pct.toFixed(2)}%</div><div class="legend" style="margin:0">Win %</div></div>
     </div>
@@ -798,6 +829,17 @@ function openProfile(name) {
     </table></div>` : '<div class="legend">No head-to-head games recorded yet.</div>'}
     <div class="legend" style="margin-top:8px">Head-to-head, rivals and partners use games with known teams (Calendar results and Americano scores). Imported season totals and manual entries only count towards the totals above.</div>`;
   $('pfBody').querySelectorAll('.plink').forEach(a => a.onclick = e => { e.preventDefault(); openProfile(a.dataset.player); });
+  const showEdit = on => { $('pfEditBox').hidden = !on; $('pfName').hidden = on; if (on) { $('pfNameIn').focus(); $('pfErr').textContent = ''; } };
+  $('pfEdit').onclick = e => { e.preventDefault(); showEdit(true); };
+  $('pfCancel').onclick = () => { $('pfNameIn').value = name; showEdit(false); };
+  $('pfEmoji').onchange = () => { if ($('pfEmoji').value) { $('pfNameIn').value = $('pfNameIn').value.trim() + ' ' + $('pfEmoji').value; $('pfEmoji').value = ''; $('pfNameIn').focus(); } };
+  $('pfSave').onclick = () => {
+    const nn = $('pfNameIn').value.trim().replace(/\s+/g, ' ');
+    const err = renamePlayer(name, nn);
+    if (err) { $('pfErr').textContent = err; return; }
+    openProfile(nn);                                   // reopen under the new name
+  };
+  $('pfNameIn').onkeydown = e => { if (e.key === 'Enter') $('pfSave').click(); if (e.key === 'Escape') { e.stopPropagation(); $('pfCancel').click(); } };
   $('profileOverlay').hidden = false; document.body.style.overflow = 'hidden';
   $('pfClose').focus();
 }
@@ -1017,10 +1059,10 @@ function renderPlayersCfg() {
 // Rename a player everywhere: results, players list, calendar weeks, match details, payments.
 function renamePlayer(oldName, newName) {
   const n = newName.trim().replace(/\s+/g, ' '), m = $('npMsg'); m.className = 'msg';
-  if (!n) { m.classList.add('err'); m.textContent = 'Enter a name.'; return; }
-  if (n === oldName) { editingPlayer = null; renderPlayersCfg(); return; }
+  if (!n) { m.classList.add('err'); m.textContent = 'Enter a name.'; return 'Enter a name.'; }
+  if (n === oldName) { editingPlayer = null; renderPlayersCfg(); return ''; }
   const clash = aggregate().find(p => p.name !== oldName && p.name.toLowerCase() === n.toLowerCase());
-  if (clash) { m.classList.add('err'); m.textContent = `${clash.name} is already a player.`; return; }
+  if (clash) { m.classList.add('err'); m.textContent = `${clash.name} is already a player.`; return `${clash.name} is already a player.`; }
   const sw = x => x === oldName ? n : x;
   results.forEach(r => { if (r.name === oldName) r.name = n; });
   roster = roster.map(sw);
@@ -1035,6 +1077,7 @@ function renamePlayer(oldName, newName) {
   editingPlayer = null;
   save(); saveCal(); savePaid(); render();
   m.classList.add('ok'); m.textContent = `${oldName} renamed to ${n}.`;
+  return '';
 }
 function removePlayer(name) {
   const recs = results.filter(r => r.name === name);
@@ -1088,7 +1131,7 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   $('cfgBtn').classList.remove('active');
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x===t));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id===t.dataset.tab));
-  if (t.dataset.tab === 'prog') renderProgress();     // re-measure width when shown
+  if (t.dataset.tab === 'board') renderProgress();    // re-measure graph width when shown
 });
 
 // ---------- schedule ----------
@@ -2013,7 +2056,7 @@ renderPinState();
 applyMode();
 if (CLOUD) { syncMsg('Loading…'); cloudRefresh(true).then(autoBackup); }
 else autoBackup();
-let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if ($('prog').classList.contains('active')) renderProgress(); }, 150); });
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if ($('board').classList.contains('active')) renderProgress(); }, 150); });
 </script>
 </body>
 </html>
