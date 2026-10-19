@@ -112,6 +112,9 @@
   #chartWrap svg .grid { stroke:var(--line); }
   #progTable tr.on td { background:var(--line); } #progTable td.name { cursor:pointer; }
   .gm { padding:3px 0; }
+  input.court-label { width:92px; height:26px; padding:2px 6px; margin-left:6px; font-size:.8rem; font-weight:400;
+                      color:var(--mut); background:transparent; border:1px dashed var(--bd); border-radius:6px; vertical-align:middle; }
+  input.court-label:hover, input.court-label:focus { color:var(--txt); border-style:solid; background:var(--inp); }
   a.plink { color:inherit; text-decoration:none; border-bottom:1px dashed var(--bd); cursor:pointer; }
   a.plink:hover { color:var(--acc); border-bottom-color:var(--acc); }
   .ov { position:fixed; inset:0; background:rgba(2,6,23,.6); display:flex; align-items:flex-start; justify-content:center; z-index:50; padding:40px 16px; overflow:auto; }
@@ -482,6 +485,8 @@ document.getElementById('themeBtn').onclick = () =>
 
 const COURT_NAMES = ['🐐 GOAT', '🐪 Camels', '🐌 Snails', '⭐ Starfish'];
 const courtName = n => COURT_NAMES[n-1] || `Court ${n}`;
+// venue court label per week: defaults to "Court 1", "Court 2"… and can be edited on the Calendar
+const courtLabel = (w, c) => (w.courtLabels?.[c] || '').trim() || `Court ${c+1}`;
 const MAX_COURTS = 4;
 const nCourts = w => ([1, 2, 3, 4].includes(+w.courts) ? +w.courts : 3);   // 1–4 courts; 3 (12 players) by default
 const capOf = w => nCourts(w) * 4;
@@ -1394,7 +1399,8 @@ function renderCalendar() {
     const res = w.res || {};
     const courts = L.courts.map((ps, c) => `
       <div class="court">
-        <h4>${courtName(c+1)} <span class="legend" style="font-weight:400">· Court ${c+1}</span></h4>
+        <h4>${courtName(c+1)} <input class="court-label" data-cl="${w.id}" data-c="${c}" maxlength="20"
+          value="${esc(courtLabel(w, c))}" placeholder="Court ${c+1}" title="Court number at the venue – click to edit"></h4>
         <div class="plist${done ? '' : ' picks'}">${ps.map(n => done
           ? `<div class="pentry"><div class="prow">${badge(n)}${esc(n)}</div>${subNote(n)}</div>`
           : `<div class="pentry"><div class="prow">${badge(n)}${pick(n)}${subSel(n)}</div>${subNote(n)}</div>`).join('')}</div>
@@ -1567,6 +1573,13 @@ function renderCalendar() {
       alert(`${minMsg(el.value)} This week has been set to ${mn} courts (${mn * 4} players).`);
     }
     else w[el.dataset.f] = el.dataset.f==='note' ? el.value.trim() : el.value;
+    saveCal(); renderCalendar();
+  });
+  $('calList').querySelectorAll('input[data-cl]').forEach(inp => inp.onchange = () => {
+    const w = find(inp.dataset.cl), c = +inp.dataset.c, v = inp.value.trim();
+    w.courtLabels = [...(w.courtLabels || [])];
+    w.courtLabels[c] = v === `Court ${c+1}` ? '' : v;            // blank = default
+    if (!w.courtLabels.some(Boolean)) delete w.courtLabels;
     saveCal(); renderCalendar();
   });
   $('calList').querySelectorAll('select[data-subw]').forEach(sel => sel.onchange = () => {
