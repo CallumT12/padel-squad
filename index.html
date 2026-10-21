@@ -185,7 +185,6 @@
   details.res-acc > summary::-webkit-details-marker { display:none; }
   details.res-acc > summary::before { content:'▸'; margin-right:8px; color:var(--mut); transition:transform .15s; }
   details.res-acc[open] > summary::before { transform:rotate(90deg); }
-  .hist-top { display:flex; flex-wrap:wrap; gap:16px; align-items:stretch; margin-bottom:20px; }
   .plist.picks { grid-template-columns:1fr; } .plist.picks select { flex:1; min-width:0; padding:4px 6px; }
   .plist .pentry { display:flex; flex-direction:column; align-items:stretch; gap:2px; }
   .plist .prow { display:flex; align-items:center; gap:8px; }
@@ -442,7 +441,7 @@
   .wk-courts[style*="--nc:4"] { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; }
   .wk-courts .court { min-width:0; }
   .wk-courts .court h4 { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; white-space:nowrap; min-height:30px; }
-  .wk-courts .court h4 input.court-label { width:72px; min-width:0; flex:0 1 72px; margin-left:auto; }
+  .wk-courts .court h4 input.court-label { width:72px; min-width:0; flex:0 1 72px; margin-left:0; }   /* court number first, league name after (left → right) */
   .plist .pentry { min-height:48px; justify-content:center; }
   @media (max-width:900px) { .wk-courts, .wk-courts[style*="--nc:4"] { grid-template-columns:1fr !important; }
                              .cal-form.wk { grid-template-columns:1fr 1fr; } }
@@ -503,6 +502,11 @@
   .av-fixed .av-cell label { display:inline-flex; flex-direction:row; align-items:center; justify-content:center; gap:6px; line-height:1.2; white-space:nowrap; }
   .av-fixed .av-cell label span { font-size:.72rem; }
   .av-fixed .av-cell input { width:16px; height:16px; }
+  /* centre the tick box + "Confirmed" / "Reserve Rn" in each cell */
+  .av-fixed td.av-cell { text-align:center; vertical-align:middle; padding-left:6px; padding-right:6px; }
+  .av-fixed .av-cell label { display:flex; width:100%; justify-content:center; align-items:center; margin:0; }
+  .av-fixed .av-cell input { margin:0; flex:none; }
+  .av-fixed .av-cell label span:empty { display:none; }
   /* Ranking Position player pills: equal width, aligned in a grid */
   .pe-chips { display:grid; grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:8px; }
   .pe-chips .pe-chip { width:100%; justify-content:center; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -527,6 +531,15 @@
   .pr-pcts b { font-weight:600; } .pr-pcts b.pr-win { color:var(--primary); font-weight:800; }
   .pr-unc { font-size:.68rem; color:#b7862b; font-weight:600; margin-top:2px; }
   @media (max-width:640px) { .pr-list { grid-template-columns:1fr; } }
+  /* leaderboard + qualifier tables: tighter columns so the whole table fits without side-scrolling */
+  #board .card > table th, #board .card > table td { padding:10px 8px; }
+  #board .card > table .bar { width:64px; margin-right:4px; }
+  #board .card > table .fd { margin:0; }
+  @media (max-width:900px) {
+    #board .card > table th, #board .card > table td { padding:8px 5px; }
+    #board .card > table th { font-size:.78rem; }
+    #board .card > table .bar { width:36px; }
+  }
   .card.qz, .qz { border:1px solid var(--border) !important; }   /* Qualifier Zone: solid border */
 </style>
 </head>
@@ -539,7 +552,7 @@
     <button type="button" class="theme-btn" id="cfgBtn" title="Configuration" aria-label="Configuration">⚙️</button>
   </div>
   <h1>Padel <span>Squad</span></h1>
-  <div class="sub" id="roBanner" style="display:none;color:#facc15;font-weight:600"></div>
+  <div class="sub" id="roBanner" style="display:none;color:var(--primary);font-weight:600"></div>
 </header>
 <main>
   <div class="tabs">
@@ -574,7 +587,8 @@
             <th data-k="losses">Losses (0)</th>
             <th data-k="points">Points</th>
             <th data-k="pct">Win %</th>
-            <th data-k="formPts" title="Most recent on the left">Last 5 Matches</th>
+            <th data-k="rating" title="Doubles Elo-style rating (0.00–7.00, everyone starts at 2.00) from Competitive matches only">Player Rating</th>
+            <th data-k="formPts" title="Most recent on the left, oldest on the right">Last 6 Matches</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -594,7 +608,8 @@
             <th data-k="losses">Losses (0)</th>
             <th data-k="points">Points</th>
             <th data-k="pct">Win %</th>
-            <th data-k="formPts" title="Most recent on the left">Last 5 Matches</th>
+            <th data-k="rating" title="Doubles Elo-style rating (0.00–7.00, everyone starts at 2.00) from Competitive matches only">Player Rating</th>
+            <th data-k="formPts" title="Most recent on the left, oldest on the right">Last 6 Matches</th>
           </tr>
         </thead>
         <tbody id="qbody"></tbody>
@@ -703,6 +718,12 @@
         <button type="button" id="npAdd">Add player</button>
         <label>Search<input id="npFilter" placeholder="Find a player" style="width:200px"></label>
       </div>
+      <details style="margin-top:8px"><summary><b>Bulk add players</b> <span class="legend">· paste one name per line</span></summary>
+        <div class="row" style="margin-top:8px;align-items:flex-start">
+          <textarea id="npBulk" rows="8" placeholder="Jeff 🍔&#10;Luke 🍑👏🏻&#10;Nick" style="width:320px;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--card,inherit);color:inherit"></textarea>
+          <button type="button" id="npBulkAdd">Add all</button>
+        </div>
+      </details>
       <div class="msg" id="npMsg"></div>
       <div style="max-height:420px;overflow:auto;margin-top:8px">
         <table class="np-table"><colgroup><col style="width:64px"><col><col style="width:80px"><col style="width:80px"><col style="width:290px"></colgroup><thead><tr><th>Rank</th><th style="text-align:left">Player</th><th>Played</th><th>Points</th><th></th></tr></thead>
@@ -730,6 +751,27 @@
       </div>
       <div class="legend" id="pinState"></div>
       <div class="msg" id="pinMsg"></div>
+    </div>
+
+    <div class="card edit">
+      <h3>📦 Archives</h3>
+      <div class="legend" style="margin:0 0 10px">Store a named snapshot of the current session that can be opened in a separate read-only browser tab to review past performance and compare changes.</div>
+      <div class="row cal-form">
+        <label>Archive name<input id="arName" placeholder="e.g. End of October 2026" maxlength="50" style="width:260px"></label>
+        <button type="button" id="arSave">Archive current session</button>
+      </div>
+      <div style="max-height:300px;overflow:auto;margin-top:8px"><table><tbody id="arList"></tbody></table></div>
+      <div class="msg" id="arMsg"></div>
+    </div>
+
+    <div class="card edit">
+      <h3>🗓️ Reset calendar</h3>
+      <div class="legend" style="margin:0 0 10px">Deletes the Matches/Calendar weeks in the chosen month (or <b>every</b> week with "All months"), including availability, lineups, reserves, entered results and Americano scores. Submitted results stay in Match History and the leaderboard. Players, fee and payments are kept. A backup is saved first – if it fails, nothing is deleted.</div>
+      <div class="row cal-form">
+        <label>Month<select id="calResetMonth" style="height:38px;min-width:220px"><option value="">All months</option></select></label>
+        <button type="button" class="del" id="calReset" style="display:inline-block!important;height:38px;padding:0 18px">Reset calendar</button>
+      </div>
+      <div class="msg" id="calResetMsg"></div>
     </div>
 
     <div class="card edit">
@@ -768,31 +810,32 @@
   <!-- ============ HISTORY ============ -->
   <section class="panel" id="hist">
     <div class="print-head print-keep"><h2 style="margin:0">Padel Squad – Match History</h2></div>
-    <div class="hist-top">
-      <div class="card" style="flex:0 1 300px;margin:0">
-        <h3>Filter</h3>
-        <div class="row">
-          <label>Filter by player<input id="hFilter" list="players" placeholder="All players"></label>
-        </div>
-        <div class="legend" id="hCount"></div>
+    <datalist id="players"></datalist>
+    <div class="card edit" style="margin-top:16px">
+      <h3>New Match Session (manual)</h3>
+      <div class="legend" style="margin:0 0 10px">Build a session like Matches: add courts, pick 4 players per court and enter who won each game. No predictions are shown.</div>
+      <div class="row cal-form">
+        <label>Date<input type="date" id="msDate" style="height:38px"></label>
+        <button type="button" class="sec" id="msAddCourt" style="height:38px">+ Add court</button>
+        <span class="legend" id="msInfo" style="margin:0"></span>
       </div>
-    <div class="card edit" style="flex:1 1 560px;margin:0">
-      <h3>Record Weekly Result Manually</h3>
-      <form id="form">
-        <label>Player<input id="fName" list="players" required placeholder="Name"></label>
-        <datalist id="players"></datalist>
-        <label>Wins<select id="fW"><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
-        <label>Draws<select id="fD"><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
-        <label>Losses (auto)<input id="fL" type="text" value="3" readonly tabindex="-1" aria-readonly="true" title="Calculated automatically"></label>
-        <button type="submit">Add</button>
-      </form>
-      <div class="msg" id="msg"></div>
+      <div class="courts" id="msCourts" style="margin-top:12px"></div>
+      <div class="row" style="margin-top:12px">
+        <button type="button" id="msSubmit">Submit session to leaderboard</button>
+        <button type="button" class="sec" id="msClear">Clear</button>
+      </div>
+      <div class="msg" id="msMsg"></div>
     </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Filter</h3>
+      <div class="row cal-form">
+        <label>Player<input id="hFilter" list="players" placeholder="All players" style="height:38px;min-width:240px"></label>
+        <label>Month<select id="hMonth" style="height:38px;min-width:200px"><option value="">All months</option></select></label>
+        <button type="button" class="sec" id="hReset" style="height:38px">Clear filters</button>
+      </div>
+      <div class="legend" id="hCount"></div>
     </div>
     <div id="history"></div>
-    <div class="edit" style="display:flex;justify-content:center;margin-top:8px">
-      <button type="button" class="del" id="masterDel" style="height:38px;padding:0 18px">🗑️ Master delete</button>
-    </div>
   </section>
 </main>
 
@@ -835,9 +878,10 @@ document.getElementById('themeBtn').onclick = () =>
   applyTheme(document.documentElement.dataset.theme==='light' ? 'dark' : 'light');
 
 const COURT_NAMES = ['🐐 GOAT', '🐪 Camels', '🐌 Snails', '⭐ Starfish'];
-const courtName = n => COURT_NAMES[n-1] || `Court ${n}`;
+// "Court N" first; the league name (GOAT, Camels, …) is added for Competitive play only
+const courtName = (n, competitive = true) => `Court ${n}` + (competitive && COURT_NAMES[n-1] ? ` · ${COURT_NAMES[n-1]}` : '');
 // court name without its emoji (used on the Americano page)
-const plainCourt = n => courtName(n).replace(/[^\p{L}\p{N} ]/gu, '').trim();
+const plainCourt = (n, competitive = true) => `Court ${n}` + (competitive && COURT_NAMES[n-1] ? ` · ${COURT_NAMES[n-1].replace(/[^\p{L}\p{N} ]/gu, '').trim()}` : '');
 // venue court label per week: defaults to "Court 1", "Court 2"… and can be edited on the Calendar
 const courtLabel = (w, c) => (w.courtLabels?.[c] || '').trim() || `Court ${c+1}`;
 const MAX_COURTS = 4;
@@ -937,7 +981,10 @@ function aggregate(recs = results) {
     p.pct = p.games ? p.points / (p.games*PTS.W) * 100 : 0;
     return p;
   });
-  list.sort((a,b) => b.pct-a.pct || b.points-a.points || b.wins-a.wins || a.games-b.games || a.name.localeCompare(b.name));
+  // ranked by Player Rating (from the Competitive games in these records); ties → Win %, points, wins, fewer games, name
+  const ratings = ratingBuild(ratingMatches(batches, recs));
+  list.forEach(p => p.rating = ratingOf(ratings, p.name));
+  list.sort((a,b) => b.rating-a.rating || b.pct-a.pct || b.points-a.points || b.wins-a.wins || a.games-b.games || a.name.localeCompare(b.name));
   // players need MIN_GAMES to enter the main leaderboard; others sit in the qualifier zone
   const main = list.filter(p => p.games >= MIN_GAMES), qual = list.filter(p => p.games < MIN_GAMES);
   main.forEach((p,i) => { p.rank = i+1; p.label = String(i+1); p.qual = false; });
@@ -996,10 +1043,10 @@ function render() {
          : '<span class="mv same" title="No change since last submission">▬</span>';
   };
   // attach form & streak (used for display and sorting)
-  const fs = formStreaks();
+  const fs = formStreaks();                                   // p.rating is set by aggregate()
   all.forEach(p => {
     const seq = fs[p.name] || [];
-    p.form = seq.slice(-5);
+    p.form = seq.slice(-6);
     p.formPts = p.form.reduce((t, r) => t + (r==='W' ? 3 : r==='D' ? 1 : 0), 0);
     let n = 0; const last = seq[seq.length-1];
     for (let i = seq.length-1; i >= 0 && seq[i] === last; i--) n++;
@@ -1011,18 +1058,19 @@ function render() {
   const row = p => `
     <tr>
       <td><span class="rk"><span class="rank${rc(p.rank,p.qual)}">${p.label}</span>${move(p)}</span></td>
-      <td class="name"><a href="#" class="plink" data-player="${esc(p.name)}">${esc(p.name)}</a>${p.qual ? ` <span class="need">${MIN_GAMES-p.games} to qualify</span>` : ''}</td>
+      <td class="name"><a href="#" class="plink" data-player="${esc(p.name)}">${esc(p.name)}</a></td>
       <td>${p.games}</td>
       <td class="w">${p.wins}</td>
       <td class="d">${p.draws}</td>
       <td class="l">${p.losses}</td>
       <td class="pts">${p.points}</td>
       <td><span class="bar"><i style="width:${p.pct}%"></i></span>${p.pct.toFixed(2)}%</td>
+      <td class="rating">${p.rating.toFixed(2)}</td>
       <td class="form">${formHtml(p)}</td>
     </tr>`;
   lbRowBuilder = { row, rc };
-  $('tbody').innerHTML = sorted(top).map(row).join('') || '<tr><td colspan="9">No qualified players yet</td></tr>';
-  $('qbody').innerHTML = sorted(quals).map(row).join('') || '<tr><td colspan="9">No players in the qualifier zone</td></tr>';
+  $('tbody').innerHTML = sorted(top).map(row).join('') || '<tr><td colspan="10">No qualified players yet</td></tr>';
+  $('qbody').innerHTML = sorted(quals).map(row).join('') || '<tr><td colspan="10">No players in the qualifier zone</td></tr>';
   document.querySelectorAll('#tbody .plink, #qbody .plink').forEach(a => a.onclick = e => { e.preventDefault(); openProfile(a.dataset.player); });
   renderStats(all, top, quals);
   lbSync();
@@ -1034,6 +1082,8 @@ function render() {
   renderPlayersCfg();
   renderEvent();
   renderAvailability();
+  renderManualSession();
+  renderCalResetMonths();
 }
 
 // ---------- rank progress ----------
@@ -1043,6 +1093,44 @@ let focusName = null;
 localStorage.removeItem('padelChartHidden');                 // old saved selection no longer used
 // ---------- player profile ----------
 // Every individual game with known teams: Calendar/schedule results (W/D/L) and Americano scores.
+// ==== PLAYER RATING MODEL (pure – tested by tests/rating.test.js) ====
+// Doubles Elo-style rating on a 0.00–7.00 scale. Derived from match history on every render (never stored),
+// so editing or removing results recalculates consistently.
+const RATING = { START:2, K:0.2, MIN:0, MAX:7, SCALE:2 };
+const ratingClamp = r => Math.min(RATING.MAX, Math.max(RATING.MIN, r));
+// Team A's expected result: 1 / (1 + 10^((RB − RA) / 2))
+function ratingExpected(ra, rb) { return 1 / (1 + 10 ** ((rb - ra) / RATING.SCALE)); }
+function ratingTeam(ratings, team) { return team.reduce((t, n) => t + (ratings[n] ?? RATING.START), 0) / team.length; }
+// Apply one match (in place). res: 'A' | 'B' | 'D'. Both teammates get the same team adjustment.
+function ratingApply(ratings, a, b, res, K = RATING.K) {
+  const actualA = res === 'A' ? 1 : res === 'D' ? 0.5 : 0;
+  const ea = ratingExpected(ratingTeam(ratings, a), ratingTeam(ratings, b));
+  const dA = K * (actualA - ea), dB = K * ((1 - actualA) - (1 - ea));
+  a.forEach(n => ratings[n] = ratingClamp((ratings[n] ?? RATING.START) + dA));
+  b.forEach(n => ratings[n] = ratingClamp((ratings[n] ?? RATING.START) + dB));
+  return { ea, dA, dB };
+}
+// Competitive matches in chronological order: batch submit time, then order within the batch.
+// Only batch games count (Calendar Competitive weeks / game schedule); Swingers produce no games,
+// Americano scores live on the calendar, and manual/imported totals have no games – so all are excluded.
+// A game is skipped if any of its four players' records for that session has been removed.
+function ratingMatches(batchList, recs) {
+  const has = new Set(recs.map(r => r.batch + '\u0000' + r.name));
+  const out = [];
+  [...batchList].map((b, i) => ({ b, i })).sort((x, y) => (x.b.ts - y.b.ts) || (x.i - y.i)).forEach(({ b }) =>
+    (b.games || []).forEach(g => {
+      if (!['A', 'B', 'D'].includes(g.res) || g.a?.length !== 2 || g.b?.length !== 2) return;
+      if (![...g.a, ...g.b].every(n => has.has(b.id + '\u0000' + n))) return;
+      out.push({ a:g.a, b:g.b, res:g.res });
+    }));
+  return out;
+}
+function ratingBuild(matches, K = RATING.K) {
+  const ratings = {}; matches.forEach(m => ratingApply(ratings, m.a, m.b, m.res, K));
+  return ratings;
+}
+const ratingOf = (ratings, n) => ratings[n] ?? RATING.START;
+// ==== END PLAYER RATING MODEL ====
 // ==== PREDICTIONS MODEL (pure – tested by tests/predictions.test.js) ====
 // Elo-style individual ratings for doubles. Change K here (the only place it is set).
 const ELO = { START:1500, K:24, LOW_DATA:3 };
@@ -1105,7 +1193,7 @@ function weekFixtures(w, L) {
   if (w.type === 'Americano') {
     const ps = amPlayers(w, L); if (ps.length < 12 || L.courts.length < 3) return [];
     return americanoRounds(ps, w.amSeed, amRoundCount(w, ps.length))
-      .flatMap((courts, r) => courts.map(([a, b], c) => ({ a, b, label:`Round ${r + 1} · ${plainCourt(c + 1)}` })));
+      .flatMap((courts, r) => courts.map(([a, b], c) => ({ a, b, label:`Round ${r + 1} · ${plainCourt(c + 1, false)}` })));
   }
   return L.courts.flatMap((ps, c) => PAIRINGS.map(([a, b], g) => ({ a:a.map(i => ps[i]), b:b.map(i => ps[i]), label:`${plainCourt(c + 1)} · Game ${g + 1}` })));
 }
@@ -1232,7 +1320,7 @@ function openProfile(name) {
       <div style="margin-left:auto;text-align:right"><div style="font-size:1.6rem;font-weight:800;color:var(--acc)">${p.pct.toFixed(2)}%</div><div class="legend" style="margin:0">Win %</div></div>
     </div>
     <div class="pf-rec"><span class="w">${p.wins} W</span> · <span class="d">${p.draws} D</span> · <span class="l">${p.losses} L</span>
-      <span style="margin-left:12px">${formHtml({ form:(formStreaks()[name] || []).slice(-5) })}</span></div>
+      <span style="margin-left:12px">${formHtml({ form:(formStreaks()[name] || []).slice(-6) })}</span></div>
     <div class="pf-sec">
       <h3>Player stats</h3>
     <div class="stats pf-stats">
@@ -1241,10 +1329,10 @@ function openProfile(name) {
       ${card('Biggest ranking jump', st.jump ? `▲ ${st.jump.n}` : '–', st.jump ? `${st.jump.from} → ${st.jump.to} · ${d(st.jump.ts)}` : 'no climb yet')}
       ${card('Biggest ranking drop', st.drop ? `▼ ${st.drop.n}` : '–', st.drop ? `${st.drop.from} → ${st.drop.to} · ${d(st.drop.ts)}` : 'no drop yet')}
       ${card('Best / worst rank', st.bestRank != null ? `${st.bestRank} / ${st.worstRank}` : '–', 'across all submissions')}
-      ${card('Biggest rival', who(st.rival), st.rival ? `faced ${st.rival.played}× · ${recStr(st.rival)}` : 'no head-to-head games yet')}
-      ${card('Biggest victim', who(st.victim), st.victim ? `beaten ${st.victim.w}× · ${recStr(st.victim)}` : '–')}
-      ${card('Nemesis', who(st.nemesis), st.nemesis ? `lost to ${st.nemesis.l}× · ${recStr(st.nemesis)}` : '–')}
-      ${card('Best partner', who(st.partner), st.partner ? `${st.partner.w} wins together · ${recStr(st.partner)}` : '–')}
+      ${card('Biggest rival', who(st.rival), st.rival ? recStr(st.rival) : 'no head-to-head games yet')}
+      ${card('Victim', who(st.victim), st.victim ? recStr(st.victim) : '–')}
+      ${card('Nemesis', who(st.nemesis), st.nemesis ? recStr(st.nemesis) : '–')}
+      ${card('Best partner', who(st.partner), st.partner ? recStr(st.partner) : '–')}
     </div>
     </div>
     <div class="pf-sec">
@@ -1254,7 +1342,7 @@ function openProfile(name) {
       <tbody>${st.opps.map(o => `<tr><td class="name"><a href="#" class="plink" data-player="${esc(o.name)}">${esc(o.name)}</a></td><td>${o.played}</td>
         <td class="w">${o.w}</td><td class="d">${o.d}</td><td class="l">${o.l}</td><td>${((o.w * 3 + o.d) / (o.played * 3) * 100).toFixed(0)}%</td></tr>`).join('')}</tbody>
     </table></div>` : '<div class="legend">No head-to-head games recorded yet.</div>'}
-    <div class="legend" style="margin-top:8px">Head-to-head, rivals and partners use games with known teams (Calendar results and Americano scores). Imported season totals and manual entries only count towards the totals above.</div>
+    <div class="legend" style="margin-top:8px">Head-to-head, rivals and partners use games with known teams (Calendar results and Americano scores)</div>
     </div>`;
   $('pfBody').querySelectorAll('.plink').forEach(a => a.onclick = e => { e.preventDefault(); openProfile(a.dataset.player); });
   const showEdit = on => { $('pfEditBox').hidden = !on; $('pfName').hidden = on; if (on) { $('pfNameIn').focus(); $('pfErr').textContent = ''; } };
@@ -1311,21 +1399,22 @@ function lbShow(i, animate = true, dur, ease) {
   const agg = aggregate(lb.snaps[i].upto).filter(p => p.games);
   const prev = i ? aggregate(lb.snaps[i - 1].upto) : [];
   const prevRank = {}; prev.forEach(p => { if (p.games) prevRank[p.name] = p.rank; });
-  const fs = {}; // last-5 as it was at that time
+  const fs = {}; // last-6 as it was at that time
   [...batches].sort((a, b) => a.ts - b.ts).slice(0, i + 1).forEach(b => results.filter(r => r.batch === b.id && r.w + r.d + r.l <= GAMES_PER_WEEK)
     .forEach(r => (fs[r.name] ||= []).push(...'W'.repeat(r.w), ...'D'.repeat(r.d), ...'L'.repeat(r.l))));
-  agg.forEach(p => { p.form = (fs[p.name] || []).slice(-5); });
+  agg.forEach(p => { p.form = (fs[p.name] || []).slice(-6); });   // p.rating (as at that time) comes from aggregate()
   const mv = p => { const pr = prevRank[p.name]; if (pr == null || !i) return '<span class="mv same">▬</span>';
     const d = pr - p.rank; return d > 0 ? `<span class="mv up">▲${d}</span>` : d < 0 ? `<span class="mv down">▼${-d}</span>` : '<span class="mv same">▬</span>'; };
   const row = p => `<tr data-n="${esc(p.name)}">
       <td><span class="rk"><span class="rank${rc(p.rank, p.qual)}">${p.label}</span>${mv(p)}</span></td>
-      <td class="name"><a href="#" class="plink" data-player="${esc(p.name)}">${esc(p.name)}</a>${p.qual ? ` <span class="need">${MIN_GAMES - p.games} to qualify</span>` : ''}</td>
+      <td class="name"><a href="#" class="plink" data-player="${esc(p.name)}">${esc(p.name)}</a></td>
       <td>${p.games}</td><td class="w">${p.wins}</td><td class="d">${p.draws}</td><td class="l">${p.losses}</td>
       <td class="pts">${p.points}</td>
       <td><span class="bar"><i style="width:${p.pct}%"></i></span>${p.pct.toFixed(2)}%</td>
+      <td class="rating">${p.rating.toFixed(2)}</td>
       <td class="form">${formHtml(p)}</td></tr>`;
   const top = agg.filter(p => !p.qual), quals = agg.filter(p => p.qual);
-  const put = (tb, list, empty) => { const html = list.map(row).join('') || `<tr><td colspan="9">${empty}</td></tr>`; animate ? lbAnimate(tb, html, dur, ease) : (tb.innerHTML = html); };
+  const put = (tb, list, empty) => { const html = list.map(row).join('') || `<tr><td colspan="10">${empty}</td></tr>`; animate ? lbAnimate(tb, html, dur, ease) : (tb.innerHTML = html); };
   put($('tbody'), top, 'No qualified players yet'); put($('qbody'), quals, 'No players in the qualifier zone');
   document.querySelectorAll('#tbody .plink, #qbody .plink').forEach(a => a.onclick = e => { e.preventDefault(); openProfile(a.dataset.player); });
   const last = i === lb.snaps.length - 1;
@@ -1554,9 +1643,17 @@ function renderStats(all, top, quals) {
 }
 
 // ---------- history ----------
+const histOpen = new Set();                                 // Results panels kept open across re-renders
 function renderHistory() {
   const f = ($('hFilter').value || '').trim().toLowerCase();
-  const list = [...batches].sort((a,b) => b.ts - a.ts);
+  const mKey = ts => { const d = new Date(ts); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
+  const playedTs = b => { const w = calendar.find(x => x.batch === b.id); return w ? new Date(w.date + 'T' + (w.time || '12:00')).getTime() : b.ts; };
+  const months = [...new Set(batches.map(b => mKey(playedTs(b))))].sort().reverse();
+  let mo = $('hMonth').value; if (mo && !months.includes(mo)) mo = '';
+  $('hMonth').innerHTML = '<option value="">All months</option>' + months.map(m =>
+    `<option value="${m}" ${m === mo ? 'selected' : ''}>${new Date(m + '-01T00:00').toLocaleDateString(undefined, { month:'long', year:'numeric' })}</option>`).join('');
+  // newest → oldest by the date the session was PLAYED (Matches weeks use their calendar date, not the submit time)
+  const list = [...batches].filter(b => !mo || mKey(playedTs(b)) === mo).sort((a,b) => playedTs(b) - playedTs(a) || b.ts - a.ts);
   let shown = 0;
   $('history').innerHTML = list.map(b => {
     let recs = results.filter(r => r.batch===b.id);
@@ -1564,24 +1661,64 @@ function renderHistory() {
     if (!recs.length) return '';
     shown += recs.length;
     const all = results.filter(r => r.batch===b.id).length;
-    const games = (b.games||[]).filter(g => !f || [...g.a,...g.b].some(n => n.toLowerCase().includes(f)));
-    const team = (t, won) => `<span class="${won?'win':''}">${t.map(esc).join(' and ')}</span>`;
+    // recorded games grouped by court, shown in the same court / game layout as the Matches results
+    const hit = g => !f || [...g.a, ...g.b].some(n => n.toLowerCase().includes(f));
+    const byCourt = {};
+    (b.games || []).forEach(g => { (byCourt[g.court] ||= []).push(g); });
+    const courtsH = Object.keys(byCourt).map(Number).sort((x, y) => x - y).map(c => {
+      const gs = byCourt[c].map((g, i) => ({ g, i })).filter(x => hit(x.g));
+      if (!gs.length) return '';
+      const side = (g, s) => g.res === 'D' ? 'D' : (g.res === s ? 'W' : 'L');
+      const gi = g => b.games.indexOf(g);
+      const box = (g, sd) => { const v = side(g, sd);
+        return `<select class="wdl wdl-${v}" data-hbb="${b.id}" data-hbg="${gi(g)}" data-side="${sd}" ${RO ? 'disabled' : ''} title="Change this result – the session's W/D/L totals update automatically">
+          ${[['W','Win'],['L','Lose'],['D','Draw']].map(([k, t]) => `<option value="${k}" ${v === k ? 'selected' : ''}>${t}</option>`).join('')}</select>`; };
+      return `<div class="court"><h4>${courtName(c)}</h4>
+        ${gs.map(({ g, i }) => `<div class="game"><div class="gl">Game ${i + 1}</div>
+          <div class="t"><div class="nm">${g.a.map(esc).join('<br>')}</div>${box(g, 'A')}</div><div>vs</div>
+          <div class="t"><div class="nm">${g.b.map(esc).join('<br>')}</div>${box(g, 'B')}</div></div>`).join('')}
+      </div>`;
+    }).filter(Boolean);
+    const nGames = (b.games || []).filter(hit).length;
     return `<div class="hb">
       <div class="hb-head">
-        <div><b>${new Date(b.ts).toLocaleString()}</b> <span class="legend">· ${esc(b.source)}${b.by ? ` · by ${esc(b.by)}` : ''} · ${all} record${all>1?'s':''}</span></div>
+        <div><b>${new Date(playedTs(b)).toLocaleString()}</b> <span class="legend">· ${esc(b.source)}${b.by ? ` · by ${esc(b.by)}` : ''} · ${all} record${all>1?'s':''}</span></div>
         <button class="del hb-btn" data-batch="${b.id}">Remove entire session</button>
       </div>
       <table><thead><tr><th style="text-align:left">Player</th><th>W</th><th>D</th><th>L</th><th>Points</th><th></th></tr></thead><tbody>
       ${recs.map(r => `<tr><td class="name">${esc(r.name)}</td><td class="w">${r.w}</td><td class="d">${r.d}</td><td class="l">${r.l}</td>
         <td class="pts">${r.w*PTS.W + r.d*PTS.D}</td><td class="hb-act"><button class="del hb-btn" data-rec="${r.id}">Remove</button></td></tr>`).join('')}
       </tbody></table>
-      ${games.length ? `<details><summary>Show ${games.length} match result${games.length>1?'s':''}</summary>
-        ${games.map(g => `<div class="gm">${courtName(g.court)}: ${team(g.a, g.res==='A')} vs ${team(g.b, g.res==='B')} — ${g.res==='D'?'Draw':'Win'}</div>`).join('')}
+      ${courtsH.length ? `<details class="res-acc" data-hbopen="${b.id}" ${histOpen.has(b.id) ? 'open' : ''}><summary><b>Results</b>
+          <span class="pill full">${nGames} game${nGames > 1 ? 's' : ''}</span></summary>
+        <div class="courts wk-courts" style="margin-top:10px;--nc:${courtsH.length}">${courtsH.join('')}</div>
       </details>` : ''}
     </div>`;
   }).join('') || '<div class="card">No match records.</div>';
   $('hCount').textContent = `${shown} record${shown!==1?'s':''} shown`;
 
+  $('history').querySelectorAll('details[data-hbopen]').forEach(d => d.ontoggle = () => { d.open ? histOpen.add(d.dataset.hbopen) : histOpen.delete(d.dataset.hbopen); });
+  // edit a recorded game: the other pair is set to match, then the session's W/D/L records are recalculated
+  $('history').querySelectorAll('select[data-hbb]').forEach(sel => sel.onchange = () => {
+    const b = batches.find(x => x.id === sel.dataset.hbb), g = b?.games?.[+sel.dataset.hbg];
+    if (!g) return;
+    const v = sel.value, sd = sel.dataset.side, other = sd === 'A' ? 'B' : 'A';
+    const nres = v === 'D' ? 'D' : v === 'W' ? sd : other;
+    if (nres === g.res) return;
+    const was = g.res === 'D' ? 'Draw' : `${g[g.res.toLowerCase()].join(' and ')} win`;
+    const now = nres === 'D' ? 'Draw' : `${g[nres.toLowerCase()].join(' and ')} win`;
+    if (!confirm(`Change this result?\n\n${g.a.join(' and ')} vs ${g.b.join(' and ')}\n${was}  →  ${now}\n\nThe leaderboard will be recalculated.`)) { renderHistory(); return; }
+    g.res = nres;
+    const tally = {};
+    b.games.forEach(x => {
+      if (!x.a || !x.b || !x.res) return;
+      [...x.a, ...x.b].forEach(n => tally[n] ||= { w:0, d:0, l:0 });
+      if (x.res === 'D') [...x.a, ...x.b].forEach(n => tally[n].d++);
+      else { const [win, lose] = x.res === 'A' ? [x.a, x.b] : [x.b, x.a]; win.forEach(n => tally[n].w++); lose.forEach(n => tally[n].l++); }
+    });
+    results.forEach(r => { if (r.batch === b.id && tally[r.name]) Object.assign(r, tally[r.name]); });
+    save(); render();
+  });
   $('history').querySelectorAll('[data-rec]').forEach(btn => btn.onclick = async () => {
     const r = results.find(x => x.id===btn.dataset.rec);
     if (!confirm(`Remove ${r.name}'s record (${r.w}W ${r.d}D ${r.l}L, ${r.w*3+r.d} pts)? The leaderboard will be recalculated.`)) return;
@@ -1596,7 +1733,8 @@ function renderHistory() {
   });
 }
 $('hFilter').oninput = renderHistory;
-$('masterDel').onclick = masterDelete;
+$('hMonth').onchange = renderHistory;
+$('hReset').onclick = () => { $('hFilter').value = ''; $('hMonth').value = ''; renderHistory(); };
 
 
 document.querySelectorAll('th').forEach(th => th.onclick = () => {
@@ -1605,16 +1743,6 @@ document.querySelectorAll('th').forEach(th => th.onclick = () => {
   sortKey = k; render();
 });
 
-// wins + draws + losses must always total 3: limit draws to what's left after wins, losses = the rest
-const syncLosses = () => {
-  const w = +$('fW').value || 0;
-  let d = +$('fD').value || 0;
-  if (w + d > GAMES_PER_WEEK) { d = GAMES_PER_WEEK - w; $('fD').value = String(d); }
-  [...$('fD').options].forEach(o => o.disabled = +o.value > GAMES_PER_WEEK - w);
-  $('fL').value = GAMES_PER_WEEK - w - d;
-};
-$('fW').onchange = $('fD').onchange = syncLosses;
-syncLosses();
 
 // ---------- players (Configuration) ----------
 const EMOJI_GROUPS = {"Sport": ["🎾", "🏓", "🏸", "⚽", "🏀", "🏈", "⚾", "🏐", "🏉", "🥎", "🏆", "🥇", "🥈", "🥉", "🏅", "🎯", "🥅", "⛳", "🏋️", "🤸", "🏃", "🚴", "🧗", "🤾"], "Mood": ["🔥", "⚡", "💪", "👑", "⭐", "🌟", "✨", "💫", "🚀", "💥", "💯", "🎉", "🥳", "😎", "🤘", "🤙", "👊", "✌️", "👏", "🙌", "🫡", "😈", "👻", "🤖", "👽", "🧠", "💀", "🥶", "🥵", "😤", "🤓", "🤠", "🥷", "🦸", "🧙"], "Animals": ["🐐", "🐪", "🐌", "🦈", "🐙", "🦁", "🐯", "🐻", "🐼", "🦊", "🐺", "🦅", "🦉", "🐝", "🦋", "🐬", "🐳", "🦖", "🐉", "🦄", "🐸", "🐵", "🦍", "🦒", "🦓", "🦘", "🐧", "🦩", "🐈", "🐕", "🐎", "🐂", "🦬", "🐊", "🐢", "🦀", "🦞", "🦑"], "Food": ["🍔", "🌮", "🌯", "🍕", "🍟", "🌭", "🥪", "🍣", "🍜", "🥘", "🍝", "🥩", "🍗", "🥓", "🌶️", "🥦", "🍆", "🥑", "🍑", "🍈", "🍉", "🍋", "🍓", "🍒", "🍍", "🥥", "🍌", "🍎", "🥕", "🌽", "🧀", "🥐", "🍩", "🍪", "🎂", "🍫", "🍿", "☕", "🍺", "🍷", "🍸", "🥂", "🧃"], "Other": ["⛪", "🪄", "🤏", "💦", "🔫", "🧤", "🍀", "🌈", "🌊", "☀️", "🌙", "❄️", "🎸", "🎧", "🎮", "🎲", "♟️", "💎", "💰", "🧲", "🔮", "🛸", "🏎️", "⚓", "🗿"]};
@@ -1694,21 +1822,110 @@ $('npAdd').onclick = () => {
   roster.push(n); save(); render();
   m.classList.add('ok'); m.textContent = `${n} added to the Qualifier Zone.`; $('npName').value = '';
 };
+// bulk add: one name per line; skips blanks, duplicates in the list and anyone who is already a player
+$('npBulkAdd').onclick = () => {
+  const m = $('npMsg'); m.className = 'msg';
+  const lines = $('npBulk').value.split(/\r?\n/).map(x => x.trim().replace(/\s+/g, ' ')).filter(Boolean);
+  if (!lines.length) { m.classList.add('err'); m.textContent = 'Paste at least one name.'; return; }
+  const have = new Set(aggregate().map(p => p.name.toLowerCase())), added = [], skipped = [];
+  lines.forEach(n => {
+    if (n.length > 40) return skipped.push(n + ' (name too long)');
+    if (have.has(n.toLowerCase())) return skipped.push(n);
+    have.add(n.toLowerCase()); added.push(n);
+  });
+  if (added.length) { roster.push(...added); save(); render(); }
+  m.classList.add(added.length ? 'ok' : 'err');
+  m.textContent = `${added.length} player${added.length === 1 ? '' : 's'} added to the Qualifier Zone` +
+    (skipped.length ? ` · ${skipped.length} skipped (already players or duplicates): ${skipped.join(', ')}` : '') + '.';
+  if (added.length) $('npBulk').value = '';
+};
 $('npName').onkeydown = e => { if (e.key === 'Enter') $('npAdd').click(); };
 $('npFilter').oninput = renderPlayersCfg;
 
-$('form').onsubmit = e => {
-  e.preventDefault();
-  const name = $('fName').value.trim();
-  const w = +$('fW').value||0, d = +$('fD').value||0, l = GAMES_PER_WEEK - w - d;
-  const msg = $('msg'); msg.className = 'msg';
-  const fail = t => { msg.textContent = t; msg.classList.add('err'); };
-  if (!name) return fail('Enter a player name.');
-  if (w < 0 || d < 0 || l < 0) return fail(`Wins + draws cannot exceed ${GAMES_PER_WEEK} games.`);
-  const b = { id:uid(), ts:Date.now(), source:'Manual entry', games:[] };
-  batches.push(b); results.push({ id:uid(), batch:b.id, name, w, d, l }); save(); render();
-  msg.textContent = `${name}: ${w}W ${d}D ${l}L = ${w*3+d}/${MAX_WEEK} pts.`; msg.classList.add('ok');
-  $('fW').value = $('fD').value = 0; syncLosses();
+
+// ---------- manual match session (History tab) – courts of 4, 3 games each, no predictions ----------
+let ms = { courts:[] };                                     // courts: [{ ps:['','','',''], res:['','',''] }]
+function renderManualSession() {
+  if (!$('msCourts')) return;
+  if (!$('msDate').value) $('msDate').value = today();
+  const players = aggregate(), rankOf = {}; players.forEach(p => rankOf[p.name] = p);
+  const names = players.map(p => p.name).sort((a, b) => a.localeCompare(b));
+  const used = ms.courts.flatMap(c => c.ps).filter(Boolean);
+  const badge = n => { const p = rankOf[n]; return `<span class="rank sm${p ? rc(p.rank, p.qual) : ''}">${p ? p.label : '–'}</span>`; };
+  const nm = n => n ? esc(n) : '<span class="legend" style="margin:0">?</span>';
+  const nc = Math.max(1, ms.courts.length);
+  // 1) courts with a player dropdown per place (same card layout as Matches)
+  const courtsH = ms.courts.map((c, ci) => `
+    <div class="court">
+      <h4>${courtName(ci + 1)}
+        <button type="button" class="del" data-msrm="${ci}" style="margin-left:auto;height:28px;min-height:28px;padding:0 10px;display:inline-block!important">Remove</button></h4>
+      <div class="plist picks">${c.ps.map((n, pi) => `<div class="pentry"><div class="prow">${badge(n)}
+        <select data-msc="${ci}" data-msp="${pi}" style="flex:1;min-width:0">
+          <option value="">– Player ${pi + 1} –</option>
+          ${names.map(x => `<option value="${esc(x)}" ${x === n ? 'selected' : ''} ${x !== n && used.includes(x) ? 'disabled' : ''}>${esc(x)}</option>`).join('')}
+        </select></div></div>`).join('')}</div>
+    </div>`).join('');
+  // 2) results per court: a Win / Lose box under each pair (the other pair is set to match)
+  const resultsH = ms.courts.map((c, ci) => `
+    <div class="court">
+      <h4>${courtName(ci + 1)}</h4>
+      ${PAIRINGS.map(([a, b], g) => {
+        const v = c.res[g], sv = sd => !v ? '' : v === 'D' ? 'D' : v === sd ? 'W' : 'L';
+        const box = sd => `<select class="wdl wdl-${sv(sd) || 'x'}" data-msc="${ci}" data-msg="${g}" data-side="${sd}">
+            <option value="">–</option>
+            ${[['W', 'Win'], ['L', 'Lose'], ['D', 'Draw']].map(([k, t]) => `<option value="${k}" ${sv(sd) === k ? 'selected' : ''}>${t}</option>`).join('')}
+          </select>`;
+        return `<div class="game"><div class="gl">Game ${g + 1}</div>
+          <div class="t"><div class="nm">${nm(c.ps[a[0]])}<br>${nm(c.ps[a[1]])}</div>${box('A')}</div><div>vs</div>
+          <div class="t"><div class="nm">${nm(c.ps[b[0]])}<br>${nm(c.ps[b[1]])}</div>${box('B')}</div></div>`; }).join('')}
+    </div>`).join('');
+  const total = ms.courts.length * PAIRINGS.length, entered = ms.courts.flatMap(c => c.res).filter(Boolean).length;
+  $('msCourts').className = '';
+  $('msCourts').innerHTML = ms.courts.length ? `
+    <h5>Players &amp; courts</h5>
+    <div class="courts wk-courts" style="--nc:${nc}">${courtsH}</div>
+    <details class="res-acc" open><summary><b>Results</b>
+      <span class="pill${entered === total ? ' full' : ''}">${entered}/${total} games entered</span></summary>
+      <div class="courts wk-courts" style="margin-top:10px;--nc:${nc}">${resultsH}</div>
+    </details>` : '<div class="legend">No courts yet – click <b>+ Add court</b>.</div>';
+  $('msInfo').textContent = ms.courts.length ? `${ms.courts.length} court${ms.courts.length > 1 ? 's' : ''} · ${used.length}/${ms.courts.length * PER_COURT} players` : '';
+  $('msCourts').querySelectorAll('select[data-msp]').forEach(el => el.onchange = () => { ms.courts[+el.dataset.msc].ps[+el.dataset.msp] = el.value; renderManualSession(); });
+  $('msCourts').querySelectorAll('select[data-msg]').forEach(el => el.onchange = () => {
+    const sd = el.dataset.side, other = sd === 'A' ? 'B' : 'A';
+    ms.courts[+el.dataset.msc].res[+el.dataset.msg] = !el.value ? '' : el.value === 'D' ? 'D' : el.value === 'W' ? sd : other;
+    renderManualSession();
+  });
+  $('msCourts').querySelectorAll('[data-msrm]').forEach(el => el.onclick = () => { ms.courts.splice(+el.dataset.msrm, 1); renderManualSession(); });
+}
+$('msAddCourt').onclick = () => { ms.courts.push({ ps:['', '', '', ''], res:['', '', ''] }); $('msMsg').textContent = ''; renderManualSession(); };
+$('msClear').onclick = () => { if (ms.courts.length && !confirm('Clear this session?')) return; ms = { courts:[] }; $('msMsg').textContent = ''; renderManualSession(); };
+$('msSubmit').onclick = () => {
+  const m = $('msMsg'); m.className = 'msg';
+  const fail = t => { m.classList.add('err'); m.textContent = t; };
+  if (!ms.courts.length) return fail('Add at least one court.');
+  if (ms.courts.some(c => c.ps.some(n => !n))) return fail('Pick 4 players on every court.');
+  const all = ms.courts.flatMap(c => c.ps);
+  if (new Set(all).size !== all.length) return fail('A player can only be on one court.');
+  if (ms.courts.some(c => c.res.some(r => !r))) return fail('Enter a result for every game.');
+  const date = $('msDate').value; if (!date) return fail('Pick a date.');
+  if (!confirm(`Add this session (${fmtDate(date)}, ${ms.courts.length} court${ms.courts.length > 1 ? 's' : ''}, ${all.length} players) to the leaderboard?`)) return;
+  const tally = {}, games = [];
+  all.forEach(n => tally[n] = { w:0, d:0, l:0 });
+  ms.courts.forEach((c, ci) => PAIRINGS.forEach(([a, b], g) => {
+    const A = a.map(i => c.ps[i]), B = b.map(i => c.ps[i]), v = c.res[g];
+    games.push({ court:ci + 1, a:A, b:B, res:v });
+    if (v === 'D') return [...A, ...B].forEach(n => tally[n].d++);
+    const [win, lose] = v === 'A' ? [A, B] : [B, A];
+    win.forEach(n => tally[n].w++); lose.forEach(n => tally[n].l++);
+  }));
+  // timestamp = chosen date (midday) so history, playback and ratings stay in date order
+  const bt = { id:uid(), ts:new Date(date + 'T12:00').getTime(), source:`Manual session ${fmtDate(date)} (${ms.courts.length} court${ms.courts.length > 1 ? 's' : ''})`, games };
+  batches.push(bt);
+  Object.entries(tally).forEach(([name, t]) => results.push({ id:uid(), batch:bt.id, name, ...t }));
+  roster = roster.filter(n => !tally[n]);
+  ms = { courts:[] };
+  save(); render();
+  m.classList.add('ok'); m.textContent = `Session added: ${all.length} players, ${games.length} games.`;
 };
 
 // ---------- tabs ----------
@@ -1769,7 +1986,7 @@ $('gen').onclick = () => {
 
   $('courts').innerHTML = courts.map((ps, c) => `
     <div class="court">
-      <h4>${courtName(c+1)} <span class="legend" style="font-weight:400">· Court ${c+1}</span></h4>
+      <h4>${courtName(c+1)}</h4>
       <div class="plist">${ps.map(p => `<div><span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span>${esc(p.name)}</div>`).join('')}</div>
       ${PAIRINGS.map(([a,b], g) => `
         <div class="game">
@@ -1811,7 +2028,6 @@ $('submitWeek').onclick = () => {
   save(); render();
   $('courtsWrap').style.display = 'none'; courts = [];
   document.querySelector('.tab[data-tab=board]').click();
-  $('msg').className = 'msg ok'; $('msg').textContent = 'Weekly results from the schedule were added.';
 };
 
 // ---------- calendar ----------
@@ -1822,23 +2038,6 @@ let pinHash = load(PINKEY) || '';                      // SHA-256 of the deletio
 async function hashPin(pin) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('padel-squad:' + pin));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-}
-// Delete ALL match history (requires the deletion PIN). Players are kept with 0 games.
-async function masterDelete() {
-  if (!pinHash) return alert('Set a deletion PIN first (⚙️ → 🔒 Deletion PIN). Master delete always requires a PIN.');
-  const n = results.length, sessions = batches.length;
-  if (!n) return alert('There is no match history to delete.');
-  if (!confirm(`MASTER DELETE\n\nThis deletes ALL match history for everyone:\n• ${sessions} sessions\n• ${n} result records\n\nPlayers are kept (with 0 games). Calendar weeks are kept.\nA backup is saved first.\n\nContinue?`)) return;
-  if ((prompt('Type DELETE to confirm:') || '').trim().toUpperCase() !== 'DELETE') return alert('Cancelled – nothing was deleted.');
-  if (!(await checkPin())) return;
-  try { await makeBackup('manual'); }
-  catch (e) { if (!confirm('Could not save a backup first (' + (e.message || e) + '). Delete anyway?')) return; }
-  const keep = new Set([...roster, ...results.map(r => r.name)]);
-  roster = [...keep];                                   // keep every player on the list
-  results = []; batches = [];
-  calendar.forEach(w => { if (w.batch) { delete w.batch; delete w.lineup; } });
-  save(); saveCal(); render();
-  alert(`All match history deleted (${sessions} sessions, ${n} records). You can restore it from ⚙️ → Backups.`);
 }
 async function checkPin() {
   if (!pinHash) return true;                             // no PIN set yet
@@ -1985,8 +2184,8 @@ function partnerLanes(ps, rounds) {
   const lanes = ps.map((n, i) => `<div class="lane">
       <div class="lane-name"><b>P${i + 1}</b> ${esc(n)}</div>
       ${rounds.map((_, r) => { const x = info[n]?.[r];
-        return `<div class="lane-cell" title="${x ? `Round ${r + 1} · ${plainCourt(x.court)}` : ''}">
-          ${x ? `<span class="lane-p">${esc(x.partner)}</span><span class="lane-c">${esc(plainCourt(x.court))}</span>` : '–'}</div>`; }).join('')}
+        return `<div class="lane-cell" title="${x ? `Round ${r + 1} · ${plainCourt(x.court, false)}` : ''}">
+          ${x ? `<span class="lane-p">${esc(x.partner)}</span><span class="lane-c">${esc(plainCourt(x.court, false))}</span>` : '–'}</div>`; }).join('')}
     </div>`).join('');
   return `<div class="lanes-wrap"><div class="lanes" style="--rounds:${rounds.length}">
       <div class="lane lane-head"><div class="lane-name">Player</div>${head}</div>${lanes}</div></div>`;
@@ -2019,7 +2218,7 @@ function americanoHtml(w, L, rankOf) {
   const roundsHtml = rounds.map((courts, r) => `
     <div class="court am-round"><h4>Round ${r+1}</h4>
       ${courts.map(([A, B], c) => `<div class="am-match">
-        <div class="gl">${plainCourt(c+1)}</div>
+        <div class="gl">${plainCourt(c+1, false)}</div>
         <div class="am-row"><span class="am-team">${A.map(pn).join('<br>')}</span>${inp(r, c, 0)}
 ${inp(r, c, 1)}<span class="am-team">${B.map(pn).join('<br>')}</span></div>
       </div>`).join('')}
@@ -2142,9 +2341,10 @@ function setAvailable(w, name, on) {
 function renderAvailability() {
   if (!$('avSheet')) return;
   const t = today(), f0 = avSearch, f = avSearch.trim().toLowerCase();
-  // months: this month + the next 5, plus any later month that already has sessions (no "All months")
+  // months: this month + next month, plus any later month added with "+ Add month" or that already has sessions
   const cur = t.slice(0, 7), set = new Set();
-  set.add(cur); avMonths.forEach(m => { if (m >= cur) set.add(m); });
+  const nxt = ymd(new Date(+cur.slice(0, 4), +cur.slice(5, 7), 1)).slice(0, 7);
+  set.add(cur); set.add(nxt); avMonths.forEach(m => { if (m >= cur) set.add(m); });
   calendar.forEach(w => { if (w.date.slice(0, 7) >= cur) set.add(w.date.slice(0, 7)); });
   const months = [...set].sort();
   const mName = m => new Date(m + '-01T00:00').toLocaleDateString(undefined, { month:'long', year:'numeric' });
@@ -2261,8 +2461,8 @@ function renderCalendar() {
     const res = w.res || {};
     const courts = L.courts.map((ps, c) => `
       <div class="court">
-        <h4>${courtName(c+1)} <input class="court-label" data-cl="${w.id}" data-c="${c}" maxlength="20"
-          value="${esc(courtLabel(w, c))}" placeholder="Court ${c+1}" title="Court number at the venue – click to edit"></h4>
+        <h4><input class="court-label" data-cl="${w.id}" data-c="${c}" maxlength="20"
+          value="${esc(courtLabel(w, c))}" placeholder="Court ${c+1}" title="Court number at the venue – click to edit">${(w.type || 'Competitive') === 'Competitive' && COURT_NAMES[c] ? ` · ${COURT_NAMES[c]}` : ''}</h4>
         <div class="plist${done ? '' : ' picks'}">${ps.map(n => done
           ? `<div class="pentry"><div class="prow">${badge(n)}${esc(n)}</div>${subNote(n)}</div>`
           : `<div class="pentry"><div class="prow">${badge(n)}<span class="pname">${esc(n)}</span>${subSel(n)}</div>${subNote(n)}</div>`).join('')}</div>
@@ -2270,14 +2470,14 @@ function renderCalendar() {
     // results for every court, shown below all the players
     const results = L.courts.map((ps, c) => `
       <div class="court">
-        <h4>${courtName(c+1)} <span class="legend" style="font-weight:400">· results</span></h4>
+        <h4>${esc(courtLabel(w, c))}${(w.type || 'Competitive') === 'Competitive' && COURT_NAMES[c] ? ` · ${COURT_NAMES[c]}` : ''}</h4>
         ${PAIRINGS.map(([a,b], g) => {
           const A = `${esc(ps[a[0]])} and ${esc(ps[a[1]])}`, B = `${esc(ps[b[0]])} and ${esc(ps[b[1]])}`;
           // one small Win/Draw/Loss box under each pair; the other pair is set to match
           const v = res[c+'-'+g], sideVal = side => !v ? '' : v === 'D' ? 'D' : (v === 'A') === (side === 'A') ? 'W' : 'L';
           const box = side => `<select class="wdl wdl-${sideVal(side) || 'x'}" data-wdl="${w.id}" data-cg="${c}-${g}" data-side="${side}" ${done ? 'disabled' : ''}>
               <option value="">–</option>
-              ${[['W','Win'],['D','Draw'],['L','Loss']].map(([k,t]) => `<option value="${k}" ${sideVal(side)===k?'selected':''}>${t}</option>`).join('')}
+              ${[['W','Win'],['L','Lose'],['D','Draw']].map(([k,t]) => `<option value="${k}" ${sideVal(side)===k?'selected':''}>${t}</option>`).join('')}
             </select>`;
           return `<div class="game"><div class="gl">Game ${g+1}</div>
             <div class="t"><div class="nm">${esc(ps[a[0]])}<br>${esc(ps[a[1]])}</div>${box('A')}</div><div>vs</div>
@@ -2550,12 +2750,22 @@ $('importFile').onchange = async () => {
 {
   const rc0 = renderCalendar;
   renderCalendar = function() { rc0(); if (RO) $('cal').querySelectorAll('.cw select, .cw input').forEach(e => e.disabled = true); };
+  const ra0 = renderAvailability;
+  renderAvailability = function() { ra0(); if (RO) $('avail').querySelectorAll('input[type=checkbox], button#avAddMonth').forEach(e => e.disabled = true); };
+  const re0 = renderEvent;
+  renderEvent = function() { re0(); if (RO) $('event').querySelectorAll('input, select[data-f], button[data-amshuffle]').forEach(e => e.disabled = true); };
 }
 function applyMode() {
   document.body.classList.toggle('ro', RO);
   $('cfgBtn').style.display = SNAP ? 'none' : '';
   const ban = $('roBanner');
-  if (SNAP) { ban.style.display = ''; ban.textContent = `📢 Read-only view · last updated ${new Date(SNAP.published).toLocaleString()}`; }
+  if (SNAP) {
+    ban.style.display = '';
+    ban.textContent = SNAP.label
+      ? `📦 Archive view: ${SNAP.label} · saved ${new Date(SNAP.published).toLocaleString()} (read-only)`
+      : `📢 Read-only view · last updated ${new Date(SNAP.published).toLocaleString()}`;
+    if (SNAP.label) document.title = `Padel Squad – ${SNAP.label} (Archive)`;
+  }
   else ban.style.display = 'none';
   // leaving the config page open is fine; but if a viewer is on an edit-only panel nothing breaks
   render();
@@ -2672,7 +2882,7 @@ if (CLOUD) {
 const AB_LOCAL = 'padelAutoBackups', WEEK_MS = 7 * 864e5;
 async function listBackups() {
   if (CLOUD) {
-    const { data, error } = await sb.from('backups').select('id,at,kind').order('at', { ascending:false }).limit(AB_MAX);
+    const { data, error } = await sb.from('backups').select('id,at,kind').not('kind', 'like', 'archive:%').order('at', { ascending:false }).limit(AB_MAX);
     if (error) throw error;
     return data;
   }
@@ -2688,9 +2898,9 @@ async function deleteBackup(id) {
   const all = JSON.parse(localStorage.getItem(AB_LOCAL) || '[]'); all.splice(id, 1);
   localStorage.setItem(AB_LOCAL, JSON.stringify(all));
 }
-async function pruneBackups() {                       // keep only the newest AB_MAX
+async function pruneBackups() {                       // keep only the newest AB_MAX (excluding named archives)
   if (!CLOUD) return;
-  const { data, error } = await sb.from('backups').select('id').order('at', { ascending:false });
+  const { data, error } = await sb.from('backups').select('id').not('kind', 'like', 'archive:%').order('at', { ascending:false });
   if (error) throw error;
   const old = data.slice(AB_MAX).map(b => b.id);
   if (old.length) { const r = await sb.from('backups').delete().in('id', old); if (r.error) console.warn('Could not prune backups:', r.error.message); }
@@ -2749,14 +2959,140 @@ $('abNow').onclick = async () => {
   try { await makeBackup('manual'); $('abMsg').className = 'msg ok'; $('abMsg').textContent = 'Backup saved.'; renderBackups(); }
   catch (e) { $('abMsg').className = 'msg err'; $('abMsg').textContent = 'Backup failed: ' + (e.message || e); }
 };
-$('cfgBtn').addEventListener('click', () => renderBackups());
+$('cfgBtn').addEventListener('click', () => { renderBackups(); renderArchives(); });
+
+// ---------- named archives (opened in a separate read-only tab to compare changes) ----------
+const AR_LOCAL = 'padelArchives';
+async function listArchives() {
+  if (CLOUD) {
+    const { data, error } = await sb.from('backups').select('id,at,kind').like('kind', 'archive:%').order('at', { ascending:false });
+    if (error) throw error;
+    return data.map(b => ({ id:b.id, at:b.at, label:b.kind.slice(8) || 'Archive' }));
+  }
+  return JSON.parse(localStorage.getItem(AR_LOCAL) || '[]').map((b, i) => ({ id:i, at:b.at, label:b.label || 'Archive' })).reverse();
+}
+async function getArchive(id) {
+  if (CLOUD) { const { data, error } = await sb.from('backups').select('at,kind,data').eq('id', id).single(); if (error) throw error; return { at:data.at, label:data.kind.slice(8) || 'Archive', data:data.data }; }
+  return JSON.parse(localStorage.getItem(AR_LOCAL) || '[]')[id];
+}
+async function createArchive(label) {
+  const clean = (label || '').trim().slice(0, 50) || `Archive ${stamp()}`;
+  const row = { kind:'archive:' + clean, data:snapshotData() };
+  if (CLOUD) { const { error } = await sb.from('backups').insert(row); if (error) throw error; return clean; }
+  const all = JSON.parse(localStorage.getItem(AR_LOCAL) || '[]');
+  all.push({ label:clean, at:new Date().toISOString(), data:row.data });
+  localStorage.setItem(AR_LOCAL, JSON.stringify(all));
+  return clean;
+}
+async function deleteArchive(id) {
+  if (CLOUD) { const { error } = await sb.from('backups').delete().eq('id', id); if (error) throw error; return; }
+  const all = JSON.parse(localStorage.getItem(AR_LOCAL) || '[]'); all.splice(id, 1);
+  localStorage.setItem(AR_LOCAL, JSON.stringify(all));
+}
+function openSnapshotTab(label, published, data) {
+  const payload = JSON.stringify({ label, published, data }).replace(/</g, '\\u003c');
+  const html = PAGE_SOURCE.replace('<script>', `<script>window.PADEL_SNAPSHOT = ${payload};<\/script>\n<script>`);
+  const url = URL.createObjectURL(new Blob([html], { type:'text/html' }));
+  const win = window.open(url, '_blank');
+  if (!win) { const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+async function renderArchives() {
+  const m = $('arMsg'); m.className = 'msg'; m.textContent = '';
+  try {
+    const list = await listArchives();
+    $('arList').innerHTML = list.length ? list.map(a => `<tr>
+      <td class="name" style="text-align:left">${esc(a.label)}</td>
+      <td class="legend" style="text-align:left;margin:0">${new Date(a.at).toLocaleString()}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button type="button" class="primary" data-aropen="${a.id}" style="min-height:34px;height:34px;padding:0 12px">Open in new tab ↗</button>
+        <button type="button" class="sec" data-ardl="${a.id}" style="min-height:34px;height:34px;padding:0 12px;margin-left:4px">Download</button>
+        <button type="button" class="del" data-ardel="${a.id}" style="min-height:34px;height:34px;padding:0 12px;margin-left:4px;display:inline-block!important">Delete</button>
+      </td></tr>`).join('') : '<tr><td colspan="3" class="legend">No archives stored yet. Enter a name above and click <b>Archive current session</b>.</td></tr>';
+    $('arList').querySelectorAll('[data-aropen]').forEach(btn => btn.onclick = async () => {
+      try {
+        const a = await getArchive(btn.dataset.aropen);
+        openSnapshotTab(a.label, a.at, a.data);
+      } catch (e) { m.className = 'msg err'; m.textContent = 'Could not open archive: ' + (e.message || e); }
+    });
+    $('arList').querySelectorAll('[data-ardl]').forEach(btn => btn.onclick = async () => {
+      try {
+        const a = await getArchive(btn.dataset.ardl);
+        const slug = a.label.replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-|-$/g, '') || 'archive';
+        download(`padel-archive-${slug}.json`,
+          JSON.stringify({ app:'padel-leaderboard', version:1, archive:a.label, exported:a.at, data:a.data }, null, 2), 'application/json');
+      } catch (e) { m.className = 'msg err'; m.textContent = 'Download failed: ' + (e.message || e); }
+    });
+    $('arList').querySelectorAll('[data-ardel]').forEach(btn => btn.onclick = async () => {
+      const row = btn.closest('tr'), label = row?.cells[0]?.textContent || 'this archive';
+      if (!confirm(`Delete archive "${label}"?`)) return;
+      if (!(await checkPin())) return;
+      try { await deleteArchive(btn.dataset.ardel); renderArchives(); }
+      catch (e) { m.className = 'msg err'; m.textContent = 'Delete failed: ' + (e.message || e); }
+    });
+  } catch (e) {
+    m.className = 'msg err';
+    m.textContent = 'Could not load archives: ' + (e.message || e);
+  }
+}
+$('arSave').onclick = async () => {
+  const m = $('arMsg'); m.className = 'msg';
+  const input = $('arName').value.trim() || `Session ${new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}`;
+  try {
+    const saved = await createArchive(input);
+    $('arName').value = '';
+    m.className = 'msg ok'; m.textContent = `Archived as "${saved}". Click "Open in new tab ↗" below to view and compare.`;
+    renderArchives();
+  } catch (e) { m.className = 'msg err'; m.textContent = 'Archive failed: ' + (e.message || e); }
+};
+const calMonthName = m => new Date(m + '-01T00:00').toLocaleDateString(undefined, { month:'long', year:'numeric' });
+function renderCalResetMonths() {
+  const sel = $('calResetMonth'); if (!sel) return;
+  const cur = sel.value, counts = {};
+  calendar.forEach(w => { const k = (w.date || '').slice(0, 7); if (k) counts[k] = (counts[k] || 0) + 1; });
+  const ms = Object.keys(counts).sort();
+  sel.innerHTML = `<option value="">All months (${calendar.length} week${calendar.length === 1 ? '' : 's'})</option>` +
+    ms.map(k => `<option value="${k}" ${k === cur ? 'selected' : ''}>${calMonthName(k)} (${counts[k]} week${counts[k] === 1 ? '' : 's'})</option>`).join('');
+}
+// ---------- reset calendar (delete every calendar week; history/results untouched) ----------
+$('calReset').onclick = async () => {
+  const m = $('calResetMsg'); m.className = 'msg'; m.textContent = '';
+  const mo = $('calResetMonth').value, inMo = w => !mo || (w.date || '').startsWith(mo);
+  const label = mo ? calMonthName(mo) : 'ALL months';
+  const n = calendar.filter(inMo).length;
+  if (!n && (mo || !CLOUD)) { m.className = 'msg err'; m.textContent = `No weeks to delete in ${label}.`; return; }
+  if (!confirm(`RESET CALENDAR – ${label}\n\nThis deletes ${n} Matches/Calendar week${n === 1 ? '' : 's'} for everyone (availability, lineups, results entered on weeks, Americano scores).\n\nMatch History, the leaderboard, players, fee and payments are kept.\nA backup is saved first.\n\nContinue?`)) return;
+  if ((prompt('Type RESET to confirm:') || '').trim().toUpperCase() !== 'RESET') { m.className = 'msg err'; m.textContent = 'Cancelled – nothing was deleted.'; return; }
+  if (!(await checkPin())) return;
+  try { await makeBackup('manual'); }
+  catch (e) { m.className = 'msg err'; m.textContent = 'Could not save a backup (' + (e.message || e) + '). Nothing was deleted.'; return; }
+  clearTimeout(pushTimer); pushTimer = null;
+  calendar = calendar.filter(w => !inMo(w)); saveCal(); render();
+  try {
+    if (CLOUD) {
+      await pushChanges();
+      // also remove matching weeks added from other devices
+      const left = (await fetchAll('calendar', 'id,data')).filter(x => inMo(x.data || {}));
+      await del('calendar', 'id', left.map(x => x.id));
+      const still = (await fetchAll('calendar', 'id,data')).filter(x => inMo(x.data || {}));
+      await cloudRefresh(true);
+      if (still.length) { m.className = 'msg err'; m.textContent = `Reset incomplete: ${still.length} weeks could not be deleted in Supabase. A backup was saved.`; return; }
+    }
+    m.className = 'msg ok'; m.textContent = `Calendar reset (${label}) – ${n} week${n === 1 ? '' : 's'} deleted. A backup was saved (⚙️ → Backups → Restore to undo).`;
+    renderBackups();
+  } catch (e) {
+    await cloudRefresh(true);
+    m.className = 'msg err'; m.textContent = 'Reset failed: ' + (e.message || e) + '. A backup was saved.';
+  }
+};
+$('arName').onkeydown = e => { if (e.key === 'Enter') $('arSave').click(); };
 
 // ---------- PDF export (uses the browser's "Save as PDF") ----------
 $('pdfBtn').onclick = () => {
   document.querySelector('.tab[data-tab=board]').click();
-  $('printDate').textContent = 'Exported ' + new Date().toLocaleString() + ' · ranked by Win % · players need 9 games to qualify';
+  $('printDate').textContent = 'Exported ' + new Date().toLocaleString() + ' · ranked by Player Rating · players need 9 games to qualify';
   // include the full, unfiltered match history with every match result expanded
-  const hf = $('hFilter').value; $('hFilter').value = ''; renderHistory();
+  const hf = $('hFilter').value, hm = $('hMonth').value; $('hFilter').value = ''; $('hMonth').value = ''; renderHistory();
   const closed = [...document.querySelectorAll('#history details:not([open])')];
   closed.forEach(d => d.open = true);
   document.body.classList.add('printing');
@@ -2764,7 +3100,7 @@ $('pdfBtn').onclick = () => {
   setTimeout(() => { window.print(); }, 50);
   const done = () => {
     document.body.classList.remove('printing'); document.title = t; removeEventListener('afterprint', done);
-    closed.forEach(d => d.open = false); $('hFilter').value = hf; renderHistory();
+    closed.forEach(d => d.open = false); $('hFilter').value = hf; renderHistory(); $('hMonth').value = hm; renderHistory();
   };
   addEventListener('afterprint', done);
 };
