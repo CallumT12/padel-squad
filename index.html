@@ -1362,7 +1362,7 @@ function openProfile(name) {
     ${st.opps.length ? `<div style="max-height:320px;overflow:auto"><table>
       <thead><tr><th style="text-align:left">Opponent</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>Win %</th></tr></thead>
       <tbody>${st.opps.map(o => `<tr><td class="name"><a href="#" class="plink" data-player="${esc(o.name)}">${esc(o.name)}</a></td><td>${o.played}</td>
-        <td class="w">${o.w}</td><td class="d">${o.d}</td><td class="l">${o.l}</td><td>${((o.w * 3 + o.d) / (o.played * 3) * 100).toFixed(0)}%</td></tr>`).join('')}</tbody>
+        <td class="w">${o.w}</td><td class="d">${o.d}</td><td class="l">${o.l}</td><td><b>${((o.w * 3 + o.d) / (o.played * 3) * 100).toFixed(0)}%</b></td></tr>`).join('')}</tbody>
     </table></div>` : '<div class="legend">No head-to-head games recorded yet.</div>'}
     <div class="legend" style="margin-top:8px">${pfMode === 'combined' ? 'Head-to-head, rivals, partners and streaks use all games with known teams (Competitive matches and Americano scores)' : pfMode === 'americano' ? 'Head-to-head, rivals, partners and streaks use Americano games only (win = more points scored)' : 'Head-to-head, rivals, partners and streaks use Competitive matches only'}</div>
     </div>`;
