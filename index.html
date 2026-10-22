@@ -589,6 +589,12 @@
   #board .card > table th, #board .card > table td { padding:10px 8px; }
   #board .card > table .bar { width:64px; margin-right:4px; }
   #board .card > table .fd { margin:0; }
+  /* "Player Rating" and "Last 6 Matches": tighter gap between them, headers on one line */
+  #board .card > table th { white-space:nowrap; }
+  /* shrink Player Rating + Last 6 to their content so the Player column gets the room (names on one line) */
+  #board .card > table th:nth-child(9), #board .card > table td:nth-child(9),
+  #board .card > table th:nth-child(10), #board .card > table td:nth-child(10) { width:1%; white-space:nowrap; padding-left:4px; padding-right:4px; }
+  #board .card > table td.name { white-space:nowrap !important; }
   @media (max-width:900px) {
     #board .card > table th, #board .card > table td { padding:8px 5px; }
     #board .card > table th { font-size:.78rem; }
@@ -622,9 +628,9 @@
     #board .card > table th:nth-child(6), #board .card > table td:nth-child(6),
     #board .card > table th:nth-child(7), #board .card > table td:nth-child(7) { display:none; }
     #board .card > table th, #board .card > table td { padding:8px 4px !important; font-size:.8rem; }
-    #board .card > table th { font-size:.68rem !important; white-space:normal; line-height:1.15; }
+    #board .card > table th { font-size:.68rem !important; white-space:nowrap !important; line-height:1.15; }
     #board .card > table .bar { display:none; }
-    #board .card > table td.name { white-space:normal; max-width:120px; overflow-wrap:anywhere; }
+    #board .card > table td.name { white-space:nowrap !important; }
     #board .card > table .fd { width:15px; height:15px; line-height:15px; font-size:.5rem; }
     .lb-controls, .rp-controls, .pe-controls { flex-wrap:wrap; gap:8px; }
     .lb-controls input[type=range], .rp-controls input[type=range] { flex:1 1 100%; order:3; }
