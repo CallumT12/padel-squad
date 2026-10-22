@@ -286,6 +286,13 @@
   .fb-act button.fb-st-live:disabled:not(.on) { color:var(--win, #22c55e); border-color:var(--win, #22c55e); }
   .fb-act button.fb-st-rej:disabled:not(.on) { color:var(--loss, #ef4444); border-color:var(--loss, #ef4444); }
   .pf-kpis { margin-left:auto; display:flex; align-items:center; gap:18px; }
+  /* compact inline name editor so the profile header barely moves */
+  .pf-editbox { display:flex; flex-wrap:nowrap !important; flex-direction:row !important; align-items:center !important; gap:4px !important; margin:0 !important; }
+  .pf-editbox input, .pf-editbox select, .pf-editbox button { height:30px !important; min-height:30px !important; font-size:.8rem !important; margin:0; }
+  .pf-editbox input { width:150px !important; padding:0 8px !important; }
+  .pf-editbox select { width:84px !important; padding-left:8px !important; padding-right:24px !important; background-position:right 8px center; }
+  .pf-editbox button { padding:0 10px !important; }
+  .pf-editbox #pfErr { white-space:nowrap; }
   .pf-kpi { font-size:1.6rem; font-weight:800; color:var(--acc); line-height:1; font-variant-numeric:tabular-nums; }
   .pf-kpi.pf-rt { padding-left:18px; border-left:2px solid var(--line); }
   .pf-mode { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin:12px 0 4px; }
@@ -646,6 +653,7 @@
     .ov-card { border-radius:0 !important; min-height:100vh; padding:16px 12px !important; }
     .pf-head { flex-wrap:wrap; margin-right:36px; gap:10px; }
     .pf-kpis { margin-left:0; width:100%; justify-content:flex-start; }
+    .pf-editbox { flex-wrap:wrap !important; } .pf-editbox input { width:100% !important; flex:1 1 100%; }
     .pf-kpi { font-size:1.3rem; }
     .pf-stats { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; }
     .pf-mode button { width:auto !important; flex:1 1 0; padding:0 6px; }
@@ -1479,9 +1487,9 @@ function openProfile(name) {
       <span class="rank${rc(p.rank, p.qual)}" style="width:44px;height:44px;line-height:44px;font-size:1.1rem">${p.label}</span>
       <div><h2 id="pfName" style="margin:0;display:flex;align-items:center;gap:8px">${esc(p.name)}
           <a href="#" class="edit pf-edit" id="pfEdit" title="Edit name / add emoji">Edit</a></h2>
-        <div id="pfEditBox" class="row" hidden style="gap:6px;align-items:center;margin:4px 0">
-          <input id="pfNameIn" value="${esc(p.name)}" maxlength="40" style="width:240px">
-          <select id="pfEmoji" style="width:120px" title="Add an emoji">
+        <div id="pfEditBox" class="row pf-editbox" hidden>
+          <input id="pfNameIn" value="${esc(p.name)}" maxlength="40">
+          <select id="pfEmoji" title="Add an emoji">
             <option value="">+ Emoji</option>${Object.entries(EMOJI_GROUPS).map(([g, list]) => `<optgroup label="${g}">${list.map(e => `<option>${e}</option>`).join('')}</optgroup>`).join('')}
           </select>
           <button type="button" class="primary" id="pfSave">Save</button>
