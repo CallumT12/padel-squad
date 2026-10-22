@@ -263,6 +263,8 @@
   .fb-item:first-child { border-top:0; }
   .fb-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
   .fb-note { white-space:pre-wrap; overflow-wrap:anywhere; }
+  .fb-reply { margin:8px 0 0 18px; padding:8px 12px; border-left:3px solid var(--line); background:var(--section, transparent); border-radius:0 8px 8px 0; }
+  .fb-reply-form { border-left-color:var(--primary, var(--acc)); }
   .fb-act { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
   .fb-act button { height:30px; min-height:30px; padding:0 12px; font-size:.8rem; }
   /* Feedback status buttons: before a decision both are transparent with a white (text-colour) outline;
@@ -628,7 +630,7 @@
             <th data-k="points">Points</th>
             <th data-k="pct">Win %</th>
             <th data-k="rating" title="Doubles Elo-style rating (0.00–7.00, everyone starts at 2.00) from Competitive matches only">Player Rating</th>
-            <th data-k="formPts" title="Most recent on the left, oldest on the right">Last 6 Matches</th>
+            <th data-k="formPts" title="Oldest on the left, most recent on the right">Last 6 Matches</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -649,7 +651,7 @@
             <th data-k="points">Points</th>
             <th data-k="pct">Win %</th>
             <th data-k="rating" title="Doubles Elo-style rating (0.00–7.00, everyone starts at 2.00) from Competitive matches only">Player Rating</th>
-            <th data-k="formPts" title="Most recent on the left, oldest on the right">Last 6 Matches</th>
+            <th data-k="formPts" title="Oldest on the left, most recent on the right">Last 6 Matches</th>
           </tr>
         </thead>
         <tbody id="qbody"></tbody>
@@ -1074,7 +1076,7 @@ function formStreaks() {
   return seq;
 }
 const formHtml = p => p.form && p.form.length
-  ? [...p.form].reverse().map((r, i) => `<span class="fd f${r}" title="${i === 0 ? 'Most recent: ' : ''}${r==='W'?'Win':r==='D'?'Draw':'Loss'}">${r}</span>`).join('')   // most recent on the left
+  ? p.form.map((r, i) => `<span class="fd f${r}" title="${i === p.form.length - 1 ? 'Most recent: ' : ''}${r==='W'?'Win':r==='D'?'Draw':'Loss'}">${r}</span>`).join('')   // oldest on the left, most recent on the right
   : '<span class="same">–</span>';
 const streakHtml = p => {
   if (!p.streak) return '<span class="same" title="No weekly results yet">–</span>';
@@ -2231,8 +2233,15 @@ const FBKEY = 'padelFeedback';
 let feedback = JSON.parse(load(FBKEY) || '[]');          // [{ id, ts, name, note, status?:'live'|'rejected', deleted?, upd? }]
 // newest change per submission wins (deleted ones are kept as hidden markers so they don't come back)
 const fbMerge = (...lists) => { const m = new Map();
-  lists.flat().forEach(x => { const o = m.get(x.id); if (!o || (x.upd || x.ts) >= (o.upd || o.ts)) m.set(x.id, x); });
+  lists.flat().forEach(x => {
+    const o = m.get(x.id);
+    if (!o) { m.set(x.id, x); return; }
+    const newer = (x.upd || x.ts) >= (o.upd || o.ts) ? x : o, older = newer === x ? o : x;
+    const rs = new Map([...(older.replies || []), ...(newer.replies || [])].map(r => [r.id, r]));
+    m.set(x.id, { ...newer, ...(rs.size ? { replies:[...rs.values()].sort((a, b) => a.ts - b.ts) } : {}) });
+  });
   return [...m.values()].sort((a, b) => a.ts - b.ts); };
+let fbReplyOpen = null;                                  // id of the submission whose reply box is open
 const saveFeedback = () => { store(FBKEY, JSON.stringify(feedback)); schedulePush(); };
 const FB_MAX = 500;
 function renderFeedback() {
@@ -2246,16 +2255,53 @@ function renderFeedback() {
       <div class="fb-head"><b>${esc(x.name)}</b>
         <span class="legend" style="margin:0 0 0 auto">${new Date(x.ts).toLocaleString()}</span></div>
       <div class="fb-note">${esc(x.note)}</div>
+      ${(x.replies || []).map(r => `<div class="fb-reply"><div class="fb-head"><b>↳ ${esc(r.name)}</b>
+          <span class="legend" style="margin:0 0 0 auto">${new Date(r.ts).toLocaleString()}</span></div>
+        <div class="fb-note">${esc(r.note)}</div></div>`).join('')}
+      ${fbReplyOpen === x.id ? `<div class="fb-reply fb-reply-form edit">
+        <div class="row cal-form" style="align-items:flex-start">
+          <label>Player<select data-fbrname="${x.id}" style="height:38px;min-width:200px"><option value="">– Select your name –</option>
+            ${names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</select></label>
+          <label style="flex:1 1 300px">Response
+            <textarea data-fbrnote="${x.id}" maxlength="${FB_MAX}" rows="3" placeholder="Your reply (max ${FB_MAX} characters)"
+              style="width:100%;box-sizing:border-box;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--inp, var(--card));color:inherit;resize:vertical"></textarea>
+            <span class="legend" data-fbrcount="${x.id}" style="margin:2px 0 0;text-align:right">0 / ${FB_MAX}</span></label>
+        </div>
+        <div class="row" style="justify-content:center;gap:8px">
+          <button type="button" data-fbrsend="${x.id}">Send reply</button>
+          <button type="button" class="sec" data-fbrcancel="${x.id}">Cancel</button>
+        </div>
+        <div class="msg" data-fbrmsg="${x.id}"></div>
+      </div>` : ''}
       <div class="fb-act edit">
         <button type="button" class="fb-st fb-st-live${x.status === 'live' ? ' on' : ''}" data-fbst="live" data-fbid="${x.id}" ${x.status ? 'disabled' : ''}>Live</button>
         <button type="button" class="fb-st fb-st-rej${x.status === 'rejected' ? ' on' : ''}" data-fbst="rejected" data-fbid="${x.id}" ${x.status ? 'disabled' : ''}>Rejected</button>
         <button type="button" class="del" data-fbdel="${x.id}" style="display:inline-block!important">Delete</button>
+        <button type="button" class="sec" data-fbreply="${x.id}" style="margin-left:auto">Reply${(x.replies || []).length ? ` (${x.replies.length})` : ''}</button>
       </div></div>`).join('')
     : '<div class="legend">No feedback yet.</div>';
 }
 // Live / Rejected toggle (click again to clear) · Delete needs the deletion PIN
+$('fbList').oninput = e => {
+  const t = e.target.closest('[data-fbrnote]');
+  if (t) $('fbList').querySelector(`[data-fbrcount="${t.dataset.fbrnote}"]`).textContent = `${t.value.length} / ${FB_MAX}`;
+};
 $('fbList').onclick = async e => {
   const st = e.target.closest('[data-fbst]'), dl = e.target.closest('[data-fbdel]');
+  const rp = e.target.closest('[data-fbreply]'), rc = e.target.closest('[data-fbrcancel]'), rs = e.target.closest('[data-fbrsend]');
+  if (rp) { fbReplyOpen = fbReplyOpen === rp.dataset.fbreply ? null : rp.dataset.fbreply; renderFeedback();
+            $('fbList').querySelector(`[data-fbrname="${fbReplyOpen}"]`)?.focus(); return; }
+  if (rc) { fbReplyOpen = null; renderFeedback(); return; }
+  if (rs) {
+    const id = rs.dataset.fbrsend, x = feedback.find(f => f.id === id); if (!x) return;
+    const nm = $('fbList').querySelector(`[data-fbrname="${id}"]`).value, note = $('fbList').querySelector(`[data-fbrnote="${id}"]`).value.trim();
+    const msg = $('fbList').querySelector(`[data-fbrmsg="${id}"]`); msg.className = 'msg err';
+    if (!nm) { msg.textContent = 'Select your name.'; return; }
+    if (!note) { msg.textContent = 'Write a response.'; return; }
+    if (note.length > FB_MAX) { msg.textContent = `Keep it to ${FB_MAX} characters.`; return; }
+    (x.replies ||= []).push({ id:uid(), ts:Date.now(), name:nm, note }); x.upd = Date.now();
+    fbReplyOpen = null; saveFeedback(); renderFeedback(); return;
+  }
   if (st) {
     const x = feedback.find(f => f.id === st.dataset.fbid); if (!x) return;
     if (x.status) return;                                       // a decision is final
