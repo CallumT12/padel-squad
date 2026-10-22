@@ -165,9 +165,11 @@
   .pf-stats .stat { background:var(--bg); } .pf-stats .v { font-size:1.2rem; }
   @media print { .ov { display:none !important; } }
   .am-round h4 { margin-bottom:6px; }
-  .ev-players { display:flex; flex-wrap:wrap; gap:6px; }
-  .ev-p { background:var(--inp); border:1px solid var(--line); border-radius:999px; padding:4px 10px; font-size:.85rem; }
-  .ev-p b { color:var(--acc); margin-right:4px; }
+  /* Americano players: equal-size tiles in a grid (like the ranked player fields) */
+  .ev-p { display:flex; align-items:center; gap:8px; box-sizing:border-box; height:38px; min-width:0; padding:0 12px;
+          background:var(--inp); border:1px solid var(--line); border-radius:var(--radius-control, 8px); font-size:.85rem;
+          white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ev-p b { flex:0 0 32px; color:var(--acc); margin:0; }
   .am-match { padding:6px 0; border-top:1px solid var(--line); }
   .am-row { display:grid; grid-template-columns:minmax(0,1fr) 52px 52px minmax(0,1fr); column-gap:10px; align-items:center; font-size:.85rem; }
   .am-team { line-height:1.35; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -259,6 +261,13 @@
     border:1px solid var(--line); border-radius:8px; font-size:.9rem; font-weight:800; }
   .game span.wdl-W { border-color:var(--win); color:var(--win); } .game span.wdl-D { border-color:var(--draw); color:var(--draw); }
   .game span.wdl-L { border-color:var(--loss); color:var(--loss); }
+  #fb .cal-form { margin-bottom:0 !important; }
+  #fb textarea { display:block; margin:0; }                  /* no inline-block gap under the box */
+  #fbMsg:empty { display:none; }
+  #fb .fb-form { padding-bottom:12px !important; margin-bottom:12px !important; }
+  #fb .fb-form h3 { margin-bottom:8px; }
+  #fb .fb-form label { gap:2px; }
+  #fb .fb-form .msg { margin-top:6px; }
   .fb-item { border-top:1px solid var(--line); padding:10px 0; }
   .fb-item:first-child { border-top:0; }
   .fb-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
@@ -482,6 +491,8 @@
   .cs-pop { position:fixed; z-index:200; overflow:auto; padding:4px; background:var(--surface); border:1px solid var(--border);
             border-radius:var(--radius-control); box-shadow:0 10px 28px rgba(0,0,0,.14); font-size:.9rem; color:var(--text); }
   .cs-opt { padding:8px 12px; border-radius:6px; cursor:pointer; white-space:nowrap; }
+  .cs-pop.cs-touch .cs-opt { padding:12px 14px; font-size:1rem; white-space:normal; }   /* finger-sized rows on phones */
+  .cs-pop.cs-touch { -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
   .cs-opt.hi { background:var(--selected); color:var(--primary); }
   .cs-opt.sel { font-weight:600; }
   .cs-opt.sel::after { content:'✓'; float:right; margin-left:14px; color:var(--primary); }
@@ -540,8 +551,12 @@
   .av-fixed .av-cell input { margin:0; flex:none; }
   .av-fixed .av-cell label span:empty { display:none; }
   /* Ranking Position player pills: equal width, aligned in a grid */
-  .pe-chips { display:grid; grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:8px; }
-  .pe-chips .pe-chip { width:100%; justify-content:center; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* player pills (Ranking Position + Americano): small, every pill as wide as the longest name, wrapping onto new rows */
+  .pe-chips, .ev-players { display:grid !important; grid-template-columns:repeat(auto-fill, var(--pw, 120px)) !important; gap:6px !important; }
+  .pe-chips .pe-chip { width:100%; min-height:26px !important; height:26px !important; padding:0 10px !important; font-size:.72rem !important;
+    justify-content:center; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ev-players .ev-p { width:100%; height:28px !important; padding:0 10px !important; font-size:.75rem !important; gap:6px !important; }
+  .ev-players .ev-p b { flex:0 0 auto !important; }
 
   /* predicted results */
   .pr-acc { margin-top:14px; }
@@ -573,6 +588,84 @@
     #board .card > table .bar { width:36px; }
   }
   .card.qz, .qz { border:1px solid var(--border) !important; }   /* Qualifier Zone: solid border */
+  /* header CTAs: text pills; on small screens they sit above the title instead of overlapping it */
+  .top-btns { align-items:center; }
+  .top-btns .top-cta { width:auto !important; height:36px !important; min-height:36px !important; padding:0 16px !important;
+    border-radius:999px !important; font-size:.85rem !important; font-weight:600; white-space:nowrap; }
+  @media (max-width:700px) {
+    .top-btns { position:static !important; justify-content:center; flex-wrap:wrap; margin:0 0 12px; }
+    .top-btns .top-cta { height:32px !important; min-height:32px !important; padding:0 12px !important; font-size:.8rem !important; }
+    header { padding-top:14px; }
+  }
+  /* ================= MOBILE (≤ 640px) – compact, single-column layout ================= */
+  @media (max-width:640px) {
+    main { padding:0 10px 32px; }
+    header { padding:12px 12px 4px; }
+    h1 { font-size:1.6rem; }
+    .card, .hb, .cw, details.month, .court { padding:12px !important; border-radius:12px; }
+    /* tabs: 3 × 2 grid that always fits */
+    .tabs { display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; margin:10px 0 14px; }
+    .tab { width:auto !important; min-width:0; padding:8px 4px !important; font-size:.8rem !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    /* stats: two per row */
+    .stats { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:8px; }
+    .stat { padding:10px !important; } .stat .v { font-size:1.05rem !important; } .stat .l, .stat .s { font-size:.7rem !important; }
+    /* leaderboard + qualifier zone: keep Rank, Player, Played, Win %, Rating, Last 6 – hide W / D / L / Points */
+    #board .card > table th:nth-child(4), #board .card > table td:nth-child(4),
+    #board .card > table th:nth-child(5), #board .card > table td:nth-child(5),
+    #board .card > table th:nth-child(6), #board .card > table td:nth-child(6),
+    #board .card > table th:nth-child(7), #board .card > table td:nth-child(7) { display:none; }
+    #board .card > table th, #board .card > table td { padding:8px 4px !important; font-size:.8rem; }
+    #board .card > table th { font-size:.68rem !important; white-space:normal; line-height:1.15; }
+    #board .card > table .bar { display:none; }
+    #board .card > table td.name { white-space:normal; max-width:120px; overflow-wrap:anywhere; }
+    #board .card > table .fd { width:15px; height:15px; line-height:15px; font-size:.5rem; }
+    .lb-controls, .rp-controls, .pe-controls { flex-wrap:wrap; gap:8px; }
+    .lb-controls input[type=range], .rp-controls input[type=range] { flex:1 1 100%; order:3; }
+    /* forms: stack fields, full-width inputs and buttons */
+    .row, .cal-form { flex-direction:column; align-items:stretch !important; gap:8px; }
+    .row > label, .cal-form > label { width:100%; }
+    .row input:not([type=checkbox]):not([type=radio]), .row select, .row textarea,
+    .cal-form input:not([type=checkbox]):not([type=radio]), .cal-form select, .cal-form textarea { width:100% !important; min-width:0 !important; box-sizing:border-box; }
+    .row > button, .cal-form > button { width:100%; }
+    .row .chk, label.chk { flex-direction:row !important; }
+    /* courts & results: one column */
+    .courts, .wk-courts, .wk-courts[style*="--nc:4"] { grid-template-columns:1fr !important; }
+    .game { grid-template-columns:1fr auto 1fr; gap:6px; font-size:.8rem; }
+    .game select.wdl, .game span.wdl { width:72px; }
+    /* match history */
+    .hb-head { flex-direction:column; align-items:stretch; gap:8px; }
+    .hb .hb-btn { width:100% !important; }
+    .hb td.hb-act { width:auto; } .hb td.hb-act .hb-btn { width:auto !important; padding:0 10px; }
+    .hb td, .hb th { padding:6px 4px !important; font-size:.8rem; }
+    /* months / payments side panel stacks under the weeks */
+    .month-body { grid-template-columns:1fr !important; }
+    /* any wide table can scroll sideways inside its card instead of breaking the page */
+    .card, .hb, .month-side { overflow-x:auto; }
+    /* player profile: full-screen sheet */
+    .ov { padding:0 !important; }
+    .ov-card { border-radius:0 !important; min-height:100vh; padding:16px 12px !important; }
+    .pf-head { flex-wrap:wrap; margin-right:36px; gap:10px; }
+    .pf-kpis { margin-left:0; width:100%; justify-content:flex-start; }
+    .pf-kpi { font-size:1.3rem; }
+    .pf-stats { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; }
+    .pf-mode button { width:auto !important; flex:1 1 0; padding:0 6px; }
+    /* feedback */
+    .fb-act button { flex:1 1 auto; }
+    .fb-act button[data-fbreply] { margin-left:0 !important; }
+    .fb-reply { margin-left:6px; }
+    /* Americano tab: event picker + "Points per match / Number of rounds / Shuffle" stack neatly */
+    #event #evWeek { min-width:0 !important; width:100% !important; }
+    #event .am-rounds .row > label { flex-direction:row !important; justify-content:space-between; align-items:center; margin:0 !important; width:100%; gap:12px; }
+    #event .am-rounds .row > label > input, #event .am-rounds .row > label > select { width:120px !important; flex:0 0 120px; height:38px; }
+    #event .am-rounds .row > button { margin:0 !important; width:100%; }
+    #event .am-rounds h3 { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+    .am-row { flex-wrap:nowrap; gap:6px; }
+    .am-row input.am-in { width:52px; flex:0 0 52px; }
+    /* stacked fields: the note's flex-basis (360px / 300px) must not become a height */
+    #fb .cal-form > label, .fb-reply-form .cal-form > label { flex:0 0 auto !important; }
+    #fb .cal-form { gap:6px; }
+    #fb .fb-form .row { margin-top:4px !important; }
+  }
   /* clean dropdown arrow everywhere: thin chevron with breathing room from the right edge */
   select:not([multiple]) { -webkit-appearance:none; -moz-appearance:none; appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.75 6 6.25l4.5-4.5' fill='none' stroke='%238a948c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; background-size:12px 8px;
@@ -587,10 +680,9 @@
 <body>
 <header style="position:relative">
   <div class="top-btns">
-    <span id="syncStatus" class="legend" style="align-self:center;margin:0"></span>
-    <button type="button" class="theme-btn" id="pdfBtn" title="Export leaderboard and match history as PDF" aria-label="Export leaderboard and match history as PDF">📄</button>
-    <button type="button" class="theme-btn" id="themeBtn"></button>
-    <button type="button" class="theme-btn" id="cfgBtn" title="Configuration" aria-label="Configuration">⚙️</button>
+    <button type="button" class="theme-btn top-cta" id="pdfBtn" title="Export leaderboard and match history as PDF" aria-label="Export leaderboard and match history as PDF">PDF</button>
+    <button type="button" class="theme-btn top-cta" id="themeBtn">Light/Dark</button>
+    <button type="button" class="theme-btn top-cta" id="cfgBtn" title="Settings" aria-label="Settings">Settings</button>
   </div>
   <h1>Padel <span>Squad</span></h1>
   <div class="sub" id="roBanner" style="display:none;color:var(--primary);font-weight:600"></div>
@@ -720,7 +812,6 @@
   <!-- ============ AVAILABILITY ============ -->
   <section class="panel" id="avail">
     <div class="card">
-      <h3 style="margin-top:0">Availability</h3>
       <div class="row" style="margin-bottom:12px">
         <div class="av-toolbar">
           <select id="avMonth" aria-label="Month"></select>
@@ -753,19 +844,14 @@
 
   <!-- ============ CONFIGURATION ============ -->
   <section class="panel" id="cfg">
+    <div class="legend" style="margin:0 0 10px;text-align:right">Sync status: <span id="syncStatus" style="font-weight:600">–</span></div>
     <div class="card edit">
       <h3>👥 Players</h3>
       <div class="row cal-form">
+        <label>Search<input id="npFilter" placeholder="Find a player" style="width:200px"></label>
         <label>New player name<input id="npName" placeholder="e.g. Sam 🎾" maxlength="40" style="width:260px"></label>
         <button type="button" id="npAdd">Add player</button>
-        <label>Search<input id="npFilter" placeholder="Find a player" style="width:200px"></label>
       </div>
-      <details style="margin-top:8px"><summary><b>Bulk add players</b> <span class="legend">· paste one name per line</span></summary>
-        <div class="row" style="margin-top:8px;align-items:flex-start">
-          <textarea id="npBulk" rows="8" placeholder="Jeff 🍔&#10;Luke 🍑👏🏻&#10;Nick" style="width:320px;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--card,inherit);color:inherit"></textarea>
-          <button type="button" id="npBulkAdd">Add all</button>
-        </div>
-      </details>
       <div class="msg" id="npMsg"></div>
       <div style="max-height:420px;overflow:auto;margin-top:8px">
         <table class="np-table"><colgroup><col style="width:64px"><col><col style="width:80px"><col style="width:80px"><col style="width:290px"></colgroup><thead><tr><th>Rank</th><th style="text-align:left">Player</th><th>Played</th><th>Points</th><th></th></tr></thead>
@@ -793,17 +879,6 @@
       </div>
       <div class="legend" id="pinState"></div>
       <div class="msg" id="pinMsg"></div>
-    </div>
-
-    <div class="card edit">
-      <h3>📦 Archives</h3>
-      <div class="legend" style="margin:0 0 10px">Store a named snapshot of the current session that can be opened in a separate read-only browser tab to review past performance and compare changes.</div>
-      <div class="row cal-form">
-        <label>Archive name<input id="arName" placeholder="e.g. End of October 2026" maxlength="50" style="width:260px"></label>
-        <button type="button" id="arSave">Archive current session</button>
-      </div>
-      <div style="max-height:300px;overflow:auto;margin-top:8px"><table><tbody id="arList"></tbody></table></div>
-      <div class="msg" id="arMsg"></div>
     </div>
 
     <div class="card edit">
@@ -840,7 +915,6 @@
   <!-- ============ EVENT (Americano) ============ -->
   <section class="panel" id="event">
     <div class="card">
-      <h3>Americano</h3>
       <div class="row cal-form">
         <select id="evWeek" aria-label="Americano event" style="min-width:320px;height:38px"></select>
       </div>
@@ -857,7 +931,7 @@
       <h3>New Match Session (manual)</h3>
       <div class="legend" style="margin:0 0 10px">Build a session like Matches: add courts, pick 4 players per court and enter who won each game. No predictions are shown.</div>
       <div class="row cal-form">
-        <label>Date<input type="date" id="msDate" style="height:38px"></label>
+        <input type="date" id="msDate" aria-label="Session date" style="height:38px">
         <button type="button" class="sec" id="msAddCourt" style="height:38px">+ Add court</button>
         <span class="legend" id="msInfo" style="margin:0"></span>
       </div>
@@ -882,20 +956,19 @@
   </section>
   <!-- ============ FEEDBACK ============ -->
   <section class="panel" id="fb">
-    <div class="card edit">
-      <h3>Send feedback</h3>
+    <div class="card edit fb-form">
       <div class="row cal-form" style="align-items:flex-start">
         <label>Player<select id="fbName" style="height:38px;min-width:220px"><option value="">– Select your name –</option></select></label>
         <label style="flex:1 1 360px">Note
-          <textarea id="fbNote" maxlength="500" rows="4" placeholder="Your feedback (max 500 characters)"
+          <textarea id="fbNote" maxlength="500" rows="3" placeholder="Your feedback (max 500 characters)"
             style="width:100%;box-sizing:border-box;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--inp, var(--card));color:inherit;resize:vertical"></textarea>
-          <span class="legend" id="fbCount" style="margin:2px 0 0;text-align:right">0 / 500</span></label>
+          <span class="legend" id="fbCount" style="margin:0;text-align:right;line-height:1.2">0 / 500</span></label>
       </div>
-      <div class="row" style="justify-content:center"><button type="button" id="fbSubmit">Submit feedback</button></div>
+      <div class="row" style="justify-content:center;margin-top:4px"><button type="button" id="fbSubmit">Submit feedback</button></div>
       <div class="msg" id="fbMsg"></div>
     </div>
     <div class="card">
-      <h3>All feedback <span class="legend" id="fbTotal"></span></h3>
+      <h3>Submissions <span id="fbTotal"></span></h3>
       <div id="fbList"></div>
     </div>
   </section>
@@ -931,7 +1004,6 @@ const TKEY = 'padelTheme';
 function applyTheme(t) {
   document.documentElement.dataset.theme = t;
   const tb = document.getElementById('themeBtn');
-  tb.textContent = t==='light' ? '🌙' : '☀️';
   tb.title = tb.ariaLabel = t==='light' ? 'Switch to dark mode' : 'Switch to light mode';
   localStorage.setItem(TKEY, t);
 }
@@ -1616,6 +1688,7 @@ function renderProgress() {
     return `<button type="button" class="pe-chip${on ? ' on' : ''}" data-pen="${esc(p.name)}" title="${esc(p.name)}"
         ${on ? `style="background:${c};border-color:${c};box-shadow:0 0 12px ${c}40"` : ''}>${on ? '✓ ' : ''}${esc(p.name)}</button>`;
   }).join('') || '<span class="legend">No qualified players yet.</span>';
+  equalizePills($('chartPlayers'));
   $('chartPlayers').querySelectorAll('[data-pen]').forEach(b => b.onclick = () => {
     const n = b.dataset.pen; peSel = peSel.includes(n) ? peSel.filter(x => x !== n) : [...peSel, n]; renderProgress();
   });
@@ -1997,23 +2070,6 @@ $('npAdd').onclick = () => {
   roster.push(n); save(); render();
   m.classList.add('ok'); m.textContent = `${n} added to the Qualifier Zone.`; $('npName').value = '';
 };
-// bulk add: one name per line; skips blanks, duplicates in the list and anyone who is already a player
-$('npBulkAdd').onclick = () => {
-  const m = $('npMsg'); m.className = 'msg';
-  const lines = $('npBulk').value.split(/\r?\n/).map(x => x.trim().replace(/\s+/g, ' ')).filter(Boolean);
-  if (!lines.length) { m.classList.add('err'); m.textContent = 'Paste at least one name.'; return; }
-  const have = new Set(aggregate().map(p => p.name.toLowerCase())), added = [], skipped = [];
-  lines.forEach(n => {
-    if (n.length > 40) return skipped.push(n + ' (name too long)');
-    if (have.has(n.toLowerCase())) return skipped.push(n);
-    have.add(n.toLowerCase()); added.push(n);
-  });
-  if (added.length) { roster.push(...added); save(); render(); }
-  m.classList.add(added.length ? 'ok' : 'err');
-  m.textContent = `${added.length} player${added.length === 1 ? '' : 's'} added to the Qualifier Zone` +
-    (skipped.length ? ` · ${skipped.length} skipped (already players or duplicates): ${skipped.join(', ')}` : '') + '.';
-  if (added.length) $('npBulk').value = '';
-};
 $('npName').onkeydown = e => { if (e.key === 'Enter') $('npAdd').click(); };
 $('npFilter').oninput = renderPlayersCfg;
 
@@ -2062,7 +2118,7 @@ function renderManualSession() {
     <details class="res-acc" open><summary><b>Results</b>
       <span class="pill${entered === total ? ' full' : ''}">${entered}/${total} games entered</span></summary>
       <div class="courts wk-courts" style="margin-top:10px;--nc:${nc}">${resultsH}</div>
-    </details>` : '<div class="legend">No courts yet – click <b>+ Add court</b>.</div>';
+    </details>` : '';
   $('msInfo').textContent = ms.courts.length ? `${ms.courts.length} court${ms.courts.length > 1 ? 's' : ''} · ${used.length}/${ms.courts.length * PER_COURT} players` : '';
   $('msCourts').querySelectorAll('select[data-msp]').forEach(el => el.onchange = () => { ms.courts[+el.dataset.msc].ps[+el.dataset.msp] = el.value; renderManualSession(); });
   $('msCourts').querySelectorAll('select[data-msg]').forEach(el => el.onchange = () => {
@@ -2114,6 +2170,7 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x===t));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id===t.dataset.tab));
   if (t.dataset.tab === 'board') renderProgress();    // re-measure graph width when shown
+  equalizePills($('chartPlayers')); equalizePills(document.querySelector('#evBody .ev-players'));   // pills can only be measured when visible
 });
 
 // ---------- schedule ----------
@@ -2250,7 +2307,7 @@ function renderFeedback() {
   const names = aggregate().map(p => p.name).sort((a, b) => a.localeCompare(b));
   sel.innerHTML = '<option value="">– Select your name –</option>' + names.map(n => `<option value="${esc(n)}" ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
   const list = feedback.filter(x => !x.deleted).sort((a, b) => b.ts - a.ts);
-  $('fbTotal').textContent = list.length ? `· ${list.length} submission${list.length === 1 ? '' : 's'}` : '';
+  $('fbTotal').textContent = `(${list.length})`;
   $('fbList').innerHTML = list.length ? list.map(x => `<div class="fb-item">
       <div class="fb-head"><b>${esc(x.name)}</b>
         <span class="legend" style="margin:0 0 0 auto">${new Date(x.ts).toLocaleString()}</span></div>
@@ -2556,6 +2613,17 @@ ${inp(r, c, 1)}<span class="am-team">${B.map(pn).join('<br>')}</span></div>
         <td class="pts">${e.pts}</td><td>${e.pts - e.against > 0 ? '+' : ''}${e.pts - e.against}</td></tr>`).join('')}</tbody></table>`;
 }
 
+// make every pill in a container as wide as its longest one (capped to the container width)
+function equalizePills(box) {
+  if (!box) return;
+  const pills = [...box.children]; if (!pills.length) return;
+  box.style.removeProperty('--pw');
+  let w = 0;
+  pills.forEach(el => { const o = el.style.width; el.style.width = 'max-content'; w = Math.max(w, Math.ceil(el.getBoundingClientRect().width)); el.style.width = o; });
+  const max = (box.clientWidth || innerWidth) - 2;
+  if (w) box.style.setProperty('--pw', Math.min(w + 2, max) + 'px');
+}
+addEventListener('resize', () => { equalizePills($('chartPlayers')); equalizePills(document.querySelector('#evBody .ev-players')); });
 // ---------- Event tab ----------
 let evSel = null;
 function renderEvent() {
@@ -2575,6 +2643,7 @@ function renderEvent() {
     <div class="legend" style="margin:0 0 10px">To change players, edit the week in the Calendar tab.</div>
     <div class="ev-players">${ps.map((n, i) => `<span class="ev-p"><b>P${i+1}</b> ${esc(n)}</span>`).join('') || '<span class="legend">No players yet.</span>'}</div>
     ${americanoHtml(w, L, rankOf)}`;
+  equalizePills(body.querySelector('.ev-players'));
   const find = id => calendar.find(x => x.id === id);
   body.querySelectorAll('details.res-acc').forEach(d => d.ontoggle = () => { resOpen[d.dataset.acc] = d.open; });
   body.querySelectorAll('[data-f]').forEach(el => el.onchange = () => {
@@ -3103,7 +3172,7 @@ function applyMode() {
 // ---------- Supabase sync ----------
 // Every edit still updates the in-memory arrays; save()/saveCal() then call schedulePush(), which
 // diffs against the last state known to be in Supabase and only sends what changed.
-const syncMsg = (t, err=false) => { const e = $('syncStatus'); e.textContent = t; e.style.color = err ? '#ef4444' : ''; };
+const syncMsg = (t, err=false) => { const e = $('syncStatus'); e.textContent = t || '–'; e.style.color = err ? '#ef4444' : ''; };
 const batchRow  = b => ({ id:b.id, ts:b.ts, source:b.source || null, games:b.games || [], created_by:b.by || null });
 const resultRow = r => ({ id:r.id, batch:r.batch, name:r.name, w:r.w, d:r.d, l:r.l });
 function snapState() {
@@ -3298,92 +3367,8 @@ $('abNow').onclick = async () => {
   try { await makeBackup('manual'); $('abMsg').className = 'msg ok'; $('abMsg').textContent = 'Backup saved.'; renderBackups(); }
   catch (e) { $('abMsg').className = 'msg err'; $('abMsg').textContent = 'Backup failed: ' + (e.message || e); }
 };
-$('cfgBtn').addEventListener('click', () => { renderBackups(); renderArchives(); });
+$('cfgBtn').addEventListener('click', () => renderBackups());
 
-// ---------- named archives (opened in a separate read-only tab to compare changes) ----------
-const AR_LOCAL = 'padelArchives';
-async function listArchives() {
-  if (CLOUD) {
-    const { data, error } = await sb.from('backups').select('id,at,kind').like('kind', 'archive:%').order('at', { ascending:false });
-    if (error) throw error;
-    return data.map(b => ({ id:b.id, at:b.at, label:b.kind.slice(8) || 'Archive' }));
-  }
-  return JSON.parse(localStorage.getItem(AR_LOCAL) || '[]').map((b, i) => ({ id:i, at:b.at, label:b.label || 'Archive' })).reverse();
-}
-async function getArchive(id) {
-  if (CLOUD) { const { data, error } = await sb.from('backups').select('at,kind,data').eq('id', id).single(); if (error) throw error; return { at:data.at, label:data.kind.slice(8) || 'Archive', data:data.data }; }
-  return JSON.parse(localStorage.getItem(AR_LOCAL) || '[]')[id];
-}
-async function createArchive(label) {
-  const clean = (label || '').trim().slice(0, 50) || `Archive ${stamp()}`;
-  const row = { kind:'archive:' + clean, data:snapshotData() };
-  if (CLOUD) { const { error } = await sb.from('backups').insert(row); if (error) throw error; return clean; }
-  const all = JSON.parse(localStorage.getItem(AR_LOCAL) || '[]');
-  all.push({ label:clean, at:new Date().toISOString(), data:row.data });
-  localStorage.setItem(AR_LOCAL, JSON.stringify(all));
-  return clean;
-}
-async function deleteArchive(id) {
-  if (CLOUD) { const { error } = await sb.from('backups').delete().eq('id', id); if (error) throw error; return; }
-  const all = JSON.parse(localStorage.getItem(AR_LOCAL) || '[]'); all.splice(id, 1);
-  localStorage.setItem(AR_LOCAL, JSON.stringify(all));
-}
-function openSnapshotTab(label, published, data) {
-  const payload = JSON.stringify({ label, published, data }).replace(/</g, '\\u003c');
-  const html = PAGE_SOURCE.replace('<script>', `<script>window.PADEL_SNAPSHOT = ${payload};<\/script>\n<script>`);
-  const url = URL.createObjectURL(new Blob([html], { type:'text/html' }));
-  const win = window.open(url, '_blank');
-  if (!win) { const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
-}
-async function renderArchives() {
-  const m = $('arMsg'); m.className = 'msg'; m.textContent = '';
-  try {
-    const list = await listArchives();
-    $('arList').innerHTML = list.length ? list.map(a => `<tr>
-      <td class="name" style="text-align:left">${esc(a.label)}</td>
-      <td class="legend" style="text-align:left;margin:0">${new Date(a.at).toLocaleString()}</td>
-      <td style="text-align:right;white-space:nowrap">
-        <button type="button" class="primary" data-aropen="${a.id}" style="min-height:34px;height:34px;padding:0 12px">Open in new tab ↗</button>
-        <button type="button" class="sec" data-ardl="${a.id}" style="min-height:34px;height:34px;padding:0 12px;margin-left:4px">Download</button>
-        <button type="button" class="del" data-ardel="${a.id}" style="min-height:34px;height:34px;padding:0 12px;margin-left:4px;display:inline-block!important">Delete</button>
-      </td></tr>`).join('') : '<tr><td colspan="3" class="legend">No archives stored yet. Enter a name above and click <b>Archive current session</b>.</td></tr>';
-    $('arList').querySelectorAll('[data-aropen]').forEach(btn => btn.onclick = async () => {
-      try {
-        const a = await getArchive(btn.dataset.aropen);
-        openSnapshotTab(a.label, a.at, a.data);
-      } catch (e) { m.className = 'msg err'; m.textContent = 'Could not open archive: ' + (e.message || e); }
-    });
-    $('arList').querySelectorAll('[data-ardl]').forEach(btn => btn.onclick = async () => {
-      try {
-        const a = await getArchive(btn.dataset.ardl);
-        const slug = a.label.replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-|-$/g, '') || 'archive';
-        download(`padel-archive-${slug}.json`,
-          JSON.stringify({ app:'padel-leaderboard', version:1, archive:a.label, exported:a.at, data:a.data }, null, 2), 'application/json');
-      } catch (e) { m.className = 'msg err'; m.textContent = 'Download failed: ' + (e.message || e); }
-    });
-    $('arList').querySelectorAll('[data-ardel]').forEach(btn => btn.onclick = async () => {
-      const row = btn.closest('tr'), label = row?.cells[0]?.textContent || 'this archive';
-      if (!confirm(`Delete archive "${label}"?`)) return;
-      if (!(await checkPin())) return;
-      try { await deleteArchive(btn.dataset.ardel); renderArchives(); }
-      catch (e) { m.className = 'msg err'; m.textContent = 'Delete failed: ' + (e.message || e); }
-    });
-  } catch (e) {
-    m.className = 'msg err';
-    m.textContent = 'Could not load archives: ' + (e.message || e);
-  }
-}
-$('arSave').onclick = async () => {
-  const m = $('arMsg'); m.className = 'msg';
-  const input = $('arName').value.trim() || `Session ${new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}`;
-  try {
-    const saved = await createArchive(input);
-    $('arName').value = '';
-    m.className = 'msg ok'; m.textContent = `Archived as "${saved}". Click "Open in new tab ↗" below to view and compare.`;
-    renderArchives();
-  } catch (e) { m.className = 'msg err'; m.textContent = 'Archive failed: ' + (e.message || e); }
-};
 const calMonthName = m => new Date(m + '-01T00:00').toLocaleDateString(undefined, { month:'long', year:'numeric' });
 function renderCalResetMonths() {
   const sel = $('calResetMonth'); if (!sel) return;
@@ -3424,7 +3409,7 @@ $('calReset').onclick = async () => {
     m.className = 'msg err'; m.textContent = 'Reset failed: ' + (e.message || e) + '. A backup was saved.';
   }
 };
-$('arName').onkeydown = e => { if (e.key === 'Enter') $('arSave').click(); };
+
 
 // ---------- PDF export (uses the browser's "Save as PDF") ----------
 $('pdfBtn').onclick = () => {
@@ -3476,12 +3461,12 @@ renderPinState();
 
 // ---------- dropdowns always open downwards ----------
 // The browser's own menu (e.g. on a Mac) opens centred over the current choice. On mouse/trackpad
-// devices we show our own list directly BELOW the field instead; the real <select> keeps its value,
-// styling and change events. Phones/tablets keep their native pickers.
+// devices AND on phones/tablets we show our own list directly BELOW the field instead (same look
+// everywhere); the real <select> keeps its value, styling and change events.
 (() => {
-  if (matchMedia('(pointer: coarse)').matches) return;
-  let pop = null, sel = null, items = [], hi = -1;
-  const close = (focus = true) => { if (!pop) return; pop.remove(); pop = null; if (focus && sel) sel.focus({ preventScroll:true }); sel = null; };
+  const touch = matchMedia('(pointer: coarse)').matches;
+  let pop = null, sel = null, items = [], hi = -1, quietUntil = 0;
+  const close = (focus = true) => { if (!pop) return; pop.remove(); pop = null; if (focus && sel && !touch) sel.focus({ preventScroll:true }); sel = null; };
   const choose = i => {
     const it = items[i]; if (!it || it.disabled) return;
     const s = sel; close();
@@ -3496,7 +3481,14 @@ renderPinState();
   };
   const open = s => {
     close(false); sel = s; items = [];
-    const r = s.getBoundingClientRect();
+    let r = s.getBoundingClientRect();
+    // not enough room underneath (e.g. near the bottom of a phone screen) → scroll the field up first
+    const want = Math.min(320, 44 * s.options.length + 12);
+    if (innerHeight - r.bottom - 12 < Math.min(want, 240)) {
+      quietUntil = Date.now() + 600;
+      scrollBy(0, Math.min(want, 240) - (innerHeight - r.bottom - 12));
+      r = s.getBoundingClientRect();
+    }
     pop = document.createElement('div'); pop.className = 'cs-pop'; pop.setAttribute('role', 'listbox');
     let html = '';
     [...s.children].forEach(ch => {
@@ -3507,21 +3499,32 @@ renderPinState();
     });
     pop.innerHTML = html;
     const below = innerHeight - r.bottom - 12;
-    pop.style.left = Math.min(r.left, innerWidth - Math.max(r.width, 160) - 8) + 'px';
+    pop.style.left = r.left + 'px';
     pop.style.top = (r.bottom + 4) + 'px';
     pop.style.minWidth = r.width + 'px';
+    pop.style.maxWidth = (innerWidth - 16) + 'px';
+    if (touch) pop.classList.add('cs-touch');
     pop.style.maxHeight = Math.max(140, Math.min(320, below)) + 'px';
     document.body.appendChild(pop);
+    // line the list up with the field: same left edge when it's the same width, otherwise centred under it (kept on screen)
+    const pw = pop.offsetWidth;
+    pop.style.left = Math.max(8, Math.min(innerWidth - pw - 8, r.left + (r.width - pw) / 2)) + 'px';
     pop.addEventListener('mousedown', e => e.preventDefault());
     pop.addEventListener('click', e => { const o = e.target.closest('.cs-opt'); if (o) choose(+o.dataset.k); });
     pop.addEventListener('mousemove', e => { const o = e.target.closest('.cs-opt'); if (o && !o.classList.contains('dis')) highlight(+o.dataset.k); });
     highlight(Math.max(0, s.selectedIndex));
   };
-  document.addEventListener('mousedown', e => {
+  const press = e => {
     const s = e.target.closest && e.target.closest('select');
-    if (s && !s.multiple && !s.disabled && s.size <= 1) { e.preventDefault(); s.focus({ preventScroll:true }); sel === s && pop ? close() : open(s); return; }
+    if (s && !s.multiple && !s.disabled && s.size <= 1) {
+      e.preventDefault();                                          // stops the native picker (mouse and touch)
+      if (!touch) s.focus({ preventScroll:true });
+      sel === s && pop ? close() : open(s); return;
+    }
     if (pop && !pop.contains(e.target)) close(false);
-  }, true);
+  };
+  document.addEventListener(touch ? 'touchstart' : 'mousedown', press, { capture:true, passive:false });
+  if (touch) document.addEventListener('mousedown', e => { if (e.target.closest && e.target.closest('select')) e.preventDefault(); }, true);
   document.addEventListener('keydown', e => {
     if (pop) {
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
@@ -3540,8 +3543,8 @@ renderPinState();
     const s = e.target;
     if (s.tagName === 'SELECT' && !s.multiple && (e.key === ' ' || e.key === 'Enter' || (e.altKey && e.key === 'ArrowDown'))) { e.preventDefault(); open(s); }
   }, true);
-  addEventListener('scroll', e => { if (pop && !pop.contains(e.target)) close(false); }, true);
-  addEventListener('resize', () => close(false));
+  addEventListener('scroll', e => { if (pop && !pop.contains(e.target) && Date.now() > quietUntil) close(false); }, true);
+  addEventListener('resize', () => { if (Date.now() > quietUntil) close(false); });
 })();
 
 applyMode();
