@@ -255,6 +255,28 @@
   .month-body { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:16px; padding:0 16px 16px; align-items:start; }
   .month-weeks .cw { background:var(--bg); }
   .month-side { background:var(--bg); border-radius:12px; padding:14px; position:sticky; top:12px; }
+  .game span.wdl.am-sc { display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; width:84px; height:30px;
+    border:1px solid var(--line); border-radius:8px; font-size:.9rem; font-weight:800; }
+  .game span.wdl-W { border-color:var(--win); color:var(--win); } .game span.wdl-D { border-color:var(--draw); color:var(--draw); }
+  .game span.wdl-L { border-color:var(--loss); color:var(--loss); }
+  .fb-item { border-top:1px solid var(--line); padding:10px 0; }
+  .fb-item:first-child { border-top:0; }
+  .fb-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+  .fb-note { white-space:pre-wrap; overflow-wrap:anywhere; }
+  .fb-act { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .fb-act button { height:30px; min-height:30px; padding:0 12px; font-size:.8rem; }
+  /* Feedback status buttons: before a decision both are transparent with a white (text-colour) outline;
+     the chosen one becomes solid green (Live) / red (Rejected); the other keeps a coloured outline, disabled */
+  .fb-act button.fb-st { background:transparent; color:var(--txt, #fff); border:2px solid var(--txt, #fff); font-weight:700; }
+  .fb-act button.fb-st:not(:disabled):hover { background:rgba(255,255,255,.08); }
+  .fb-act button.fb-st-live.on { background:var(--win, #22c55e); border-color:var(--win, #22c55e); color:#fff; opacity:1; }
+  .fb-act button.fb-st-rej.on { background:var(--loss, #ef4444); border-color:var(--loss, #ef4444); color:#fff; opacity:1; }
+  .fb-act button.fb-st:disabled:not(.on) { opacity:.6; cursor:not-allowed; }
+  .fb-act button.fb-st-live:disabled:not(.on) { color:var(--win, #22c55e); border-color:var(--win, #22c55e); }
+  .fb-act button.fb-st-rej:disabled:not(.on) { color:var(--loss, #ef4444); border-color:var(--loss, #ef4444); }
+  .pf-kpis { margin-left:auto; display:flex; align-items:center; gap:18px; }
+  .pf-kpi { font-size:1.6rem; font-weight:800; color:var(--acc); line-height:1; font-variant-numeric:tabular-nums; }
+  .pf-kpi.pf-rt { padding-left:18px; border-left:2px solid var(--line); }
   .pf-mode { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin:12px 0 4px; }
   .pf-mode button { height:34px; min-height:34px; padding:0 16px; width:130px; text-align:center; justify-content:center; }
   .month-side h4 { margin:0 0 8px; }
@@ -549,6 +571,15 @@
     #board .card > table .bar { width:36px; }
   }
   .card.qz, .qz { border:1px solid var(--border) !important; }   /* Qualifier Zone: solid border */
+  /* clean dropdown arrow everywhere: thin chevron with breathing room from the right edge */
+  select:not([multiple]) { -webkit-appearance:none; -moz-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.75 6 6.25l4.5-4.5' fill='none' stroke='%238a948c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; background-size:12px 8px;
+    padding-right:38px !important; }
+  select:not([multiple])::-ms-expand { display:none; }
+  /* compact selects keep a smaller arrow / padding */
+  .game select.wdl { background-position:right 8px center; background-size:10px 7px; padding-right:24px !important; padding-left:8px !important; }
+  .plist.picks select, .slot select { background-position:right 10px center; padding-right:30px !important; }
+  .plist select.subsel { background-image:none; padding-right:4px !important; }
 </style>
 </head>
 <body>
@@ -569,6 +600,7 @@
     <button class="tab" data-tab="cal">Matches</button>
     <button class="tab" data-tab="event">Americano</button>
     <button class="tab" data-tab="hist">Match History</button>
+    <button class="tab" data-tab="fb">Feedback</button>
   </div>
 
   <!-- ============ LEADERBOARD ============ -->
@@ -839,11 +871,31 @@
       <div class="row cal-form">
         <label>Player<input id="hFilter" list="players" placeholder="All players" style="height:38px;min-width:240px"></label>
         <label>Month<select id="hMonth" style="height:38px;min-width:200px"><option value="">All months</option></select></label>
+        <label>Game type<select id="hType" style="height:38px;min-width:170px"><option value="">All game types</option><option value="comp">Competitive</option><option value="am">Americano</option></select></label>
         <button type="button" class="sec" id="hReset" style="height:38px">Clear filters</button>
       </div>
       <div class="legend" id="hCount"></div>
     </div>
     <div id="history"></div>
+  </section>
+  <!-- ============ FEEDBACK ============ -->
+  <section class="panel" id="fb">
+    <div class="card edit">
+      <h3>Send feedback</h3>
+      <div class="row cal-form" style="align-items:flex-start">
+        <label>Player<select id="fbName" style="height:38px;min-width:220px"><option value="">– Select your name –</option></select></label>
+        <label style="flex:1 1 360px">Note
+          <textarea id="fbNote" maxlength="500" rows="4" placeholder="Your feedback (max 500 characters)"
+            style="width:100%;box-sizing:border-box;font:inherit;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--inp, var(--card));color:inherit;resize:vertical"></textarea>
+          <span class="legend" id="fbCount" style="margin:2px 0 0;text-align:right">0 / 500</span></label>
+      </div>
+      <div class="row" style="justify-content:center"><button type="button" id="fbSubmit">Submit feedback</button></div>
+      <div class="msg" id="fbMsg"></div>
+    </div>
+    <div class="card">
+      <h3>All feedback <span class="legend" id="fbTotal"></span></h3>
+      <div id="fbList"></div>
+    </div>
   </section>
 </main>
 
@@ -994,10 +1046,13 @@ function aggregate(recs = results) {
   list.forEach(p => p.rating = ratingOf(ratings, p.name));
   list.sort((a,b) => b.rating-a.rating || b.pct-a.pct || b.points-a.points || b.wins-a.wins || a.games-b.games || a.name.localeCompare(b.name));
   // players need MIN_GAMES to enter the main leaderboard; others sit in the qualifier zone
-  const main = list.filter(p => p.games >= MIN_GAMES), qual = list.filter(p => p.games < MIN_GAMES);
+  // qualifier zone = players who have STARTED playing (1+ games) but have fewer than MIN_GAMES;
+  // players with no games yet are listed last, unranked ('–'), and are not shown in either table
+  const main = list.filter(p => p.games >= MIN_GAMES), qual = list.filter(p => p.games > 0 && p.games < MIN_GAMES), idle = list.filter(p => !p.games);
   main.forEach((p,i) => { p.rank = i+1; p.label = String(i+1); p.qual = false; });
   qual.forEach((p,i) => { p.rank = main.length+i+1; p.label = 'Q'+(i+1); p.qual = true; });
-  return [...main, ...qual];
+  idle.forEach((p,i) => { p.rank = main.length+qual.length+i+1; p.label = '–'; p.qual = true; p.idle = true; });
+  return [...main, ...qual, ...idle];
 }
 const rc = (r, q) => !q && r<=3 ? ' r'+r : '';
 // Game-by-game results per player, oldest → newest. Only weekly sessions (≤3 games per player) are used;
@@ -1035,15 +1090,17 @@ const sorted = arr => [...arr].sort((a,b) => {
   return (typeof x==='string' ? x.localeCompare(y) : x-y) * sortDir;
 });
 function render() {
-  const all = aggregate(), top = all.filter(p => !p.qual), quals = all.filter(p => p.qual);
+  const all = aggregate(), top = all.filter(p => !p.qual), quals = all.filter(p => p.qual && !p.idle);
   // rank movement since the previous submitted score
   const lastB = [...batches].sort((a,b) => b.ts - a.ts)[0];
   const prevRank = {};
   if (lastB && batches.length > 1)
-    aggregate(results.filter(r => r.batch !== lastB.id)).forEach(q => { if (q.games) prevRank[q.name] = q.rank; });
+    aggregate(results.filter(r => r.batch !== lastB.id)).forEach(q => { if (!q.qual) prevRank[q.name] = q.rank; });   // previously RANKED only
   const move = p => {
+    if (p.qual) return '<span class="mv same" title="Qualifier Zone – not ranked yet">▬</span>';
     const pr = prevRank[p.name];
-    if (batches.length < 2 || pr == null || !p.games)
+    if (batches.length >= 2 && pr == null) return '<span class="mv new" title="Newly qualified – entered the leaderboard">⭐</span>';
+    if (batches.length < 2 || pr == null)
       return '<span class="mv same" title="No previous submission">▬</span>';
     const d = pr - p.rank;
     return d > 0 ? `<span class="mv up" title="Up ${d} since last submission">▲${d}</span>`
@@ -1092,6 +1149,7 @@ function render() {
   renderAvailability();
   renderManualSession();
   renderCalResetMonths();
+  renderFeedback();
 }
 
 // ---------- rank progress ----------
@@ -1260,7 +1318,7 @@ function rankSnapshots() {
   const snaps = []; let cum = [];
   [...batches].sort((a, b) => a.ts - b.ts).forEach(b => {
     cum = cum.concat(results.filter(r => r.batch === b.id));
-    const ranks = {}; aggregate(cum).forEach(p => { if (p.games) ranks[p.name] = p.rank; });
+    const ranks = {}; aggregate(cum).forEach(p => { if (!p.qual) ranks[p.name] = p.rank; });   // ranked (qualified) positions only
     snaps.push({ ts:b.ts, ranks });
   });
   return snaps;
@@ -1307,8 +1365,18 @@ function profileStats(name, mode = pfMode) {
     prev = r;
   });
   const winPct = e => (e.w * 3 + e.d) / (e.played * 3);           // same Win % as shown in the table
+  // historical peaks (Competitive leaderboard, after each submitted session):
+  //   Win % counts only once the player had qualified (9+ games) so a 1-game 100% doesn't count
+  let peakRating = null, peakPct = null, cumR = [];
+  [...batches].sort((a, b) => a.ts - b.ts).forEach(b => {
+    cumR = cumR.concat(results.filter(r => r.batch === b.id));
+    if (!cumR.some(r => r.name === name)) return;
+    const q = aggregate(cumR).find(x => x.name === name); if (!q || !q.games) return;
+    if (ratingMatches([b], cumR).some(m => [...m.a, ...m.b].includes(name)) && (!peakRating || q.rating > peakRating.v + 1e-9)) peakRating = { v:q.rating, ts:b.ts };
+    if (!q.qual && (!peakPct || q.pct > peakPct.v + 1e-9)) peakPct = { v:q.pct, ts:b.ts };
+  });
   return { me, opps:opps.sort((a, b) => winPct(b) - winPct(a) || b.played - a.played || b.w - a.w || a.name.localeCompare(b.name)), rival, victim, nemesis, partner,
-           bestStreak:best, curWins:cur, jump, drop, bestRank, worstRank, games:seq.length, seq };
+           peakRating, peakPct, bestStreak:best, curWins:cur, jump, drop, bestRank, worstRank, games:seq.length, seq };
 }
 function openProfile(name) {
   const st = profileStats(name), p = st.me; if (!p) return;
@@ -1334,8 +1402,11 @@ function openProfile(name) {
           <button type="button" class="sec" id="pfCancel">Cancel</button>
           <span class="l" id="pfErr" style="font-size:.8rem"></span>
         </div>
-        <div class="legend" style="margin:2px 0 0">${p.qual ? `Qualifier Zone · ${MIN_GAMES - p.games} games to qualify` : `Rank ${p.rank}`} · ${p.games} games · ${p.points} pts</div></div>
-      <div style="margin-left:auto;text-align:right"><div style="font-size:1.6rem;font-weight:800;color:var(--acc)">${p.pct.toFixed(2)}%</div><div class="legend" style="margin:0">Win %</div></div>
+        </div>
+      <div class="pf-kpis">
+        <div class="pf-kpi" title="Win % (Competitive leaderboard)">${p.pct.toFixed(2)}%</div>
+        <div class="pf-kpi pf-rt" title="Player Rating (0.00–7.00, from Competitive matches)">${(p.rating ?? RATING.START).toFixed(2)}</div>
+      </div>
     </div>
     <div class="pf-mode" role="group" aria-label="Games included">
       ${[['competitive', 'Competitive'], ['americano', 'Americano'], ['combined', 'Combined']].map(([k, t]) => `<button type="button" class="${pfMode === k ? 'primary' : 'sec'}" data-pfmode="${k}" aria-pressed="${pfMode === k}">${t}</button>`).join('')}
@@ -1346,12 +1417,14 @@ function openProfile(name) {
     <div class="pf-sec">
       <h3>Player stats</h3>
     <div class="stats pf-stats">
+      ${pfMode === 'competitive' ? card('Highest Player Rating', st.peakRating ? st.peakRating.v.toFixed(2) : '–', st.peakRating ? d(st.peakRating.ts) : 'no rated matches yet') : ''}
+      ${pfMode === 'competitive' ? card('Highest Win %', st.peakPct ? st.peakPct.v.toFixed(2) + '%' : '–', st.peakPct ? d(st.peakPct.ts) : `from ${MIN_GAMES} games (qualified)`) : ''}
       ${card('Longest win streak', st.bestStreak || '–', st.games ? (pfMode === 'competitive' ? 'from weekly results' : 'from games in this view') : 'no results yet')}
-      ${card('Current win streak', st.games ? st.curWins : '–', !st.games ? 'no results yet' : st.curWins ? `${st.curWins === 1 ? 'win' : 'wins'} in a row` : 'not on a winning run')}
-      ${card('Biggest ranking jump', st.jump ? `▲ ${st.jump.n}` : '–', st.jump ? `${st.jump.from} → ${st.jump.to} · ${d(st.jump.ts)}` : 'no climb yet')}
-      ${card('Biggest ranking drop', st.drop ? `▼ ${st.drop.n}` : '–', st.drop ? `${st.drop.from} → ${st.drop.to} · ${d(st.drop.ts)}` : 'no drop yet')}
-      ${card('Best / worst rank', st.bestRank != null ? `${st.bestRank} / ${st.worstRank}` : '–', 'across all submissions')}
-      ${card('Biggest rival', who(st.rival), st.rival ? recStr(st.rival) : 'no head-to-head games yet')}
+      ${pfMode !== 'competitive' ? card('Current win streak', st.games ? st.curWins : '–', !st.games ? 'no results yet' : st.curWins ? `${st.curWins === 1 ? 'win' : 'wins'} in a row` : 'not on a winning run') : ''}
+      ${pfMode !== 'competitive' ? card('Biggest rival', who(st.rival), st.rival ? recStr(st.rival) : 'no head-to-head games yet') : ''}
+      ${pfMode === 'competitive' ? card('Biggest ranking jump', st.jump ? `▲ ${st.jump.n}` : '–', st.jump ? `${st.jump.from} → ${st.jump.to} · ${d(st.jump.ts)}` : 'no climb yet') : ''}
+      ${pfMode === 'competitive' ? card('Biggest ranking drop', st.drop ? `▼ ${st.drop.n}` : '–', st.drop ? `${st.drop.from} → ${st.drop.to} · ${d(st.drop.ts)}` : 'no drop yet') : ''}
+      ${pfMode === 'competitive' ? card('Best / worst rank', st.bestRank != null ? `${st.bestRank} / ${st.worstRank}` : '–', 'across all submissions') : ''}
       ${card('Victim', who(st.victim), st.victim ? recStr(st.victim) : '–')}
       ${card('Nemesis', who(st.nemesis), st.nemesis ? recStr(st.nemesis) : '–')}
       ${card('Best partner', who(st.partner), st.partner ? recStr(st.partner) : '–')}
@@ -1432,7 +1505,9 @@ function lbShow(i, animate = true, dur, ease) {
   [...batches].sort((a, b) => a.ts - b.ts).slice(0, lb.snaps[i].bi + 1).forEach(b => results.filter(r => r.batch === b.id && r.w + r.d + r.l <= GAMES_PER_WEEK)
     .forEach(r => (fs[r.name] ||= []).push(...'W'.repeat(r.w), ...'D'.repeat(r.d), ...'L'.repeat(r.l))));
   agg.forEach(p => { p.form = (fs[p.name] || []).slice(-6); });   // p.rating (as at that time) comes from aggregate()
-  const mv = p => { const pr = prevRank[p.name]; if (pr == null || !i) return '<span class="mv same">▬</span>';
+  const mv = p => { const pr = prevRank[p.name];
+    if (!p.qual && i && pr == null) return '<span class="mv new" title="Newly qualified">⭐</span>';
+    if (pr == null || !i) return '<span class="mv same">▬</span>';
     const d = pr - p.rank; return d > 0 ? `<span class="mv up">▲${d}</span>` : d < 0 ? `<span class="mv down">▼${-d}</span>` : '<span class="mv same">▬</span>'; };
   const row = p => `<tr data-n="${esc(p.name)}">
       <td><span class="rk"><span class="rank${rc(p.rank, p.qual)}">${p.label}</span>${mv(p)}</span></td>
@@ -1482,7 +1557,7 @@ $('lbSlider').oninput = () => {
 
 // ---------- Ranking Position (position evolution chart) ----------
 const PE_COLORS = ['#14b8a6','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#10b981','#6366f1','#ef4444','#60a5fa','#a3e635'];
-let peSel = null;                                   // selected player names (order = colour order); null = default top 6
+let peSel = null;                                   // selected player names (order = colour order); null = default all players
 // Rank of every qualified player (9+ games) after each submitted set of scores.
 function peSnapshots() {
   const snaps = []; let cum = [];
@@ -1516,7 +1591,7 @@ function monotonePath(pts) {
 function renderProgress() {
   const qualified = aggregate().filter(p => !p.qual);
   const qNames = qualified.map(p => p.name);
-  if (peSel === null && qNames.length) peSel = qNames.slice(0, 6);   // default: top 6 (once data has loaded)
+  if (peSel === null && qNames.length) peSel = qNames.slice();   // default: all qualified players (once data has loaded)
   if (peSel === null) { $('peCount').textContent = ''; $('chartPlayers').innerHTML = ''; $('chartWrap').innerHTML = '<div class="legend">Loading…</div>'; return; }
   peSel = peSel.filter(n => qNames.includes(n));
   const colorOf = n => PE_COLORS[peSel.indexOf(n) % PE_COLORS.length];
@@ -1651,42 +1726,91 @@ function renderStats(all, top, quals) {
   const sum = k => played.reduce((s,p) => s + p[k], 0);
   const best = k => played.length ? played.reduce((a,b) => b[k] > a[k] ? b : a) : null;
   const pg = sum('games'), pts = sum('points');
-  const matches = Math.round(pg / PER_COURT);                    // 4 players per game
-  const draws = Math.round(sum('draws') / PER_COURT);
   const avgPct = pg ? pts / (pg * PTS.W) * 100 : 0;
   const mw = best('wins'), mg = best('games'), mp = best('points'), md = best('draws');
   const over50 = top.filter(p => p.pct >= 50).length;
+  // highest Win % among ranked (qualified) players; ties → more points, then name
+  const hiPct = top.length ? [...top].sort((a, b) => b.pct - a.pct || b.points - a.points || a.name.localeCompare(b.name))[0] : null;
   const card = (l, v, sub='', hl=false) =>
     `<div class="stat${hl?' hl':''}"><div class="l">${l}</div><div class="v" title="${esc(String(v))}">${esc(String(v))}</div><div class="s">${sub}</div></div>`;
   $('stats').innerHTML = [
-    card('Leader', top[0] ? top[0].name : '–', top[0] ? `${top[0].pct.toFixed(2)}% win rate` : '', true),
+    card('Number 1', top[0] ? top[0].name : '–', top[0] ? `Player Rating ${top[0].rating.toFixed(2)}` : '', true),
+    card('Highest Win %', hiPct ? hiPct.name : '–', hiPct ? `${hiPct.pct.toFixed(2)}% win rate` : ''),
+    card('Top 3 Gap', top[2] ? (top[0].rating - top[2].rating).toFixed(2) : '–', top[2] ? `Player Rating · ${esc(top[0].name)} → ${esc(top[2].name)}` : ''),
     card('Players', all.length, `${top.length} ranked · ${quals.length} qualifying`),
-    card('Matches Played', matches, `${pg} player-games · ${draws} drawn`),
     card('Points Awarded', pts, `Avg win % ${avgPct.toFixed(2)}%`),
     card('Most Wins', mw ? mw.name : '–', mw ? `${mw.wins} wins` : ''),
     card('Most Points', mp ? mp.name : '–', mp ? `${mp.points} pts` : ''),
     card('Most Games', mg ? mg.name : '–', mg ? `${mg.games} played` : ''),
     card('Most Draws', md && md.draws ? md.name : '–', md && md.draws ? `${md.draws} draws` : ''),
     card('50%+ Win Rate', over50, `of ${top.length} ranked players`),
-    card('Top 3 Gap', top[2] ? `${(top[0].pct - top[2].pct).toFixed(2)}%` : '–', top[2] ? `${esc(top[0].name)} → ${esc(top[2].name)}` : ''),
   ].join('');
 }
 
 // ---------- history ----------
+// Americano week shown in Match History – read-only, never counted on the leaderboard
+function amHistoryCard(w, f, rankOf, addShown) {
+  const L = weekLineup(w, rankOf), ps = amPlayers(w, L);
+  if (ps.length < 4) return '';
+  const rounds = amSchedule(w, ps), sc = w.amer || {};
+  let table = americanoTable(w, rounds).filter(e => e.played);
+  if (f) table = table.filter(e => e.name.toLowerCase().includes(f));
+  if (!table.length) return '';
+  addShown(table.length);
+  const scored = (r, c) => { const v = sc[`${r}-${c}`]; return v && v[0] !== '' && v[1] !== '' && v[0] != null && v[1] != null ? v : null; };
+  const hit = (A, B) => !f || [...A, ...B].some(n => n.toLowerCase().includes(f));
+  const roundsH = rounds.map((courts, r) => {
+    const ms = courts.map(([A, B], c) => ({ A, B, c, v:scored(r, c) })).filter(m => m.v && hit(m.A, m.B));
+    if (!ms.length) return '';
+    return `<div class="court"><h4>Round ${r + 1}</h4>
+      ${ms.map(({ A, B, c, v }) => { const a = +v[0], b = +v[1], cls = (x, y) => x > y ? 'W' : x < y ? 'L' : 'D';
+        return `<div class="game"><div class="gl">${esc(courtLabel(w, c))}</div>
+          <div class="t"><div class="nm">${A.map(esc).join('<br>')}</div><span class="wdl am-sc wdl-${cls(a, b)}">${a}</span></div><div>vs</div>
+          <div class="t"><div class="nm">${B.map(esc).join('<br>')}</div><span class="wdl am-sc wdl-${cls(b, a)}">${b}</span></div></div>`; }).join('')}
+    </div>`;
+  }).filter(Boolean);
+  const nm = roundsH.length ? rounds.reduce((t, cs, r) => t + cs.filter(([A, B], c) => scored(r, c) && hit(A, B)).length, 0) : 0;
+  const key = 'am-' + w.id;
+  return `<div class="hb hb-am">
+    <div class="hb-head">
+      <div><b>${new Date(w.date + 'T' + (w.time || '12:00')).toLocaleString()}</b>
+        <span class="legend">· 🔄 Americano${w.note ? ' · ' + esc(w.note) : ''} · ${ps.length} players · not counted on the leaderboard</span></div>
+      <button class="del hb-btn" data-amrm="${w.id}">Remove from history</button>
+    </div>
+    <table><thead><tr><th style="text-align:left">Player</th><th>Played</th><th>Won</th><th>Drawn</th><th>Points</th><th>+/−</th></tr></thead><tbody>
+      ${table.map(e => `<tr><td class="name">${esc(e.name)}</td><td>${e.played}</td><td class="w">${e.won}</td><td class="d">${e.drawn}</td>
+        <td class="pts">${e.pts}</td><td>${e.pts - e.against > 0 ? '+' : ''}${e.pts - e.against}</td></tr>`).join('')}
+    </tbody></table>
+    ${roundsH.length ? `<details class="res-acc" data-hbopen="${key}" ${histOpen.has(key) ? 'open' : ''}><summary><b>Results</b>
+        <span class="pill full">${nm} match${nm === 1 ? '' : 'es'}</span></summary>
+      <div class="courts wk-courts" style="margin-top:10px;--nc:${Math.min(3, roundsH.length)}">${roundsH.join('')}</div>
+    </details>` : ''}
+  </div>`;
+}
 const histOpen = new Set();                                 // Results panels kept open across re-renders
 function renderHistory() {
   const f = ($('hFilter').value || '').trim().toLowerCase();
   const mKey = ts => { const d = new Date(ts); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
   const playedTs = b => { const w = calendar.find(x => x.batch === b.id); return w ? new Date(w.date + 'T' + (w.time || '12:00')).getTime() : b.ts; };
-  const months = [...new Set(batches.map(b => mKey(playedTs(b))))].sort().reverse();
+  const amWeeks = calendar.filter(w => w.type === 'Americano' && w.amHist);
+  const amTs = w => new Date(w.date + 'T' + (w.time || '12:00')).getTime();
+  const months = [...new Set([...batches.map(b => mKey(playedTs(b))), ...amWeeks.map(w => mKey(amTs(w)))])].sort().reverse();
+  const ty = $('hType').value;
   let mo = $('hMonth').value; if (mo && !months.includes(mo)) mo = '';
   $('hMonth').innerHTML = '<option value="">All months</option>' + months.map(m =>
     `<option value="${m}" ${m === mo ? 'selected' : ''}>${new Date(m + '-01T00:00').toLocaleDateString(undefined, { month:'long', year:'numeric' })}</option>`).join('');
   // newest → oldest by the date the session was PLAYED (Matches weeks use their calendar date, not the submit time)
-  const list = [...batches].filter(b => !mo || mKey(playedTs(b)) === mo).sort((a,b) => playedTs(b) - playedTs(a) || b.ts - a.ts);
+  const entries = [
+    ...(ty === 'am' ? [] : batches.map(b => ({ kind:'comp', b, ts:playedTs(b), sub:b.ts }))),
+    ...(ty === 'comp' ? [] : amWeeks.map(w => ({ kind:'am', w, ts:amTs(w), sub:0 }))),
+  ].filter(e => !mo || mKey(e.ts) === mo).sort((x, y) => y.ts - x.ts || y.sub - x.sub);
   let shown = 0;
-  $('history').innerHTML = list.map(b => {
-    let recs = results.filter(r => r.batch===b.id);
+  const rankOfH = {}; aggregate().forEach(p => rankOfH[p.name] = p);
+  $('history').innerHTML = entries.map(e => {
+    if (e.kind === 'am') return amHistoryCard(e.w, f, rankOfH, n => { shown += n; });
+    const b = e.b;
+    let recs = results.filter(r => r.batch===b.id)
+      .sort((x, y) => (y.w*PTS.W + y.d*PTS.D) - (x.w*PTS.W + x.d*PTS.D) || y.w - x.w || x.l - y.l || x.name.localeCompare(y.name));   // most points first
     if (f) recs = recs.filter(r => r.name.toLowerCase().includes(f));
     if (!recs.length) return '';
     shown += recs.length;
@@ -1749,6 +1873,12 @@ function renderHistory() {
     results.forEach(r => { if (r.batch === b.id && tally[r.name]) Object.assign(r, tally[r.name]); });
     save(); render();
   });
+  $('history').querySelectorAll('[data-amrm]').forEach(btn => btn.onclick = async () => {
+    const w = calendar.find(x => x.id === btn.dataset.amrm); if (!w) return;
+    if (!confirm(`Remove the Americano on ${fmtDate(w.date)} from Match History?\nIts scores stay on the Americano tab and it can be submitted again.`)) return;
+    if (!(await checkPin())) return;
+    delete w.amHist; saveCal(); render();
+  });
   $('history').querySelectorAll('[data-rec]').forEach(btn => btn.onclick = async () => {
     const r = results.find(x => x.id===btn.dataset.rec);
     if (!confirm(`Remove ${r.name}'s record (${r.w}W ${r.d}D ${r.l}L, ${r.w*3+r.d} pts)? The leaderboard will be recalculated.`)) return;
@@ -1764,7 +1894,8 @@ function renderHistory() {
 }
 $('hFilter').oninput = renderHistory;
 $('hMonth').onchange = renderHistory;
-$('hReset').onclick = () => { $('hFilter').value = ''; $('hMonth').value = ''; renderHistory(); };
+$('hType').onchange = renderHistory;
+$('hReset').onclick = () => { $('hFilter').value = ''; $('hMonth').value = ''; $('hType').value = ''; renderHistory(); };
 
 
 document.querySelectorAll('th').forEach(th => th.onclick = () => {
@@ -2084,6 +2215,60 @@ const savePaid = () => { store(PKEY, JSON.stringify(paid)); schedulePush(); };
 const AMKEY = 'padelAvMonths';
 let avMonths = JSON.parse(load(AMKEY) || '[]');          // extra months added on the Availability tab ('YYYY-MM')
 const saveAvMonths = () => { store(AMKEY, JSON.stringify(avMonths)); schedulePush(); };
+const FBKEY = 'padelFeedback';
+let feedback = JSON.parse(load(FBKEY) || '[]');          // [{ id, ts, name, note, status?:'live'|'rejected', deleted?, upd? }]
+// newest change per submission wins (deleted ones are kept as hidden markers so they don't come back)
+const fbMerge = (...lists) => { const m = new Map();
+  lists.flat().forEach(x => { const o = m.get(x.id); if (!o || (x.upd || x.ts) >= (o.upd || o.ts)) m.set(x.id, x); });
+  return [...m.values()].sort((a, b) => a.ts - b.ts); };
+const saveFeedback = () => { store(FBKEY, JSON.stringify(feedback)); schedulePush(); };
+const FB_MAX = 500;
+function renderFeedback() {
+  if (!$('fbList')) return;
+  const sel = $('fbName'), cur = sel.value;
+  const names = aggregate().map(p => p.name).sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '<option value="">– Select your name –</option>' + names.map(n => `<option value="${esc(n)}" ${n === cur ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  const list = feedback.filter(x => !x.deleted).sort((a, b) => b.ts - a.ts);
+  $('fbTotal').textContent = list.length ? `· ${list.length} submission${list.length === 1 ? '' : 's'}` : '';
+  $('fbList').innerHTML = list.length ? list.map(x => `<div class="fb-item">
+      <div class="fb-head"><b>${esc(x.name)}</b>
+        <span class="legend" style="margin:0 0 0 auto">${new Date(x.ts).toLocaleString()}</span></div>
+      <div class="fb-note">${esc(x.note)}</div>
+      <div class="fb-act edit">
+        <button type="button" class="fb-st fb-st-live${x.status === 'live' ? ' on' : ''}" data-fbst="live" data-fbid="${x.id}" ${x.status ? 'disabled' : ''}>Live</button>
+        <button type="button" class="fb-st fb-st-rej${x.status === 'rejected' ? ' on' : ''}" data-fbst="rejected" data-fbid="${x.id}" ${x.status ? 'disabled' : ''}>Rejected</button>
+        <button type="button" class="del" data-fbdel="${x.id}" style="display:inline-block!important">Delete</button>
+      </div></div>`).join('')
+    : '<div class="legend">No feedback yet.</div>';
+}
+// Live / Rejected toggle (click again to clear) · Delete needs the deletion PIN
+$('fbList').onclick = async e => {
+  const st = e.target.closest('[data-fbst]'), dl = e.target.closest('[data-fbdel]');
+  if (st) {
+    const x = feedback.find(f => f.id === st.dataset.fbid); if (!x) return;
+    if (x.status) return;                                       // a decision is final
+    x.status = st.dataset.fbst; x.upd = Date.now();
+    saveFeedback(); renderFeedback();
+  } else if (dl) {
+    const x = feedback.find(f => f.id === dl.dataset.fbdel); if (!x) return;
+    if (!confirm(`Delete this feedback from ${x.name}?\n\n"${x.note.slice(0, 120)}${x.note.length > 120 ? '…' : ''}"`)) return;
+    if (!(await checkPin())) return;
+    Object.assign(x, { deleted:true, note:'', upd:Date.now() });
+    saveFeedback(); renderFeedback();
+  }
+};
+$('fbNote').oninput = () => { $('fbCount').textContent = `${$('fbNote').value.length} / ${FB_MAX}`; };
+$('fbSubmit').onclick = () => {
+  const m = $('fbMsg'); m.className = 'msg';
+  const name = $('fbName').value, note = $('fbNote').value.trim();
+  if (!name) { m.classList.add('err'); m.textContent = 'Select your name.'; return; }
+  if (!note) { m.classList.add('err'); m.textContent = 'Write a note.'; return; }
+  if (note.length > FB_MAX) { m.classList.add('err'); m.textContent = `Keep it to ${FB_MAX} characters.`; return; }
+  feedback.push({ id:uid(), ts:Date.now(), name, note });
+  saveFeedback(); renderFeedback();
+  $('fbNote').value = ''; $('fbNote').oninput();
+  m.classList.add('ok'); m.textContent = 'Thanks – your feedback has been submitted.';
+};
 const money = v => '£' + v.toFixed(2);
 const resOpen = {};    // results accordion open/closed per week
 const monthOpen = {};   // user's expand/collapse choice per month; default: current & future open, past closed
@@ -2298,6 +2483,10 @@ ${inp(r, c, 1)}<span class="am-team">${B.map(pn).join('<br>')}</span></div>
         <button type="button" class="sec edit" data-amshuffle="${w.id}" style="height:38px;margin-left:16px">Shuffle</button>
       </div>
       <div class="courts">${roundsHtml}</div>
+      <div class="row edit" style="margin-top:12px;justify-content:center">${w.amHist
+        ? `<span class="pill full">✓ In Match History</span>`
+        : `<button type="button" data-amhist="${w.id}" ${scored === rounds.length * nCourts(w) ? '' : 'disabled title="Enter a score for every match first"'}>Submit to Match History</button>`}
+      </div>
     </div>
     <h3 style="margin:22px 0 8px">Partner Schedule</h3>
     <div class="legend" style="margin:0 0 8px">Each player's partner and court in every round.</div>
@@ -2331,12 +2520,21 @@ function renderEvent() {
   const find = id => calendar.find(x => x.id === id);
   body.querySelectorAll('details.res-acc').forEach(d => d.ontoggle = () => { resOpen[d.dataset.acc] = d.open; });
   body.querySelectorAll('[data-f]').forEach(el => el.onchange = () => {
-    find(el.dataset.w)[el.dataset.f] = el.value; saveCal(); renderEvent();
+    const wk = find(el.dataset.w); wk[el.dataset.f] = el.value;
+    if (el.dataset.f === 'amRounds') delete wk.amHist;          // rounds changed → must be re-submitted when complete
+    saveCal(); renderEvent(); renderHistory();
+  });
+  body.querySelectorAll('[data-amhist]').forEach(b => b.onclick = () => {
+    const wk = find(b.dataset.amhist);
+    const L2 = weekLineup(wk, rankOf), ps2 = amPlayers(wk, L2), rs = amSchedule(wk, ps2), sc2 = wk.amer || {};
+    const missing = rs.reduce((t, cs, r) => t + cs.filter((_, c) => { const v = sc2[`${r}-${c}`]; return !(v && v[0] !== '' && v[1] !== '' && v[0] != null && v[1] != null); }).length, 0);
+    if (missing) return alert(`Enter a score for every match first (${missing} missing).`);
+    wk.amHist = Date.now(); saveCal(); render();
   });
   body.querySelectorAll('[data-amshuffle]').forEach(b => b.onclick = () => {
     const wk = find(b.dataset.amshuffle);
     if (amHasScores(wk) && !confirm('Reshuffling creates new pairs and clears all scores entered for this Americano. Continue?')) return;
-    wk.amSeed = 1 + Math.floor(Math.random() * 2e9); delete wk.amer; delete wk.amOrder; wk.amOpt = true;
+    wk.amSeed = 1 + Math.floor(Math.random() * 2e9); delete wk.amer; delete wk.amOrder; delete wk.amHist; wk.amOpt = true;
     saveCal(); renderEvent();
   });
   body.querySelectorAll('input[data-am]').forEach(inp => inp.onchange = () => {
@@ -2344,10 +2542,10 @@ function renderEvent() {
     if (!wk.amOrder) wk.amOrder = ps.slice();              // lock P1…Pn once scoring starts
     if (!amHasScores(wk)) wk.amOpt = true;                  // scores entered on the low-movement layout
     const sc = (wk.amer ||= {}), cur = sc[inp.dataset.rc] || ['', ''];
-    if (inp.value === '') cur[side] = '';
+    if (inp.value === '') { cur[side] = ''; delete wk.amHist; }    // no longer complete → out of Match History
     else { const v = Math.max(0, Math.min(max, parseInt(inp.value, 10) || 0)); cur[side] = v; cur[1 - side] = max - v; }
     sc[inp.dataset.rc] = cur;
-    saveCal(); renderEvent();
+    saveCal(); renderEvent(); renderHistory();
   });
 }
 $('evWeek').onchange = () => { evSel = $('evWeek').value; renderEvent(); };
@@ -2771,7 +2969,7 @@ function renderCalendar() {
 }
 
 // ---------- backup & share ----------
-const DATA_KEYS = () => [KEY, BKEY, RKEY, CKEY, FKEY, PKEY, AMKEY];
+const DATA_KEYS = () => [KEY, BKEY, RKEY, CKEY, FKEY, PKEY, AMKEY, FBKEY];
 function download(name, text, type) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([text], { type }));
@@ -2780,7 +2978,7 @@ function download(name, text, type) {
 }
 function snapshotData() {
   return { [KEY]:JSON.stringify(results), [BKEY]:JSON.stringify(batches), [RKEY]:JSON.stringify(roster),
-           [CKEY]:JSON.stringify(calendar), [FKEY]:String(fee), [PKEY]:JSON.stringify(paid), [AMKEY]:JSON.stringify(avMonths) };
+           [CKEY]:JSON.stringify(calendar), [FKEY]:String(fee), [PKEY]:JSON.stringify(paid), [AMKEY]:JSON.stringify(avMonths), [FBKEY]:JSON.stringify(feedback) };
 }
 // replace all in-memory data from a {key: jsonString} object (backup file or local storage)
 function applyData(d) {
@@ -2791,6 +2989,7 @@ function applyData(d) {
   fee      = parseFloat(d[FKEY] ?? '13.5');
   paid     = JSON.parse(d[PKEY] || '{}');
   if (d[AMKEY]) avMonths = JSON.parse(d[AMKEY]);
+  if (d[FBKEY]) feedback = JSON.parse(d[FBKEY]);
   results.forEach(r => { r.id = r.id || uid(); });
   batches = batches.filter(b => results.some(r => r.batch===b.id));
 }
@@ -2852,7 +3051,7 @@ const resultRow = r => ({ id:r.id, batch:r.batch, name:r.name, w:r.w, d:r.d, l:r
 function snapState() {
   const m = (arr, key, row) => new Map(arr.map(x => [x[key], JSON.stringify(row(x))]));
   return { batches:m(batches,'id',batchRow), results:m(results,'id',resultRow),
-           calendar:m(calendar,'id',w => ({ id:w.id, data:w })), roster:new Set(roster), fee, paid:JSON.stringify(paid), pinHash, avMonths:JSON.stringify(avMonths) };
+           calendar:m(calendar,'id',w => ({ id:w.id, data:w })), roster:new Set(roster), fee, paid:JSON.stringify(paid), pinHash, avMonths:JSON.stringify(avMonths), feedback:JSON.stringify(feedback) };
 }
 function schedulePush() {
   if (SNAP || !synced) return;
@@ -2888,6 +3087,13 @@ async function pushChanges() {
     if (cur.paid !== synced.paid) await up('settings', [{ key:'paid', value:JSON.parse(cur.paid) }]);
     if (cur.pinHash !== synced.pinHash) await up('settings', [{ key:'pinHash', value:cur.pinHash }]);
     if (cur.avMonths !== synced.avMonths) await up('settings', [{ key:'avMonths', value:JSON.parse(cur.avMonths) }]);
+    if (cur.feedback !== synced.feedback) {                       // merge with what others submitted meanwhile
+      const { data, error } = await sb.from('settings').select('value').eq('key', 'feedback').maybeSingle();
+      if (error) throw error;
+      feedback = fbMerge(data?.value || [], feedback);
+      await up('settings', [{ key:'feedback', value:feedback }]);
+      store(FBKEY, JSON.stringify(feedback)); cur.feedback = JSON.stringify(feedback); renderFeedback();
+    }
     synced = cur;
     syncMsg('✓ Saved');
   } catch (e) {
@@ -2918,6 +3124,9 @@ async function cloudRefresh(force=false) {
     const np = st.find(x => x.key==='paid')?.value || {};
     pinHash = st.find(x => x.key==='pinHash')?.value || '';
     avMonths = st.find(x => x.key==='avMonths')?.value || [];
+    const fbBefore = JSON.stringify(feedback);
+    feedback = st.find(x => x.key==='feedback')?.value || [];
+    if (fbBefore !== JSON.stringify(feedback)) renderFeedback();
     const before = JSON.stringify([batches, results, roster, calendar, fee, paid]);
     batches = nb; results = nr; roster = ro.map(x => x.name); calendar = c.map(x => x.data); fee = nf; paid = np;
     synced = snapState();
@@ -3164,7 +3373,7 @@ $('pdfBtn').onclick = () => {
   document.querySelector('.tab[data-tab=board]').click();
   $('printDate').textContent = 'Exported ' + new Date().toLocaleString() + ' · ranked by Player Rating · players need 9 games to qualify';
   // include the full, unfiltered match history with every match result expanded
-  const hf = $('hFilter').value, hm = $('hMonth').value; $('hFilter').value = ''; $('hMonth').value = ''; renderHistory();
+  const hf = $('hFilter').value, hm = $('hMonth').value, ht = $('hType').value; $('hFilter').value = ''; $('hMonth').value = ''; $('hType').value = ''; renderHistory();
   const closed = [...document.querySelectorAll('#history details:not([open])')];
   closed.forEach(d => d.open = true);
   document.body.classList.add('printing');
@@ -3172,7 +3381,7 @@ $('pdfBtn').onclick = () => {
   setTimeout(() => { window.print(); }, 50);
   const done = () => {
     document.body.classList.remove('printing'); document.title = t; removeEventListener('afterprint', done);
-    closed.forEach(d => d.open = false); $('hFilter').value = hf; renderHistory(); $('hMonth').value = hm; renderHistory();
+    closed.forEach(d => d.open = false); $('hFilter').value = hf; $('hType').value = ht; renderHistory(); $('hMonth').value = hm; renderHistory();
   };
   addEventListener('afterprint', done);
 };
