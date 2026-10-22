@@ -1309,7 +1309,7 @@ function allGames() {
     const ts = new Date(w.date + 'T12:00').getTime();
     amSchedule(w, ps).forEach((courts, r) => courts.forEach(([A, B], c) => {
       const v = w.amer[`${r}-${c}`]; if (!v || v[0] === '' || v[1] === '' || v[0] == null || v[1] == null) return;
-      out.push({ ts: ts + r, a:A, b:B, win: Math.sign(+v[0] - +v[1]), src:'americano' });
+      out.push({ ts: ts + r, a:A, b:B, win: Math.sign(+v[0] - +v[1]), src:'americano', wid:w.id });
     }));
   });
   return out.sort((x, y) => x.ts - y.ts);
@@ -1327,7 +1327,9 @@ function rankSnapshots() {
 let pfMode = 'competitive';
 function profileStats(name, mode = pfMode) {
   const me = aggregate().find(p => p.name === name);
-  const games = allGames().filter(g => mode === 'combined' || g.src === (mode === 'americano' ? 'americano' : 'match'));
+  // Americano games count only from weeks submitted to Match History
+  const inHist = new Set(calendar.filter(w => w.amHist).map(w => w.id));
+  const games = allGames().filter(g => (g.src !== 'americano' || inHist.has(g.wid)) && (mode === 'combined' || g.src === (mode === 'americano' ? 'americano' : 'match')));
   // head-to-head, partners
   const h2h = {}, partners = {};
   const rec = (m, k) => m[k] ||= { played:0, w:0, d:0, l:0 };
@@ -1385,6 +1387,16 @@ function openProfile(name) {
   const card = (label, val, sub = '') => `<div class="stat"><div class="l">${label}</div><div class="v">${val}</div><div class="s">${sub}</div></div>`;
   const who = e => e ? esc(e.name) : '–';
   const cnt = k => st.seq.filter(r => r === k).length;
+  const amWinPct = st.games ? (cnt('W') * 3 + cnt('D')) / (st.games * 3) * 100 : 0;
+  let amBest = null;
+  if (pfMode === 'americano') {
+    const rk = {}; aggregate().forEach(q => rk[q.name] = q);
+    calendar.filter(w => w.type === 'Americano' && w.amHist).forEach(w => {     // Americano weeks in Match History
+      const ps = amPlayers(w, weekLineup(w, rk)); if (!ps.includes(name)) return;
+      const e = americanoTable(w, amSchedule(w, ps)).find(x => x.name === name);
+      if (e && e.played && (!amBest || e.pts > amBest.pts)) amBest = { pts:e.pts, date:w.date };
+    });
+  }
   const tot = pfMode === 'competitive'
     ? { w:p.wins, d:p.draws, l:p.losses, form:(formStreaks()[name] || []).slice(-6) }
     : { w:cnt('W'), d:cnt('D'), l:cnt('L'), form:st.seq.slice(-6) };
@@ -1419,9 +1431,9 @@ function openProfile(name) {
     <div class="stats pf-stats">
       ${pfMode === 'competitive' ? card('Highest Player Rating', st.peakRating ? st.peakRating.v.toFixed(2) : '–', st.peakRating ? d(st.peakRating.ts) : 'no rated matches yet') : ''}
       ${pfMode === 'competitive' ? card('Highest Win %', st.peakPct ? st.peakPct.v.toFixed(2) + '%' : '–', st.peakPct ? d(st.peakPct.ts) : `from ${MIN_GAMES} games (qualified)`) : ''}
-      ${card('Longest win streak', st.bestStreak || '–', st.games ? (pfMode === 'competitive' ? 'from weekly results' : 'from games in this view') : 'no results yet')}
-      ${pfMode !== 'competitive' ? card('Current win streak', st.games ? st.curWins : '–', !st.games ? 'no results yet' : st.curWins ? `${st.curWins === 1 ? 'win' : 'wins'} in a row` : 'not on a winning run') : ''}
-      ${pfMode !== 'competitive' ? card('Biggest rival', who(st.rival), st.rival ? recStr(st.rival) : 'no head-to-head games yet') : ''}
+      ${pfMode === 'americano' ? card('Win %', st.games ? `${amWinPct.toFixed(2)}%` : '–', st.games ? `${st.games} Americano game${st.games === 1 ? '' : 's'} in Match History` : 'no Americano games in history yet') : ''}
+      ${pfMode === 'americano' ? card('Most Points', amBest ? amBest.pts : '–', amBest ? `best Americano week · ${fmtDate(amBest.date)}` : 'no Americano weeks in history yet') : ''}
+      ${pfMode === 'combined' ? '' : card('Longest win streak', st.bestStreak || '–', st.games ? (pfMode === 'competitive' ? 'from weekly results' : 'from games in this view') : 'no results yet')}
       ${pfMode === 'competitive' ? card('Biggest ranking jump', st.jump ? `▲ ${st.jump.n}` : '–', st.jump ? `${st.jump.from} → ${st.jump.to} · ${d(st.jump.ts)}` : 'no climb yet') : ''}
       ${pfMode === 'competitive' ? card('Biggest ranking drop', st.drop ? `▼ ${st.drop.n}` : '–', st.drop ? `${st.drop.from} → ${st.drop.to} · ${d(st.drop.ts)}` : 'no drop yet') : ''}
       ${pfMode === 'competitive' ? card('Best / worst rank', st.bestRank != null ? `${st.bestRank} / ${st.worstRank}` : '–', 'across all submissions') : ''}
