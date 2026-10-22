@@ -289,8 +289,8 @@
   /* compact inline name editor so the profile header barely moves */
   .pf-editbox { display:flex; flex-wrap:nowrap !important; flex-direction:row !important; align-items:center !important; gap:4px !important; margin:0 !important; }
   .pf-editbox input, .pf-editbox select, .pf-editbox button { height:30px !important; min-height:30px !important; font-size:.8rem !important; margin:0; }
-  .pf-editbox input { width:150px !important; padding:0 8px !important; }
-  .pf-editbox select { width:84px !important; padding-left:8px !important; padding-right:24px !important; background-position:right 8px center; }
+  .pf-editbox input { width:120px !important; padding:0 8px !important; }
+  .pf-editbox select { width:auto !important; field-sizing:content; padding-left:8px !important; padding-right:22px !important; background-position:right 7px center; }   /* fits '+ Emoji' */
   .pf-editbox button { padding:0 10px !important; }
   .pf-editbox #pfErr { white-space:nowrap; }
   .pf-kpi { font-size:1.6rem; font-weight:800; color:var(--acc); line-height:1; font-variant-numeric:tabular-nums; }
@@ -2001,7 +2001,7 @@ document.querySelectorAll('th').forEach(th => th.onclick = () => {
 
 
 // ---------- players (Configuration) ----------
-const EMOJI_GROUPS = {"McDonald's": ["🍔", "🍟", "🥤", "🍦", "🍨", "🥧", "🍗", "🍳", "🥓", "🥚", "🧀", "🥞", "🥯", "🥗", "🍎", "☕", "🧃", "🎈", "🤡", "Ⓜ️"], "Sport": ["🎾", "🏓", "🏸", "⚽", "🏀", "🏈", "⚾", "🏐", "🏉", "🥎", "🏆", "🥇", "🥈", "🥉", "🏅", "🎯", "🥅", "⛳", "🏋️", "🤸", "🏃", "🚴", "🧗", "🤾"], "Mood": ["🔥", "⚡", "💪", "👑", "⭐", "🌟", "✨", "💫", "🚀", "💥", "💯", "🎉", "🥳", "😎", "🤘", "🤙", "👊", "✌️", "👏", "🙌", "🫡", "😈", "👻", "🤖", "👽", "🧠", "💀", "🥶", "🥵", "😤", "🤓", "🤠", "🥷", "🦸", "🧙"], "Animals": ["🐐", "🐪", "🐌", "🦈", "🐙", "🦁", "🐯", "🐻", "🐼", "🦊", "🐺", "🦅", "🦉", "🐝", "🦋", "🐬", "🐳", "🦖", "🐉", "🦄", "🐸", "🐵", "🦍", "🦒", "🦓", "🦘", "🐧", "🦩", "🐈", "🐕", "🐎", "🐂", "🦬", "🐊", "🐢", "🦀", "🦞", "🦑"], "Food": ["🍔", "🌮", "🌯", "🍕", "🍟", "🌭", "🥪", "🍣", "🍜", "🥘", "🍝", "🥩", "🍗", "🥓", "🌶️", "🥦", "🍆", "🥑", "🍑", "🍈", "🍉", "🍋", "🍓", "🍒", "🍍", "🥥", "🍌", "🍎", "🥕", "🌽", "🧀", "🥐", "🍩", "🍪", "🎂", "🍫", "🍿", "☕", "🍺", "🍷", "🍸", "🥂", "🧃"], "Other": ["⛪", "🪄", "🤏", "💦", "🔫", "🧤", "🍀", "🌈", "🌊", "☀️", "🌙", "❄️", "🎸", "🎧", "🎮", "🎲", "♟️", "💎", "💰", "🧲", "🔮", "🛸", "🏎️", "⚓", "🗿"]};
+const EMOJI_GROUPS = {"Sport": ["🎾", "🏓", "🏸", "⚽", "🏀", "🏈", "⚾", "🏐", "🏉", "🥎", "🏆", "🥇", "🥈", "🥉", "🏅", "🎯", "🥅", "⛳", "🏋️", "🤸", "🏃", "🚴", "🧗", "🤾"], "Mood": ["🔥", "⚡", "💪", "👑", "⭐", "🌟", "✨", "💫", "🚀", "💥", "💯", "🎉", "🥳", "😎", "🤘", "🤙", "👊", "✌️", "👏", "🙌", "🫡", "😈", "👻", "🤖", "👽", "🧠", "💀", "🥶", "🥵", "😤", "🤓", "🤠", "🥷", "🦸", "🧙"], "Animals": ["🐐", "🐪", "🐌", "🦈", "🐙", "🦁", "🐯", "🐻", "🐼", "🦊", "🐺", "🦅", "🦉", "🐝", "🦋", "🐬", "🐳", "🦖", "🐉", "🦄", "🐸", "🐵", "🦍", "🦒", "🦓", "🦘", "🐧", "🦩", "🐈", "🐕", "🐎", "🐂", "🦬", "🐊", "🐢", "🦀", "🦞", "🦑"], "Food": ["🍔", "🌮", "🌯", "🍕", "🍟", "🌭", "🥪", "🍣", "🍜", "🥘", "🍝", "🥩", "🍗", "🥓", "🌶️", "🥦", "🍆", "🥑", "🍑", "🍈", "🍉", "🍋", "🍓", "🍒", "🍍", "🥥", "🍌", "🍎", "🥕", "🌽", "🧀", "🥐", "🍩", "🍪", "🎂", "🍫", "🍿", "☕", "🍺", "🍷", "🍸", "🥂", "🧃", "🥤", "🍦", "🍨", "🥧", "🍳", "🥚", "🥞", "🥯", "🥗", "🎈", "🤡", "Ⓜ️"], "Other": ["⛪", "🪄", "🤏", "💦", "🔫", "🧤", "🍀", "🌈", "🌊", "☀️", "🌙", "❄️", "🎸", "🎧", "🎮", "🎲", "♟️", "💎", "💰", "🧲", "🔮", "🛸", "🏎️", "⚓", "🗿"]};
 const EMOJIS = Object.values(EMOJI_GROUPS).flat();
 let editingPlayer = null;
 function renderPlayersCfg() {
