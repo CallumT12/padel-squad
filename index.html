@@ -65,8 +65,9 @@
   h3 { margin-top:0; }
   .sub { color:var(--mut); margin-top:6px; font-size:.9rem; }
   main { max-width:1100px; margin:0 auto; padding:0 16px 40px; }
-  .tabs { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:16px 0 20px; }
-  .tab { width:170px; text-align:center; background:var(--card); color:var(--mut); padding:10px 12px; border-radius:999px; border:1px solid var(--line); cursor:pointer; font-weight:600; }
+  .tabs { display:flex; flex-wrap:nowrap; gap:8px; justify-content:safe center; margin:16px 0 20px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; }
+  .tabs::-webkit-scrollbar { display:none; }
+  .tab { flex:0 0 auto; width:142px; text-align:center; white-space:nowrap; background:var(--card); color:var(--mut); padding:10px 12px; border-radius:999px; border:1px solid var(--line); cursor:pointer; font-weight:600; }
   .tab.active { background:var(--acc); color:#000; border-color:var(--acc); }
   .panel { display:none; } .panel.active { display:block; }
   .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:20px; }
@@ -285,6 +286,46 @@
   .fb-act button.fb-st:disabled:not(.on) { opacity:.6; cursor:not-allowed; }
   .fb-act button.fb-st-live:disabled:not(.on) { color:var(--win, #22c55e); border-color:var(--win, #22c55e); }
   .fb-act button.fb-st-rej:disabled:not(.on) { color:var(--loss, #ef4444); border-color:var(--loss, #ef4444); }
+  .pf-six { grid-template-columns:repeat(3, minmax(0, 1fr)) !important; }
+  .am-courtnames { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:6px 0 12px; }
+  /* same size / weight as the "Points per match" and "Number of rounds" controls */
+  .am-cn-label { font-size:.9rem; color:var(--txt); }
+  .am-courtnames { gap:10px; margin:6px 0 14px; }
+  .am-courtnames input.am-cl { width:120px; height:38px !important; min-height:38px !important; font-size:.9rem !important; font-weight:400;
+    color:var(--txt) !important; border:1px solid var(--bd) !important; border-style:solid !important; background:var(--inp) !important; padding:0 10px; }
+  .am-plist { display:grid !important; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:6px; }
+  /* match-up predictor */
+  .mu-grid { display:grid; grid-template-columns:minmax(0, 1fr) auto minmax(0, 1fr); gap:14px; align-items:center; }
+  .mu-team { background:var(--section); border:1px solid var(--line); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px; }
+  .mu-team h4 { margin:0; text-align:center; }
+  .mu-team label { width:100%; } .mu-team select { width:100%; height:38px; }
+  .mu-avg { text-align:center; font-size:.85rem; color:var(--muted); }
+  .mu-mid { display:flex; justify-content:center; }
+  .mu-shuffle { height:44px; padding:0 22px; border:0; border-radius:999px; background:var(--win, #22c55e); color:#fff; font-weight:700;
+    white-space:nowrap; box-shadow:0 4px 14px rgba(34,197,94,.35); cursor:pointer; transition:transform .15s, filter .15s; }
+  .mu-shuffle:hover:not(:disabled) { filter:brightness(1.05); transform:translateY(-1px); }
+  .mu-shuffle:active:not(:disabled) { transform:scale(.97); }
+  .mu-shuffle:disabled { opacity:.45; box-shadow:none; cursor:not-allowed; }
+  .mu-wdl { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+  .mu-r { height:32px; min-height:32px; padding:0; border-radius:8px; background:transparent; font-weight:700; font-size:.8rem; cursor:pointer; border:2px solid; }
+  .mu-r-W { color:var(--win, #22c55e); border-color:var(--win, #22c55e); } .mu-r-D { color:var(--draw, #eab308); border-color:var(--draw, #eab308); }
+  .mu-r-L { color:var(--loss, #ef4444); border-color:var(--loss, #ef4444); }
+  .mu-r-W.on { background:var(--win, #22c55e); color:#fff; } .mu-r-D.on { background:var(--draw, #eab308); color:#fff; } .mu-r-L.on { background:var(--loss, #ef4444); color:#fff; }
+  .mu-proj { margin-top:14px; border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--section); }
+  .mu-proj h4 { margin:0 0 8px; text-align:center; }
+  .mu-proj-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .mu-pp { display:flex; align-items:center; gap:8px; padding:6px 0; border-top:1px solid var(--line); font-size:.85rem; }
+  .mu-pp:first-child { border-top:0; }
+  .mu-pn { flex:1; min-width:0; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mu-pv { color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .mu-pd { min-width:52px; text-align:center; font-weight:800; border-radius:6px; padding:2px 6px; font-variant-numeric:tabular-nums; }
+  .mu-pd.up { color:var(--win, #22c55e); } .mu-pd.down { color:var(--loss, #ef4444); } .mu-pd.same { color:var(--muted); }
+  .mu-res { margin-top:14px; }
+  .mu-swing { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; margin-top:12px; }
+  .mu-swing > div { background:var(--section); border-radius:10px; padding:8px; text-align:center; font-size:.8rem; display:flex; flex-direction:column; gap:2px; }
+  @media (max-width:640px) { .mu-grid { grid-template-columns:1fr; } .mu-proj-grid { grid-template-columns:1fr; } }
+  .pf-subhead { margin:16px 0 8px; font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  .pf-h2h .stat .v { font-size:1.15rem; font-weight:800; }              /* player names prominent */
   .pf-kpis { margin-left:auto; display:flex; align-items:center; gap:18px; }
   /* compact inline name editor so the profile header barely moves */
   .pf-editbox { display:flex; flex-wrap:nowrap !important; flex-direction:row !important; align-items:center !important; gap:4px !important; margin:0 !important; }
@@ -356,6 +397,7 @@
                   background:var(--selected); color:var(--primary); font-size:.85rem; font-weight:600; }
   .pill.full { background:var(--primary); color:#fff; }
   .pill.cp { background:#dfe9f5; color:#2d5b8a; } .pill.sw { background:#f6e3ea; color:#9b3d5d; } .pill.am { background:#ebe5f5; color:#5b4590; }
+  .pill.gt { display:inline-flex; align-items:center; gap:4px; font-weight:600; white-space:nowrap; vertical-align:middle; }
   details.month[open] > summary .pill { background:rgba(255,255,255,.2); color:#fff; }
 
   /* tables */
@@ -503,6 +545,11 @@
   .cs-opt.hi { background:var(--selected); color:var(--primary); }
   .cs-opt.sel { font-weight:600; }
   .cs-opt.sel::after { content:'✓'; float:right; margin-left:14px; color:var(--primary); }
+  /* two-column options (name left · value right, e.g. player rating) */
+  .cs-opt.cs-2col { display:flex; align-items:center; gap:16px; }
+  .cs-opt.cs-2col .cs-l { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  .cs-opt.cs-2col .cs-r { flex:0 0 auto; min-width:3.2em; text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); font-weight:600; }
+  .cs-opt.cs-2col.sel::after { float:none; order:3; margin-left:0; }
   .cs-opt.dis { color:var(--muted); opacity:.5; cursor:not-allowed; }
   .cs-grp { padding:8px 12px 4px; font-size:.72rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
 
@@ -562,6 +609,8 @@
   .pe-chips, .ev-players { display:grid !important; grid-template-columns:repeat(auto-fill, var(--pw, 120px)) !important; gap:6px !important; }
   .pe-chips .pe-chip { width:100%; min-height:26px !important; height:26px !important; padding:0 10px !important; font-size:.72rem !important;
     justify-content:center; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* Americano: rows of 6 players (P1–P6, P7–P12, P13–P16) */
+  #evBody .ev-players { grid-template-columns:repeat(6, var(--pw, 160px)) !important; justify-content:start; overflow-x:auto; }
   .ev-players .ev-p { width:100%; height:28px !important; padding:0 10px !important; font-size:.75rem !important; gap:6px !important; }
   .ev-players .ev-p b { flex:0 0 auto !important; }
 
@@ -576,6 +625,9 @@
   .pr-team.pr-right { text-align:right; }
   .pr-team.pr-fav { color:var(--text); font-weight:700; }
   .pr-p sup { color:#b7862b; font-weight:700; margin-left:1px; }
+  .pr-team { align-self:start; }
+  .pr-names { line-height:1.35; }
+  .pr-tag-off { visibility:hidden; }                       /* keeps both teams the same height so names line up */
   .pr-tag { display:inline-block; margin-top:4px; padding:1px 8px; border-radius:999px; background:var(--selected); color:var(--primary); font-size:.68rem; font-weight:700; }
   .pr-mid { text-align:center; }
   .pr-bar { display:flex; gap:2px; height:8px; border-radius:999px; overflow:hidden; }
@@ -617,8 +669,10 @@
     h1 { font-size:1.6rem; }
     .card, .hb, .cw, details.month, .court { padding:12px !important; border-radius:12px; }
     /* tabs: 3 × 2 grid that always fits */
-    .tabs { display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; margin:10px 0 14px; }
-    .tab { width:auto !important; min-width:0; padding:8px 4px !important; font-size:.8rem !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tabs { display:flex !important; flex-wrap:nowrap !important; justify-content:flex-start !important; overflow-x:auto; gap:6px; margin:10px -10px 14px;
+            padding:0 10px 4px; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .tabs::-webkit-scrollbar { display:none; }
+    .tab { flex:0 0 auto; width:auto !important; padding:8px 14px !important; font-size:.8rem !important; white-space:nowrap; scroll-snap-align:start; }
     /* stats: two per row */
     .stats { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:8px; }
     .stat { padding:10px !important; } .stat .v { font-size:1.05rem !important; } .stat .l, .stat .s { font-size:.7rem !important; }
@@ -662,6 +716,7 @@
     .pf-editbox { flex-wrap:wrap !important; } .pf-editbox input { width:100% !important; flex:1 1 100%; }
     .pf-kpi { font-size:1.3rem; }
     .pf-stats { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; }
+    .pf-six { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; }
     .pf-mode button { width:auto !important; flex:1 1 0; padding:0 6px; }
     /* feedback */
     .fb-act button { flex:1 1 auto; }
@@ -704,10 +759,11 @@
 <main>
   <div class="tabs">
     <button class="tab active" data-tab="board">Leaderboard</button>
-    <button class="tab" data-tab="avail">Availability</button>
+    <button class="tab" data-tab="avail">Calendar</button>
     <button class="tab" data-tab="cal">Matches</button>
     <button class="tab" data-tab="event">Americano</button>
     <button class="tab" data-tab="hist">Match History</button>
+    <button class="tab" data-tab="pred">Predictor</button>
     <button class="tab" data-tab="fb">Feedback</button>
   </div>
 
@@ -838,7 +894,7 @@
           <label>Date<input type="date" id="calDate"></label>
           <label>Start time<input type="time" id="calTime" value="17:30"></label>
           <label>Game type<select id="calType"><option>Competitive</option><option>Swingers</option><option>Americano</option></select></label>
-          <label>Courts<select id="calCourts"><option value="1">1 court (4 players)</option><option value="2">2 courts (8 players)</option><option value="3" selected>3 courts (12 players)</option><option value="4">4 courts (16 players)</option></select></label>
+          <label>Courts<select id="calCourts"><option value="1">1 court</option><option value="2">2 courts</option><option value="3" selected>3 courts</option><option value="4">4 courts</option></select></label>
           <label>Venue (optional)<input id="calNote" placeholder="e.g. Padel Club Court A"></label>
           <button type="button" id="calAdd">Add match</button>
         </div>
@@ -968,6 +1024,20 @@
     </div>
     <div id="history"></div>
   </section>
+  <!-- ============ PREDICTOR ============ -->
+  <section class="panel" id="pred">
+    <div class="card mu-card">
+      <h3 style="margin:0 0 12px">Match Predictor</h3>
+      <div class="mu-grid">
+        <div class="mu-team" id="muT1"></div>
+        <div class="mu-mid"><button type="button" class="mu-shuffle" id="muShuffle" title="Randomly rearrange the four players between the teams">Shuffle</button></div>
+        <div class="mu-team" id="muT2"></div>
+      </div>
+      <div id="muResult"></div>
+    </div>
+    <div id="predBody"></div>
+  </section>
+
   <!-- ============ FEEDBACK ============ -->
   <section class="panel" id="fb">
     <div class="card edit fb-form">
@@ -1025,6 +1095,9 @@ applyTheme(localStorage.getItem(TKEY) || 'light');                // brand desig
 document.getElementById('themeBtn').onclick = () =>
   applyTheme(document.documentElement.dataset.theme==='light' ? 'dark' : 'light');
 
+// one game-type badge used everywhere (same colours / emoji as the Matches cards)
+const typeBadge = (t = 'Competitive') => { t = t || 'Competitive';
+  return `<span class="pill gt ${t === 'Swingers' ? 'sw' : t === 'Americano' ? 'am' : 'cp'}">${t === 'Swingers' ? '💃 Swingers' : t === 'Americano' ? '🔄 Americano' : '🏆 Competitive'}</span>`; };
 const COURT_NAMES = ['🐐 GOAT', '🐪 Camels', '🐌 Snails', '⭐ Starfish'];
 // "Court N" first; the league name (GOAT, Camels, …) is added for Competitive play only
 const courtName = (n, competitive = true) => `Court ${n}` + (competitive && COURT_NAMES[n-1] ? ` · ${COURT_NAMES[n-1]}` : '');
@@ -1238,6 +1311,7 @@ function render() {
   renderManualSession();
   renderCalResetMonths();
   renderFeedback();
+  renderPredictor();
 }
 
 // ---------- rank progress ----------
@@ -1362,24 +1436,24 @@ function predictionsHtml(w, L) {
     const uncertain = !model.matches || [...f.a, ...f.b].some(low);
     return `<div class="pr-row">
       <div class="gl">${f.label}</div>
-      <div class="pr-team ${favA && !even ? 'pr-fav' : ''}">${f.a.map(who).join('<br>')}${favA && !even ? '<span class="pr-tag">Favourite</span>' : ''}</div>
+      <div class="pr-team ${favA && !even ? 'pr-fav' : ''}"><div class="pr-names">${f.a.map(who).join('<br>')}</div><span class="pr-tag${favA && !even ? '' : ' pr-tag-off'}">Favourite</span></div>
       <div class="pr-mid">
         <div class="pr-bar" title="Win chance: ${p.pctA}% v ${p.pctB}%"><i class="${favA && !even ? 'pr-favbar' : ''}" style="width:${p.pctA}%"></i><i class="${!favA && !even ? 'pr-favbar' : ''}" style="width:${p.pctB}%"></i></div>
         <div class="pr-pcts"><b class="${favA && !even ? 'pr-win' : ''}">${p.pctA}%</b><b class="${!favA && !even ? 'pr-win' : ''}">${p.pctB}%</b></div>
         ${uncertain ? '<div class="pr-unc">low data</div>' : ''}
       </div>
-      <div class="pr-team pr-right ${!favA && !even ? 'pr-fav' : ''}">${f.b.map(who).join('<br>')}${!favA && !even ? '<span class="pr-tag">Favourite</span>' : ''}</div>
+      <div class="pr-team pr-right ${!favA && !even ? 'pr-fav' : ''}"><div class="pr-names">${f.b.map(who).join('<br>')}</div><span class="pr-tag${!favA && !even ? '' : ' pr-tag-off'}">Favourite</span></div>
     </div>`;
   }).join('');
   const info = model.matches
     ? `Ratings from ${model.matches} past match${model.matches === 1 ? '' : 'es'} with known teams (completed weeks only). <sup>*</sup> = fewer than ${ELO.LOW_DATA} past matches – estimate uncertain.`
     : 'No past matches with known teams yet – every match shows a neutral 50% / 50% estimate. Predictions will improve as results are recorded.';
   const many = fixtures.length > 12;
-  return `<details class="res-acc pr-acc" data-acc="${w.id}-pr" ${resOpen[w.id + '-pr'] ?? !many ? 'open' : ''}>
+  return `<details class="res-acc pr-acc" data-acc="${w.id}-pr" ${(resOpen[w.id + '-pr'] ?? (!many && w.type !== 'Americano')) ? 'open' : ''}>
       <summary><b>Predicted results</b>
         <span class="pill">${fixtures.length} match${fixtures.length === 1 ? '' : 'es'}</span>
         <span class="pr-i" title="Predictions are based only on past win/loss outcomes (Elo-style ratings). They estimate each team's chance of winning – not an exact score.">ⓘ</span></summary>
-      <div class="legend" style="margin:8px 0 10px">${info} Based on past win/loss outcomes only – not an exact-score prediction.</div>
+      <div style="height:10px"></div>
       <div class="pr-list">${rows}</div>
     </details>`;
 }
@@ -1465,7 +1539,8 @@ function profileStats(name, mode = pfMode) {
     if (ratingMatches([b], cumR).some(m => [...m.a, ...m.b].includes(name)) && (!peakRating || q.rating > peakRating.v + 1e-9)) peakRating = { v:q.rating, ts:b.ts };
     if (!q.qual && (!peakPct || q.pct > peakPct.v + 1e-9)) peakPct = { v:q.pct, ts:b.ts };
   });
-  return { me, opps:opps.sort((a, b) => winPct(b) - winPct(a) || b.played - a.played || b.w - a.w || a.name.localeCompare(b.name)), rival, victim, nemesis, partner,
+  const byWin = (a, b) => winPct(b) - winPct(a) || b.played - a.played || b.w - a.w || a.name.localeCompare(b.name);
+  return { me, opps:opps.sort(byWin), pals:pals.slice().sort(byWin), rival, victim, nemesis, partner,
            peakRating, peakPct, bestStreak:best, curWins:cur, jump, drop, bestRank, worstRank, games:seq.length, seq };
 }
 function openProfile(name) {
@@ -1484,6 +1559,19 @@ function openProfile(name) {
       const e = americanoTable(w, amSchedule(w, ps)).find(x => x.name === name);
       if (e && e.played && (!amBest || e.pts > amBest.pts)) amBest = { pts:e.pts, date:w.date };
     });
+  }
+  // Americano dashboard: podiums, points for/against, best single match (round) score – weeks in Match History only
+  const am = { weeks:0, podium:0, pts:0, against:0, diff:0, best:null };
+  if (pfMode === 'americano') {
+    const rk = {}; aggregate().forEach(q => rk[q.name] = q);
+    calendar.filter(w => w.type === 'Americano' && w.amHist).forEach(w => {
+      const ps = amPlayers(w, weekLineup(w, rk)); if (!ps.includes(name)) return;
+      const rounds = amSchedule(w, ps), table = americanoTable(w, rounds), pos = table.findIndex(x => x.name === name), e = table[pos];
+      if (!e || !e.played) return;
+      am.weeks++; if (pos < 3) am.podium++;
+      am.pts += e.pts; am.against += e.against;
+    });
+    am.diff = am.pts - am.against;
   }
   const tot = pfMode === 'competitive'
     ? { w:p.wins, d:p.draws, l:p.losses, form:(formStreaks()[name] || []).slice(-6) }
@@ -1514,30 +1602,46 @@ function openProfile(name) {
     <div class="pf-rec">
       <span class="pf-tot"><span class="w">${tot.w} W</span> · <span class="d">${tot.d} D</span> · <span class="l">${tot.l} L</span></span>
       <span class="pf-form">${formHtml({ form:tot.form })}</span></div>
-    <div class="pf-sec">
+    <div class="pf-sec"${pfMode === 'combined' ? ' hidden' : ''}>
       <h3>Player stats</h3>
-    <div class="stats pf-stats">
+    ${pfMode === 'americano' ? `<div class="stats pf-stats pf-six">
+      ${card('Win %', st.games ? `${amWinPct.toFixed(2)}%` : '–', st.games ? '' : 'no Americano games in history yet')}
+      ${card('Podium Finishes', am.weeks ? am.podium : '–', am.weeks ? '' : 'no Americano weeks in history yet')}
+      ${card('Point Differential', am.weeks ? `${am.diff > 0 ? '+' : ''}${am.diff}` : '–', am.weeks ? `${am.pts} for · ${am.against} against` : '–')}
+      ${card('Total Points', am.weeks ? am.pts : '–', '')}
+      ${card('Longest Win Streak', st.bestStreak || '–', st.games ? 'Americano games in a row' : 'no results yet')}
+      ${card('Best Americano Week', amBest ? amBest.pts : '–', amBest ? fmtDate(amBest.date) : '–')}
+    </div>` : `<div class="stats pf-stats">
       ${pfMode === 'competitive' ? card('Highest Player Rating', st.peakRating ? st.peakRating.v.toFixed(2) : '–', st.peakRating ? d(st.peakRating.ts) : 'no rated matches yet') : ''}
       ${pfMode === 'competitive' ? card('Highest Win %', st.peakPct ? st.peakPct.v.toFixed(2) + '%' : '–', st.peakPct ? d(st.peakPct.ts) : `from ${MIN_GAMES} games (qualified)`) : ''}
-      ${pfMode === 'americano' ? card('Win %', st.games ? `${amWinPct.toFixed(2)}%` : '–', st.games ? `${st.games} Americano game${st.games === 1 ? '' : 's'} in Match History` : 'no Americano games in history yet') : ''}
-      ${pfMode === 'americano' ? card('Most Points', amBest ? amBest.pts : '–', amBest ? `best Americano week · ${fmtDate(amBest.date)}` : 'no Americano weeks in history yet') : ''}
-      ${pfMode === 'combined' ? '' : card('Longest win streak', st.bestStreak || '–', st.games ? (pfMode === 'competitive' ? 'from weekly results' : 'from games in this view') : 'no results yet')}
+      ${pfMode === 'competitive' ? card('Longest Win Streak', st.bestStreak || '–', st.games ? 'from weekly results' : 'no results yet') : ''}
       ${pfMode === 'competitive' ? card('Biggest ranking jump', st.jump ? `▲ ${st.jump.n}` : '–', st.jump ? `${st.jump.from} → ${st.jump.to} · ${d(st.jump.ts)}` : 'no climb yet') : ''}
       ${pfMode === 'competitive' ? card('Biggest ranking drop', st.drop ? `▼ ${st.drop.n}` : '–', st.drop ? `${st.drop.from} → ${st.drop.to} · ${d(st.drop.ts)}` : 'no drop yet') : ''}
       ${pfMode === 'competitive' ? card('Best / worst rank', st.bestRank != null ? `${st.bestRank} / ${st.worstRank}` : '–', 'across all submissions') : ''}
-      ${card('Victim', who(st.victim), st.victim ? recStr(st.victim) : '–')}
-      ${card('Nemesis', who(st.nemesis), st.nemesis ? recStr(st.nemesis) : '–')}
-      ${card('Best partner', who(st.partner), st.partner ? recStr(st.partner) : '–')}
-    </div>
+    </div>`}
     </div>
     <div class="pf-sec">
-      <h3>Head-to-head</h3>
-    ${st.opps.length ? `<div style="max-height:320px;overflow:auto"><table>
+      <h3>Head-to-head performance</h3>
+    <div class="stats pf-stats pf-six pf-h2h">
+      ${card('Biggest Victim', who(st.victim), st.victim ? recStr(st.victim) : '–')}
+      ${card('Nemesis', who(st.nemesis), st.nemesis ? recStr(st.nemesis) : '–')}
+      ${card('Best Partner', who(st.partner), st.partner ? recStr(st.partner) : '–')}
+    </div>
+    <div style="height:12px"></div>
+    ${st.opps.length ? `<div><table>
       <thead><tr><th style="text-align:left">Opponent</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>Win %</th></tr></thead>
       <tbody>${st.opps.map(o => `<tr><td class="name"><a href="#" class="plink" data-player="${esc(o.name)}">${esc(o.name)}</a></td><td>${o.played}</td>
         <td class="w">${o.w}</td><td class="d">${o.d}</td><td class="l">${o.l}</td><td><b>${((o.w * 3 + o.d) / (o.played * 3) * 100).toFixed(0)}%</b></td></tr>`).join('')}</tbody>
     </table></div>` : '<div class="legend">No head-to-head games recorded yet.</div>'}
     <div class="legend" style="margin-top:8px">${pfMode === 'combined' ? 'Head-to-head, rivals, partners and streaks use all games with known teams (Competitive matches and Americano scores)' : pfMode === 'americano' ? 'Head-to-head, rivals, partners and streaks use Americano games only (win = more points scored)' : 'Head-to-head, rivals, partners and streaks use Competitive matches only'}</div>
+    </div>
+    <div class="pf-sec">
+      <h3>Best Partner</h3>
+    ${st.pals.length ? `<div><table>
+      <thead><tr><th style="text-align:left">Partner</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>Win %</th></tr></thead>
+      <tbody>${st.pals.map(o => `<tr><td class="name"><a href="#" class="plink" data-player="${esc(o.name)}">${esc(o.name)}</a></td><td>${o.played}</td>
+        <td class="w">${o.w}</td><td class="d">${o.d}</td><td class="l">${o.l}</td><td><b>${((o.w * 3 + o.d) / (o.played * 3) * 100).toFixed(0)}%</b></td></tr>`).join('')}</tbody>
+    </table></div>` : '<div class="legend">No games with a partner recorded yet.</div>'}
     </div>`;
   $('pfBody').querySelectorAll('.plink').forEach(a => a.onclick = e => { e.preventDefault(); openProfile(a.dataset.player); });
   $('pfBody').querySelectorAll('[data-pfmode]').forEach(b => b.onclick = () => {
@@ -1875,7 +1979,7 @@ function amHistoryCard(w, f, rankOf, addShown) {
   return `<div class="hb hb-am">
     <div class="hb-head">
       <div><b>${new Date(w.date + 'T' + (w.time || '12:00')).toLocaleString()}</b>
-        <span class="legend">· 🔄 Americano${w.note ? ' · ' + esc(w.note) : ''} · ${ps.length} players · not counted on the leaderboard</span></div>
+        ${typeBadge('Americano')} <span class="legend">${w.note ? '· ' + esc(w.note) + ' ' : ''}· ${ps.length} players · not counted on the leaderboard</span></div>
       <button class="del hb-btn" data-amrm="${w.id}">Remove from history</button>
     </div>
     <table><thead><tr><th style="text-align:left">Player</th><th>Played</th><th>Won</th><th>Drawn</th><th>Points</th><th>+/−</th></tr></thead><tbody>
@@ -1937,7 +2041,7 @@ function renderHistory() {
     const nGames = (b.games || []).filter(hit).length;
     return `<div class="hb">
       <div class="hb-head">
-        <div><b>${new Date(playedTs(b)).toLocaleString()}</b> <span class="legend">· ${esc(b.source)}${b.by ? ` · by ${esc(b.by)}` : ''} · ${all} record${all>1?'s':''}</span></div>
+        <div><b>${new Date(playedTs(b)).toLocaleString()}</b> ${(b.games || []).length ? typeBadge('Competitive') : ''} <span class="legend">· ${esc(b.source)}${b.by ? ` · by ${esc(b.by)}` : ''} · ${all} record${all>1?'s':''}</span></div>
         <button class="del hb-btn" data-batch="${b.id}">Remove entire session</button>
       </div>
       <table><thead><tr><th style="text-align:left">Player</th><th>W</th><th>D</th><th>L</th><th>Points</th><th></th></tr></thead><tbody>
@@ -2184,6 +2288,7 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x===t));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id===t.dataset.tab));
   if (t.dataset.tab === 'board') renderProgress();    // re-measure graph width when shown
+  t.scrollIntoView({ block:'nearest', inline:'nearest', behavior:'smooth' });   // keep the active tab visible when the bar scrolls
   equalizePills($('chartPlayers')); equalizePills(document.querySelector('#evBody .ev-players'));   // pills can only be measured when visible
 });
 
@@ -2315,6 +2420,85 @@ const fbMerge = (...lists) => { const m = new Map();
 let fbReplyOpen = null;                                  // id of the submission whose reply box is open
 const saveFeedback = () => { store(FBKEY, JSON.stringify(feedback)); schedulePush(); };
 const FB_MAX = 500;
+// ---------- match-up predictor (doubles) ----------
+let mu = ['', '', '', ''];                                 // Team 1 = slots 0,1 · Team 2 = slots 2,3
+let muRes = '';                                           // simulated result: 'A' (Team 1 wins) · 'B' (Team 2 wins) · 'D' (draw)
+function renderMatchup() {
+  if (!$('muT1')) return;
+  const players = aggregate(), byName = {}; players.forEach(p => byName[p.name] = p);
+  mu = mu.map(n => n && byName[n] ? n : '');              // drop players that no longer exist
+  const names = players.map(p => p.name).sort((a, b) => a.localeCompare(b));
+  const rt = n => (byName[n]?.rating ?? RATING.START);
+  const slot = i => `<label>Player ${i + 1}<select data-mu="${i}">
+      <option value="">– Select player –</option>
+      ${names.map(n => `<option value="${esc(n)}" data-aside="${rt(n).toFixed(2)}" ${mu[i] === n ? 'selected' : ''} ${mu[i] !== n && mu.includes(n) ? 'disabled' : ''}>${esc(n)}</option>`).join('')}
+    </select></label>`;
+  const team = (t, a, b) => {
+    const full = mu[a] && mu[b];
+    const me = t === 1 ? 'A' : 'B', other = t === 1 ? 'B' : 'A';
+    const state = muRes === 'D' ? 'D' : muRes === me ? 'W' : muRes === other ? 'L' : '';
+    return `<h4>Team ${t}</h4>${slot(a)}${slot(b)}
+      <div class="mu-avg">${full ? `Team rating <b>${((rt(mu[a]) + rt(mu[b])) / 2).toFixed(2)}</b>` : '&nbsp;'}</div>
+      <div class="mu-wdl">${[['W', 'Win'], ['D', 'Draw'], ['L', 'Loss']].map(([k, txt]) =>
+        `<button type="button" class="mu-r mu-r-${k}${state === k ? ' on' : ''}" data-mur="${k === 'D' ? 'D' : k === 'W' ? me : other}">${txt}</button>`).join('')}</div>`;
+  };
+  $('muT1').innerHTML = team(1, 0, 1); $('muT2').innerHTML = team(2, 2, 3);
+  $('muShuffle').disabled = !mu.every(Boolean);                   // shuffle only once all four players are picked
+  $('muShuffle').title = mu.every(Boolean) ? 'Randomly rearrange the four players between the teams' : 'Select all four players first';
+  let out = '';
+  if (mu.every(Boolean)) {
+    const ra = (rt(mu[0]) + rt(mu[1])) / 2, rb = (rt(mu[2]) + rt(mu[3])) / 2, ea = ratingExpected(ra, rb);
+    const pA = Math.round(ea * 100), pB = 100 - pA, even = pA === pB, favA = pA > pB;
+    const ch = v => `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
+    const winA = RATING.K * (1 - ea), lossA = RATING.K * (0 - ea);
+    const low = mu.filter(n => !(byName[n]?.games)).length;
+    out = `<div class="mu-res">
+      <div class="pr-pcts" style="font-size:1rem"><b class="${favA && !even ? 'pr-win' : ''}">Team 1 · ${pA}%</b><b class="${!favA && !even ? 'pr-win' : ''}">${pB}% · Team 2</b></div>
+      <div class="pr-bar" style="height:12px;margin:6px 0" title="Win chance"><i class="${favA && !even ? 'pr-favbar' : ''}" style="width:${pA}%"></i><i class="${!favA && !even ? 'pr-favbar' : ''}" style="width:${pB}%"></i></div>
+      <div class="legend" style="margin:6px 0 0;text-align:center">${even ? 'Evenly matched' : `Favourite: <b>Team ${favA ? 1 : 2}</b> (${mu.slice(favA ? 0 : 2, favA ? 2 : 4).map(esc).join(' & ')})`}
+        · rating gap ${Math.abs(ra - rb).toFixed(2)}</div>
+      ${muRes ? (() => {
+        const after = {}; mu.forEach(n => after[n] = rt(n));
+        ratingApply(after, [mu[0], mu[1]], [mu[2], mu[3]], muRes);            // same update rule as the real rating (clamped 0–7)
+        const row = n => { const d = after[n] - rt(n);
+          return `<div class="mu-pp"><span class="mu-pn">${esc(n)}</span><span class="mu-pv">${rt(n).toFixed(2)} → <b>${after[n].toFixed(2)}</b></span>
+            <span class="mu-pd ${d > 1e-9 ? 'up' : d < -1e-9 ? 'down' : 'same'}">${ch(d)}</span></div>`; };
+        return `<div class="mu-proj"><h4>Projected Player Rating (+/-)</h4>
+          <div class="mu-proj-grid"><div>${row(mu[0])}${row(mu[1])}</div><div>${row(mu[2])}${row(mu[3])}</div></div></div>`;
+      })() : '<div class="legend" style="text-align:center;margin:10px 0 0">Choose Win, Draw or Loss under a team to see each player\'s projected rating.</div>'}
+      ${low ? `<div class="pr-unc" style="text-align:center;margin-top:6px">${low} player${low === 1 ? ' has' : 's have'} no recorded games yet (rating ${RATING.START.toFixed(2)}) – estimate uncertain</div>` : ''}
+    </div>`;
+  } else out = '<div class="legend" style="text-align:center;margin:10px 0 0">Select all four players to see the prediction.</div>';
+  $('muResult').innerHTML = out;
+  document.querySelectorAll('select[data-mu]').forEach(sel => sel.onchange = () => { mu[+sel.dataset.mu] = sel.value; renderMatchup(); });
+  document.querySelectorAll('[data-mur]').forEach(b => b.onclick = () => { muRes = muRes === b.dataset.mur ? '' : b.dataset.mur; renderMatchup(); });
+}
+$('muShuffle').onclick = () => {
+  if (!mu.every(Boolean)) return;
+  const key = a => [[a[0], a[1]].sort().join('+'), [a[2], a[3]].sort().join('+')].sort().join(' v ');
+  const before = key(mu); let next = mu;
+  for (let k = 0; k < 20; k++) {                             // random arrangement, preferably with different teams
+    next = shuffled(mu, Math.random);
+    if (mu.filter(Boolean).length < 4 || key(next) !== before) break;
+  }
+  mu = next; renderMatchup();
+};
+// Predictor tab: predicted results for every upcoming Competitive / Americano match (same model as on Matches)
+function renderPredictor() {
+  renderMatchup();
+  const box = $('predBody'); if (!box) return;
+  const t = today(), rankOf = {}; aggregate().forEach(p => rankOf[p.name] = p);
+  const weeks = calendar.filter(w => w.date >= t && w.type !== 'Swingers' && !isSubmitted(w)).sort((a, b) => a.date.localeCompare(b.date));
+  box.innerHTML = weeks.map(w => {
+    const html = predictionsHtml(w, weekLineup(w, rankOf));
+    return `<div class="card">
+      <div class="cw-head"><div><b>${fmtDate(w.date)}</b>${w.time ? ` <span class="legend" style="margin:0">· ${esc(w.time)}</span>` : ''}
+        ${typeBadge(w.type)}${w.note ? ` <span class="legend" style="margin:0">· ${esc(w.note)}</span>` : ''}</div></div>
+      ${html || '<div class="legend">Predictions appear once the courts for this match are full.</div>'}
+    </div>`;
+  }).join('') || '<div class="card"><div class="legend">No upcoming matches to predict. Add a match on the Calendar tab.</div></div>';
+  box.querySelectorAll('details.res-acc').forEach(d => d.ontoggle = () => { resOpen[d.dataset.acc] = d.open; });
+}
 function renderFeedback() {
   if (!$('fbList')) return;
   const sel = $('fbName'), cur = sel.value;
@@ -2420,7 +2604,7 @@ $('calAdd').onclick = () => {
   if (!date) { msg.classList.add('err'); msg.textContent = 'Pick a date.'; return; }
   if (calendar.some(w => w.date === date)) { msg.classList.add('err'); msg.textContent = 'A match already exists for that date.'; return; }
   calendar.push({ id:uid(), date, time:$('calTime').value, type:$('calType').value, note:$('calNote').value.trim(),
-                  courts:$('calCourts').value, players:Array(+$('calCourts').value * 4).fill(''), reserves:Array(MIN_RES).fill('') });
+                  courts:$('calCourts').value, maxCourts:$('calCourts').value, players:Array(+$('calCourts').value * 4).fill(''), reserves:Array(MIN_RES).fill('') });
   saveCal();
   $('avMonth').value = date.slice(0, 7); render();             // show the month it was added to
   // next suggested date = +7 days
@@ -2440,9 +2624,27 @@ const isSubmitted = w => !!(w.batch && batches.some(b => b.id === w.batch));
 //  • reserves stay in reserve order (R1, R2, …), with gaps closed up
 //  • any free key-player slot is filled by the next reserve (R1 first), who leaves the reserve list
 //  • ranking is then applied among the key players when courts are built
+// Automatic courts (Competitive / Swingers, upcoming weeks with no results entered yet):
+// courts = whole groups of 4 among everyone available (confirmed first, then reserves in order),
+// between the game type's minimum and the week's chosen maximum; the rest are reserves.
+// e.g. max 3 courts · 5 available → 1 court + 1 reserve · 10 → 2 courts + 2 reserves · 12 → 3 courts.
+const autoCourtsOn = w => w.type !== 'Americano' && !isSubmitted(w) && w.date >= today() && !(w.res && Object.keys(w.res).length);
+function autoCourts(w) {
+  if (!autoCourtsOn(w)) return;
+  if (!w.maxCourts) w.maxCourts = String(nCourts(w));            // existing weeks: today's courts become the maximum
+  const all = [...w.players.filter(Boolean), ...w.reserves.filter(Boolean)];
+  const max = +w.maxCourts, min = Math.min(max, minCourts(w.type));
+  const n = Math.max(min, Math.min(max, Math.floor(all.length / 4)));
+  const cap = n * 4;
+  w.courts = String(n);
+  w.players = [...all.slice(0, cap), ...Array(Math.max(0, cap - all.length)).fill('')];
+  const rest = all.slice(cap), len = Math.max(MIN_RES, +w.resSlots || MIN_RES, rest.length);
+  w.reserves = [...rest, ...Array(len - rest.length).fill('')];
+}
 function normalizeWeek(w) {
   if (isSubmitted(w)) return false;
-  const before = JSON.stringify([w.players, w.reserves, w.subs]);
+  const before = JSON.stringify([w.players, w.reserves, w.subs, w.courts, w.maxCourts]);
+  autoCourts(w);
   const res = w.reserves.filter(Boolean);
   const len = Math.max(MIN_RES, +w.resSlots || MIN_RES, res.length);   // 3 slots unless more were added
   let moved = false;
@@ -2451,10 +2653,10 @@ function normalizeWeek(w) {
   if (moved) delete w.res;                              // courts changed – clear entered results
   // drop substitute notes for players no longer in the key players (or pointing at themselves after a rename)
   if (w.subs) { Object.keys(w.subs).forEach(n => { if (!w.players.includes(n) || w.subs[n] === n) delete w.subs[n]; }); if (!Object.keys(w.subs).length) delete w.subs; }
-  return before !== JSON.stringify([w.players, w.reserves, w.subs]);
+  return before !== JSON.stringify([w.players, w.reserves, w.subs, w.courts, w.maxCourts]);
 }
 function setCourts(w, n) {
-  w.courts = String(n);
+  w.courts = String(n); w.maxCourts = String(n);
   const cap = n * 4;
   if (w.players.length < cap) w.players = [...w.players, ...Array(cap - w.players.length).fill('')];
   else if (w.players.length > cap) {
@@ -2609,7 +2811,12 @@ ${inp(r, c, 1)}<span class="am-team">${B.map(pn).join('<br>')}</span></div>
           <select data-f="amRounds" data-w="${w.id}" style="height:38px;width:80px">
             ${Array.from({ length:ps.length - 1 }, (_, i) => i + 1).map(k => `<option value="${k}" ${k === rounds.length ? 'selected' : ''}>${k}</option>`).join('')}
           </select></label>
-        <button type="button" class="sec edit" data-amshuffle="${w.id}" style="height:38px;margin-left:16px">Shuffle</button>
+        <button type="button" class="mu-shuffle edit" data-amshuffle="${w.id}" style="margin-left:16px">Shuffle</button>
+      </div>
+      <h3 style="margin:18px 0 6px">Court names</h3>
+      <div class="am-courtnames">
+        ${Array.from({ length:nCourts(w) }, (_, c) => `<input class="court-label am-cl" data-amcl="${w.id}" data-c="${c}" maxlength="20"
+          value="${esc(courtLabel(w, c))}" placeholder="Court ${c + 1}" title="Court name at the venue – click to edit">`).join('')}
       </div>
       <div class="courts">${roundsHtml}</div>
       <div class="row edit" style="margin-top:12px;justify-content:center">${w.amHist
@@ -2671,6 +2878,13 @@ function renderEvent() {
     const missing = rs.reduce((t, cs, r) => t + cs.filter((_, c) => { const v = sc2[`${r}-${c}`]; return !(v && v[0] !== '' && v[1] !== '' && v[0] != null && v[1] != null); }).length, 0);
     if (missing) return alert(`Enter a score for every match first (${missing} missing).`);
     wk.amHist = Date.now(); saveCal(); render();
+  });
+  body.querySelectorAll('input[data-amcl]').forEach(inp => inp.onchange = () => {
+    const wk = find(inp.dataset.amcl), c = +inp.dataset.c, v = inp.value.trim();
+    wk.courtLabels = [...(wk.courtLabels || [])];
+    wk.courtLabels[c] = v === `Court ${c + 1}` ? '' : v;           // blank = default
+    if (!wk.courtLabels.some(Boolean)) delete wk.courtLabels;
+    saveCal(); render();
   });
   body.querySelectorAll('[data-amshuffle]').forEach(b => b.onclick = () => {
     const wk = find(b.dataset.amshuffle);
@@ -2770,7 +2984,7 @@ function renderAvailability() {
         <span class="legend" style="margin:0">${d && d >= t ? 'Tick to create' : '–'}</span></th>`;
     }
     const w = sl.w, conf = w.players.filter(Boolean).length, res = w.reserves.filter(Boolean).length;
-    return `<th class="av-wk"><div>${short(w.date)}</div><div class="legend" style="margin:0">${w.time || ''} · ${esc(w.type || 'Competitive')}</div>
+    return `<th class="av-wk"><div>${short(w.date)}</div><div class="legend" style="margin:0">${w.time || ''}</div><div style="margin:2px 0">${typeBadge(w.type)}</div>
       <span class="pill${conf === capOf(w) ? ' full' : ''}">${conf}/${capOf(w)}</span>${res ? ` <span class="pill">+${res} R</span>` : ''}
       ${locked(w) ? '<div class="legend" style="margin:2px 0 0">🔒 closed</div>' : ''}${sl.extra > 0 ? `<div class="legend" style="margin:2px 0 0">+${sl.extra} more this week (see Matches)</div>` : ''}</th>`;
   }).join('');
@@ -2827,7 +3041,7 @@ function autoSessionDate(yy, mm, from, to) {
 function createAutoSession(date) {
   const last = [...calendar].sort((a, b) => b.date.localeCompare(a.date))[0] || {};
   const courts = String(last.courts || 3);
-  const w = { id:uid(), date, time:last.time || '17:30', type:'Competitive', courts, note:last.note || '',
+  const w = { id:uid(), date, time:last.time || '17:30', type:'Competitive', courts, maxCourts:courts, note:last.note || '',
               players:Array(+courts * 4).fill(''), reserves:Array(MIN_RES).fill(''), auto:true };
   calendar.push(w);
   return w;
@@ -2894,12 +3108,22 @@ function renderCalendar() {
         <h4>${L.waiting.length ? `⏳ Next court – needs ${PER_COURT - L.waiting.length} more` : 'Open places'}</h4>
         <div class="plist picks">
           ${L.waiting.map(n => `<div class="pentry"><div class="prow">${badge(n)}<span class="pname">${esc(n)}</span></div></div>`).join('')}
-          ${open.length ? `<div class="legend" style="margin:4px 0 0;background:none">${open.length} open place${open.length > 1 ? 's' : ''} – players can tick this week on the Availability tab.</div>` : ''}
+          ${open.length ? `<div class="legend" style="margin:4px 0 0;background:none">${open.length} open place${open.length > 1 ? 's' : ''} – players can tick this week on the Calendar tab.</div>` : ''}
         </div>
       </div>` : '';
     const spare = '';                            // spare-reserves line removed
-    return `<h5>Key players &amp; courts – sorted by ranking${done ? ' · 🔒 lineup locked' : ''}</h5>
-      <div class="courts wk-courts" style="--nc:${Math.max(1, L.courts.length + (waiting ? 1 : 0))}">${courts}${waiting}</div>
+    // Americano: just the player list – pairings and courts are handled on the Americano tab
+    const amList = () => {
+      const ps = [...L.courts.flat(), ...L.waiting];
+      const open = capOf(w) - ps.length;
+      return `<h5>Players – sorted by ranking · ${ps.length}/${capOf(w)}</h5>
+        <div class="plist${done ? '' : ' picks'} am-plist">${ps.map(n => done
+          ? `<div class="pentry"><div class="prow">${badge(n)}${esc(n)}</div>${subNote(n)}</div>`
+          : `<div class="pentry"><div class="prow">${badge(n)}<span class="pname">${esc(n)}</span>${subSel(n)}</div>${subNote(n)}</div>`).join('')}</div>
+        ${open > 0 && !done ? `<div class="legend" style="margin:6px 0 0">${open} open place${open > 1 ? 's' : ''} – players can tick this week on the Calendar tab.</div>` : ''}`;
+    };
+    return `${w.type === 'Americano' ? amList() : `<h5>Key players &amp; courts – sorted by ranking${done ? ' · 🔒 lineup locked' : ''}</h5>
+      <div class="courts wk-courts" style="--nc:${Math.max(1, L.courts.length + (waiting ? 1 : 0))}">${courts}${waiting}</div>`}
       ${spare}
       ${reservesHtml}
       ${!done && w.date >= today() ? predictionsHtml(w, L) : ''}
@@ -2948,7 +3172,7 @@ function renderCalendar() {
     return `<div class="cw${w.date < t ? ' past' : ''}">
       <div class="cw-head">
         <div><b>📅 ${fmtDate(w.date)}</b>
-          <span class="pill ${w.type==='Swingers'?'sw':w.type==='Americano'?'am':'cp'}">${w.type==='Swingers'?'💃 Swingers':w.type==='Americano'?'🔄 Americano':'🏆 Competitive'}</span>
+          ${typeBadge(w.type)}
           <span class="pill${filled===capOf(w)?' full':''}">${filled}/${capOf(w)} confirmed</span>
           <span class="pill">${w.reserves.filter(Boolean).length} reserve${w.reserves.filter(Boolean).length === 1 ? '' : 's'}</span></div>
         <div class="row">
@@ -2960,8 +3184,9 @@ function renderCalendar() {
         <label>Game type<select data-f="type" data-w="${w.id}">
           ${['Competitive','Swingers','Americano'].map(t => `<option ${(w.type||'Competitive')===t?'selected':''}>${t}</option>`).join('')}
         </select></label>
-        <label>Courts<select data-f="courts" data-w="${w.id}" ${isSubmitted(w) ? 'disabled' : ''}>
-          ${[1,2,3,4].map(n => `<option value="${n}" ${nCourts(w)===n?'selected':''} ${n < minCourts(w.type) ? 'disabled' : ''}>${n} court${n>1?'s':''} (${n*4} players)</option>`).join('')}
+        <label>${autoCourtsOn(w) ? 'Max courts' : 'Courts'}<select data-f="courts" data-w="${w.id}" ${isSubmitted(w) ? 'disabled' : ''}
+            title="${autoCourtsOn(w) ? `Courts open automatically for every 4 players available, up to this maximum (now ${nCourts(w)} in use)` : ''}">
+          ${[1,2,3,4].map(n => `<option value="${n}" ${(autoCourtsOn(w) ? +(w.maxCourts || nCourts(w)) : nCourts(w))===n?'selected':''} ${n < minCourts(w.type) ? 'disabled' : ''}>${n} court${n>1?'s':''}</option>`).join('')}
         </select></label>
         <label>Venue<input data-f="note" data-w="${w.id}" value="${esc(w.note||'')}" placeholder="Venue"></label>
       </div>
@@ -3049,7 +3274,7 @@ function renderCalendar() {
       alert(`${minMsg(el.value)} This week has been set to ${mn} courts (${mn * 4} players).`);
     }
     else w[el.dataset.f] = el.dataset.f==='note' ? el.value.trim() : el.value;
-    saveCal(); renderCalendar();
+    normalizeWeek(w); saveCal(); render();
   });
   $('calList').querySelectorAll('input[data-cl]').forEach(inp => inp.onchange = () => {
     const w = find(inp.dataset.cl), c = +inp.dataset.c, v = inp.value.trim();
@@ -3507,7 +3732,9 @@ renderPinState();
     let html = '';
     [...s.children].forEach(ch => {
       const add = (o) => { const k = items.length; items.push({ value:o.value, disabled:o.disabled });
-        html += `<div class="cs-opt${o.selected ? ' sel' : ''}${o.disabled ? ' dis' : ''}" role="option" data-k="${k}">${esc(o.textContent)}</div>`; };
+        html += o.dataset.aside != null
+          ? `<div class="cs-opt cs-2col${o.selected ? ' sel' : ''}${o.disabled ? ' dis' : ''}" role="option" data-k="${k}"><span class="cs-l">${esc(o.textContent)}</span><span class="cs-r">${esc(o.dataset.aside)}</span></div>`
+          : `<div class="cs-opt${o.selected ? ' sel' : ''}${o.disabled ? ' dis' : ''}" role="option" data-k="${k}">${esc(o.textContent)}</div>`; };
       if (ch.tagName === 'OPTGROUP') { html += `<div class="cs-grp">${esc(ch.label)}</div>`; [...ch.children].forEach(add); }
       else add(ch);
     });
