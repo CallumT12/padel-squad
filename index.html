@@ -185,8 +185,6 @@
   .fd.fW { background:#22c55e; } .fd.fD { background:#eab308; color:#000; } .fd.fL { background:#ef4444; }
   .paidchk { width:18px; height:18px; cursor:pointer; accent-color:var(--acc); }
   tr.paid td { color:var(--mut); }
-  #form input, #form select, #form button { height:38px; margin:0; }
-  #form select { width:80px; }
   #fL { width:80px; background:var(--line); color:var(--mut); border-color:var(--line); cursor:not-allowed; text-align:center; }
   details.res-acc { margin-top:14px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:var(--card); }
   details.res-acc > summary { cursor:pointer; list-style:none; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
@@ -630,7 +628,9 @@
   .pr-p sup { color:#b7862b; font-weight:700; margin-left:1px; }
   .pr-team { align-self:start; }
   .pr-names { line-height:1.35; }
-  .pr-tag-off { visibility:hidden; }                       /* keeps both teams the same height so names line up */
+  .pr-tag-off { visibility:hidden; }
+  .pr-ev { grid-column:1 / -1; font-size:.72rem; color:var(--muted); margin-top:6px; line-height:1.35; text-align:center; }
+  .pr-ev b { color:var(--txt); }                       /* keeps both teams the same height so names line up */
   .pr-tag { display:inline-block; margin-top:4px; padding:1px 8px; border-radius:999px; background:var(--selected); color:var(--primary); font-size:.68rem; font-weight:700; }
   .pr-mid { text-align:center; }
   .pr-bar { display:flex; gap:2px; height:8px; border-radius:999px; overflow:hidden; }
@@ -725,6 +725,12 @@
     .fb-act button { flex:1 1 auto; }
     .fb-act button[data-fbreply] { margin-left:0 !important; }
     .fb-reply { margin-left:6px; }
+    /* Matches month header: let the pills wrap instead of overlapping */
+    details.month > summary { display:flex !important; flex-wrap:wrap; align-items:center; gap:6px; }
+    details.month > summary > b { flex:1 1 100%; }
+    details.month > summary .pill { flex:0 0 auto; white-space:nowrap; }
+    /* Americano players: rows of 6 don't fit a phone – wrap instead */
+    #evBody .ev-players { grid-template-columns:repeat(auto-fill, var(--pw, 140px)) !important; overflow-x:visible; }
     /* Americano tab: event picker + "Points per match / Number of rounds / Shuffle" stack neatly */
     #event #evWeek { min-width:0 !important; width:100% !important; }
     #event .am-rounds .row > label { flex-direction:row !important; justify-content:space-between; align-items:center; margin:0 !important; width:100%; gap:12px; }
@@ -844,40 +850,6 @@
       <div class="pe-chart"><div id="chartWrap"></div><div id="peTip" class="pe-tip" hidden></div></div>
     </div>
     <table id="progTable" hidden></table>  <!-- Rank Changes table removed from view; kept hidden so the graph code is unchanged -->
-  </section>
-
-  <!-- ============ SCHEDULE ============ -->
-  <section class="panel" id="sched" hidden>
-    <div class="card">
-      <h3>1. Who's Playing This Week?</h3>
-      <div class="row">
-        <label>Courts
-          <select id="nCourts"><option value="1">1 – GOAT</option><option value="2">2 – GOAT, Camels</option><option value="3" selected>3 – GOAT, Camels, Snails</option></select>
-        </label>
-        <label>Add new player<input id="newPlayer" placeholder="Name"></label>
-        <button type="button" class="sec" id="addPlayer">Add</button>
-        <button type="button" class="sec" id="selAll">Select all</button>
-        <button type="button" class="sec" id="selNone">Select none</button>
-      </div>
-      <div class="roster" id="roster"></div>
-      <div class="row">
-        <button type="button" id="gen">Generate courts by ranking</button>
-        <span class="legend" id="selCount"></span>
-      </div>
-      <div class="msg" id="schedMsg"></div>
-    </div>
-
-    <div id="courtsWrap" style="display:none">
-      <div class="courts" id="courts"></div>
-      <div class="bench" id="bench"></div>
-      <div class="card" style="margin-top:16px">
-        <div class="row">
-          <button type="button" class="edit" id="submitWeek">Submit results to leaderboard</button>
-          <span class="legend">Each player plays 3 games (one with each partner). Results are added as W/D/L per player.</span>
-        </div>
-        <div class="msg" id="submitMsg"></div>
-      </div>
-    </div>
   </section>
 
   <!-- ============ RANK PROGRESS ============ -->
@@ -1307,7 +1279,6 @@ function render() {
   renderStats(all, top, quals);
   lbSync();
   $('players').innerHTML = all.map(p=>`<option value="${esc(p.name)}">`).join('');
-  renderRoster();
   renderHistory();
   renderProgress();
   renderCalendar();
@@ -1365,42 +1336,6 @@ function ratingBuild(matches, K = RATING.K) {
 }
 const ratingOf = (ratings, n) => ratings[n] ?? RATING.START;
 // ==== END PLAYER RATING MODEL ====
-// ==== PREDICTIONS MODEL (pure – tested by tests/predictions.test.js) ====
-// Elo-style individual ratings for doubles. Change K here (the only place it is set).
-const ELO = { START:1500, K:24, LOW_DATA:3 };
-// Team A's chance of beating Team B
-function eloExpected(teamARating, teamBRating) { return 1 / (1 + 10 ** ((teamBRating - teamARating) / 400)); }
-// a doubles team's rating = average of its players (unknown players start at ELO.START)
-function eloTeamRating(ratings, team) { return team.reduce((t, n) => t + (ratings[n] ?? ELO.START), 0) / team.length; }
-// Rebuild ratings week by week. Every match in a week is predicted from the ratings at the START of
-// that week; the week's changes are added up and applied only after the whole week, so the order of
-// matches inside a session never changes the result.
-//   weeks: [{ key:'YYYY-MM-DD', matches:[{ a:[p1,p2], b:[p3,p4], winner:'A'|'B'|null }] }]
-//   matches with no recorded winner (draws / missing results) are skipped.
-function eloBuildRatings(weeks, K = ELO.K) {
-  const ratings = {}, played = {}; let used = 0;
-  [...weeks].sort((x, y) => x.key < y.key ? -1 : x.key > y.key ? 1 : 0).forEach(wk => {
-    const start = { ...ratings }, delta = {};
-    wk.matches.forEach(m => {
-      if (m.winner !== 'A' && m.winner !== 'B') return;
-      if (!m.a?.length || !m.b?.length) return;
-      const expectedA = eloExpected(eloTeamRating(start, m.a), eloTeamRating(start, m.b));
-      const change = K * ((m.winner === 'A' ? 1 : 0) - expectedA);
-      m.a.forEach(n => { delta[n] = (delta[n] || 0) + change; played[n] = (played[n] || 0) + 1; });
-      m.b.forEach(n => { delta[n] = (delta[n] || 0) - change; played[n] = (played[n] || 0) + 1; });
-      used++;
-    });
-    Object.entries(delta).forEach(([n, d]) => { ratings[n] = (ratings[n] ?? ELO.START) + d; });
-  });
-  return { ratings, played, matches:used };
-}
-// Prediction for one fixture; percentages always add up to exactly 100
-function eloPredict(model, a, b) {
-  const ra = eloTeamRating(model.ratings, a), rb = eloTeamRating(model.ratings, b);
-  const pA = model.matches ? eloExpected(ra, rb) : 0.5;            // no usable history → neutral
-  const pctA = Math.round(pA * 100);
-  return { ratingA:ra, ratingB:rb, pA, pB:1 - pA, pctA, pctB:100 - pctA };
-}
 // remove duplicate fixtures (same two teams, any order)
 function eloUniqueFixtures(fixtures) {
   const seen = new Set();
@@ -1409,18 +1344,7 @@ function eloUniqueFixtures(fixtures) {
     if (seen.has(k)) return false; seen.add(k); return true;
   });
 }
-// ==== END PREDICTIONS MODEL ====
 
-// history of completed matches grouped by week (date), from the app's existing match records
-function predictionHistory(beforeDate) {
-  const weeks = {};
-  allGames().forEach(g => {
-    const key = ymd(new Date(g.ts));
-    if (!(key < beforeDate)) return;                          // only weeks before the upcoming one
-    (weeks[key] ||= []).push({ a:g.a, b:g.b, winner: g.win > 0 ? 'A' : g.win < 0 ? 'B' : null });
-  });
-  return Object.entries(weeks).map(([key, matches]) => ({ key, matches }));
-}
 // fixtures for an upcoming week, using the same courts/pairings the week will actually play
 function weekFixtures(w, L) {
   if (w.type === 'Swingers') return [];
@@ -1431,14 +1355,66 @@ function weekFixtures(w, L) {
   }
   return L.courts.flatMap((ps, c) => PAIRINGS.map(([a, b], g) => ({ a:a.map(i => ps[i]), b:b.map(i => ps[i]), label:`${plainCourt(c + 1)} · Game ${g + 1}` })));
 }
+// ---------- prediction model (shared by Predicted Results and the Match Predictor) ----------
+// base = Player Rating win chance; then two small, capped nudges from Competitive history:
+//  • head-to-head: these exact pairs' previous meetings (or, if none, the players' cross head-to-head, half weight)
+//  • partnership: how each pair has done together
+// Each nudge is shrunk when there are few games (n / (n + k)) and capped, so ratings stay the main driver.
+const PRED = { H2H_W:0.10, H2H_CAP:0.06, H2H_K:3, PART_W:0.05, PART_CAP:0.04, PART_K:4 };
+function predContext() {
+  const rated = ratingMatches(batches, results);
+  return { rated, ratings:ratingBuild(rated) };
+}
+function predictMatch(ctx, A, B) {
+  const same = (x, y) => x.length === y.length && x.every(n => y.includes(n));
+  const sc = r => r === 'D' ? 0.5 : r === 'A' ? 1 : 0;      // result from side A's point of view
+  const base = ratingExpected(ratingTeam(ctx.ratings, A), ratingTeam(ctx.ratings, B));
+  // exact pair-v-pair meetings
+  const meet = { a:0, d:0, b:0 };
+  // cross head-to-head between individual players (A players vs B players)
+  const cross = { a:0, d:0, b:0 };
+  // partnerships
+  const togA = { w:0, d:0, l:0 }, togB = { w:0, d:0, l:0 };
+  ctx.rated.forEach(m => {
+    const add = (o, v) => { v === 1 ? o.a++ : v === 0 ? o.b++ : o.d++; };
+    if (same(m.a, A) && same(m.b, B)) add(meet, sc(m.res));
+    else if (same(m.a, B) && same(m.b, A)) add(meet, 1 - sc(m.res));
+    A.forEach(x => B.forEach(y => {
+      if (m.a.includes(x) && m.b.includes(y)) add(cross, sc(m.res));
+      else if (m.b.includes(x) && m.a.includes(y)) add(cross, 1 - sc(m.res));
+    }));
+    const tog = (team, o) => { const inA = same(m.a, team), inB = same(m.b, team); if (!inA && !inB) return;
+      const v = inA ? sc(m.res) : 1 - sc(m.res); v === 1 ? o.w++ : v === 0 ? o.l++ : o.d++; };
+    tog(A, togA); tog(B, togB);
+  });
+  const clamp = (v, c) => Math.max(-c, Math.min(c, v));
+  const n1 = meet.a + meet.d + meet.b, n2 = cross.a + cross.d + cross.b;
+  let h2h = 0;
+  if (n1) h2h = ((meet.a + meet.d / 2) / n1 - 0.5) * (n1 / (n1 + PRED.H2H_K)) * PRED.H2H_W * 2;
+  else if (n2) h2h = ((cross.a + cross.d / 2) / n2 - 0.5) * (n2 / (n2 + PRED.H2H_K * 4)) * PRED.H2H_W;   // half weight
+  h2h = clamp(h2h, PRED.H2H_CAP);
+  const form = o => { const n = o.w + o.d + o.l; return n ? ((o.w + o.d / 2) / n - 0.5) * (n / (n + PRED.PART_K)) : 0; };
+  const part = clamp((form(togA) - form(togB)) * PRED.PART_W * 2, PRED.PART_CAP);
+  const pA = Math.max(0.02, Math.min(0.98, base + h2h + part));
+  return { base, h2h, part, pA, meet, cross, togA, togB };
+}
+// short "evidence" line under a prediction: these exact pairs' previous meetings (left / Team 1's view)
+function predEvidence(r) {
+  const m = r.meet;
+  return m.a + m.d + m.b ? `Previous meetings: <b>${m.a}W ${m.d}D ${m.b}L</b>` : 'No previous meetings';
+}
 function predictionsHtml(w, L) {
   const fixtures = eloUniqueFixtures(weekFixtures(w, L).filter(f => f.a.every(Boolean) && f.b.every(Boolean)));
   if (!fixtures.length) return '';
-  const model = eloBuildRatings(predictionHistory(w.date));
-  const low = n => (model.played[n] || 0) < ELO.LOW_DATA;
+  // one model everywhere: the current Player Rating (same as the leaderboard and the Match Predictor)
+  const ctx = predContext(), rated = ctx.rated, played = {};
+  rated.forEach(m => [...m.a, ...m.b].forEach(n => played[n] = (played[n] || 0) + 1));
+  const model = { played, matches:rated.length };
+  const low = n => (model.played[n] || 0) < 3;
   const who = n => `<span class="pr-p${low(n) ? ' pr-low' : ''}" title="${esc(n)} · ${model.played[n] || 0} past match${(model.played[n] || 0) === 1 ? '' : 'es'}${low(n) ? ' – little history, estimate uncertain' : ''}">${esc(n)}${low(n) ? '<sup>*</sup>' : ''}</span>`;
   const rows = fixtures.map(f => {
-    const p = eloPredict(model, f.a, f.b), even = p.pctA === p.pctB, favA = p.pctA > p.pctB;
+    const r = predictMatch(ctx, f.a, f.b), pctA = Math.round(r.pA * 100);
+    const p = { pctA, pctB:100 - pctA }, even = p.pctA === p.pctB, favA = p.pctA > p.pctB;
     const uncertain = !model.matches || [...f.a, ...f.b].some(low);
     return `<div class="pr-row">
       <div class="gl">${f.label}</div>
@@ -1449,15 +1425,13 @@ function predictionsHtml(w, L) {
         ${uncertain ? '<div class="pr-unc">low data</div>' : ''}
       </div>
       <div class="pr-team pr-right ${!favA && !even ? 'pr-fav' : ''}"><div class="pr-names">${f.b.map(who).join('<br>')}</div><span class="pr-tag${!favA && !even ? '' : ' pr-tag-off'}">Favourite</span></div>
+      <div class="pr-ev">${predEvidence(r)}</div>
     </div>`;
   }).join('');
-  const info = model.matches
-    ? `Ratings from ${model.matches} past match${model.matches === 1 ? '' : 'es'} with known teams (completed weeks only). <sup>*</sup> = fewer than ${ELO.LOW_DATA} past matches – estimate uncertain.`
-    : 'No past matches with known teams yet – every match shows a neutral 50% / 50% estimate. Predictions will improve as results are recorded.';
   return `<details class="res-acc pr-acc" data-acc="${w.id}-pr" ${(resOpen[w.id + '-pr'] ?? true) ? 'open' : ''}>
       <summary><b>Predicted Results</b>
         <span class="pill">${fixtures.length} match${fixtures.length === 1 ? '' : 'es'}</span>
-        <span class="pr-i" title="Predictions are based only on past win/loss outcomes (Elo-style ratings). They estimate each team's chance of winning – not an exact score.">ⓘ</span></summary>
+        <span class="pr-i" title="Win chances from each team's average Player Rating, nudged slightly by these pairs' previous meetings and how each pair has done together (Competitive matches only, capped at ±10%). Same model as the Match Predictor. Not an exact-score prediction.">ⓘ</span></summary>
       <div style="height:10px"></div>
       <div class="pr-list">${rows}</div>
     </details>`;
@@ -2309,94 +2283,8 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   equalizePills($('chartPlayers')); equalizePills(document.querySelector('#evBody .ev-players'));   // pills can only be measured when visible
 });
 
-// ---------- schedule ----------
-const selected = new Set();       // names attending this week
-let firstRoster = true;
-let courts = [];                  // [[p1,p2,p3,p4], ...] in rank order
-
-function renderRoster() {
-  const all = aggregate();
-  if (firstRoster && all.length) { all.forEach(p => selected.add(p.name)); firstRoster = false; }
-  $('roster').innerHTML = all.map(p => `
-    <label class="chk"><input type="checkbox" data-n="${esc(p.name)}" ${selected.has(p.name)?'checked':''}>
-      <span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span>${esc(p.name)}</label>`).join('');
-  $('roster').querySelectorAll('input').forEach(cb => cb.onchange = () => {
-    cb.checked ? selected.add(cb.dataset.n) : selected.delete(cb.dataset.n); updateCount();
-  });
-  updateCount();
-}
-function updateCount() {
-  const need = +$('nCourts').value * PER_COURT;
-  $('selCount').textContent = `${selected.size} selected · ${need} needed for ${$('nCourts').value} court(s)`;
-}
-$('nCourts').onchange = updateCount;
-$('selAll').onclick = () => { aggregate().forEach(p => selected.add(p.name)); renderRoster(); };
-$('selNone').onclick = () => { selected.clear(); renderRoster(); };
-$('addPlayer').onclick = () => {
-  const n = $('newPlayer').value.trim(); if (!n) return;
-  if (aggregate().some(p => p.name.toLowerCase()===n.toLowerCase())) { $('schedMsg').className='msg err'; $('schedMsg').textContent=`${n} already exists.`; return; }
-  roster.push(n); selected.add(n); save(); $('newPlayer').value=''; render();
-};
-
-// 4 players, 3 games – everyone partners everyone once
+// 4 players, 3 games – everyone partners everyone once (used by Matches, history, predictions)
 const PAIRINGS = [ [[0,3],[1,2]], [[0,2],[1,3]], [[0,1],[2,3]] ];
-
-$('gen').onclick = () => {
-  const nC = +$('nCourts').value, msg = $('schedMsg'); msg.className = 'msg';
-  const ranked = aggregate().filter(p => selected.has(p.name));
-  const usable = Math.min(nC, Math.floor(ranked.length / PER_COURT));
-  if (!usable) { msg.classList.add('err'); msg.textContent = `Need at least ${PER_COURT} players selected.`; return; }
-  if (usable < nC) { msg.classList.add('err'); msg.textContent = `Only enough players for ${usable} court(s).`; }
-  else msg.textContent = '';
-  courts = [];
-  for (let c = 0; c < usable; c++) courts.push(ranked.slice(c*PER_COURT, (c+1)*PER_COURT));
-  const bench = ranked.slice(usable*PER_COURT);
-
-  $('courts').innerHTML = courts.map((ps, c) => `
-    <div class="court">
-      <h4>${courtName(c+1)}</h4>
-      <div class="plist">${ps.map(p => `<div><span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span>${esc(p.name)}</div>`).join('')}</div>
-      ${PAIRINGS.map(([a,b], g) => `
-        <div class="game">
-          <div class="gl">Game ${g+1}</div>
-          <div class="t">${esc(ps[a[0]].name)} and ${esc(ps[a[1]].name)}</div><div>vs</div>
-          <div class="t">${esc(ps[b[0]].name)} and ${esc(ps[b[1]].name)}</div>
-          <select data-c="${c}" data-g="${g}">
-            <option value="">– result –</option>
-            <option value="A">${esc(ps[a[0]].name)} and ${esc(ps[a[1]].name)} win</option>
-            <option value="D">Draw</option>
-            <option value="B">${esc(ps[b[0]].name)} and ${esc(ps[b[1]].name)} win</option>
-          </select>
-        </div>`).join('')}
-    </div>`).join('');
-  $('bench').textContent = bench.length ? `Not on a court: ${bench.map(p=>p.name).join(', ')}` : '';
-  $('submitMsg').textContent = '';
-  $('courtsWrap').style.display = '';
-};
-
-$('submitWeek').onclick = () => {
-  const msg = $('submitMsg'); msg.className = 'msg';
-  const sels = [...$('courts').querySelectorAll('select')];
-  if (sels.some(s => !s.value)) { msg.classList.add('err'); msg.textContent = 'Enter a result for every game first.'; return; }
-  const tally = {}, games = [];
-  courts.forEach(ps => ps.forEach(p => tally[p.name] = { w:0, d:0, l:0 }));
-  sels.forEach(s => {
-    const ps = courts[+s.dataset.c], [a,b] = PAIRINGS[+s.dataset.g];
-    const A = a.map(i => ps[i].name), B = b.map(i => ps[i].name);
-    games.push({ court:+s.dataset.c+1, a:A, b:B, res:s.value });
-    if (s.value==='D') [...A,...B].forEach(n => tally[n].d++);
-    else { const [win, lose] = s.value==='A' ? [A,B] : [B,A];
-           win.forEach(n => tally[n].w++); lose.forEach(n => tally[n].l++); }
-  });
-  if (!confirm(`Add this week's results for ${Object.keys(tally).length} players?`)) return;
-  const bt = { id:uid(), ts:Date.now(), source:`Game schedule (${courts.length} court${courts.length>1?'s':''})`, games };
-  batches.push(bt);
-  Object.entries(tally).forEach(([name, t]) => results.push({ id:uid(), batch:bt.id, name, ...t }));
-  roster = roster.filter(n => !tally[n]);
-  save(); render();
-  $('courtsWrap').style.display = 'none'; courts = [];
-  document.querySelector('.tab[data-tab=board]').click();
-};
 
 // ---------- calendar ----------
 const CKEY = 'padelCalendar', KEY_PLAYERS = 12, MIN_RES = 3, FKEY = 'padelFee';
@@ -2464,7 +2352,8 @@ function renderMatchup() {
   $('muShuffle').title = mu.every(Boolean) ? 'Randomly rearrange the four players between the teams' : 'Select all four players first';
   let out = '';
   if (mu.every(Boolean)) {
-    const ra = (rt(mu[0]) + rt(mu[1])) / 2, rb = (rt(mu[2]) + rt(mu[3])) / 2, ea = ratingExpected(ra, rb);
+    const ra = (rt(mu[0]) + rt(mu[1])) / 2, rb = (rt(mu[2]) + rt(mu[3])) / 2;
+    const pr = predictMatch(predContext(), [mu[0], mu[1]], [mu[2], mu[3]]), ea = pr.pA;
     const pA = Math.round(ea * 100), pB = 100 - pA, even = pA === pB, favA = pA > pB;
     const ch = v => `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
     const winA = RATING.K * (1 - ea), lossA = RATING.K * (0 - ea);
@@ -2474,6 +2363,7 @@ function renderMatchup() {
       <div class="pr-bar" style="height:12px;margin:6px 0" title="Win chance"><i class="${favA && !even ? 'pr-favbar' : ''}" style="width:${pA}%"></i><i class="${!favA && !even ? 'pr-favbar' : ''}" style="width:${pB}%"></i></div>
       <div class="legend" style="margin:6px 0 0;text-align:center">${even ? 'Evenly matched' : `Favourite: <b>Team ${favA ? 1 : 2}</b> (${mu.slice(favA ? 0 : 2, favA ? 2 : 4).map(esc).join(' & ')})`}
         · rating gap ${Math.abs(ra - rb).toFixed(2)}</div>
+      <div class="pr-ev" style="text-align:center">${predEvidence(pr)}</div>
       ${muRes ? (() => {
         const after = {}; mu.forEach(n => after[n] = rt(n));
         ratingApply(after, [mu[0], mu[1]], [mu[2], mu[3]], muRes);            // same update rule as the real rating (clamped 0–7)
