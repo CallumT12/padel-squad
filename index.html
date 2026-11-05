@@ -289,6 +289,9 @@
   .pf-six { grid-template-columns:repeat(3, minmax(0, 1fr)) !important; }
   .am-courtnames { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:6px 0 12px; }
   /* same size / weight as the "Points per match" and "Number of rounds" controls */
+  .sync-line { margin:-12px 0 14px; text-align:center; font-size:.75rem; }
+  body:not(:has(#cfg.panel.active)) .sync-line { display:none; }   /* only on the Settings page */
+  .pred-sub { margin:22px 0 10px; }
   .am-cn-label { font-size:.9rem; color:var(--txt); }
   .am-courtnames { gap:10px; margin:6px 0 14px; }
   .am-courtnames input.am-cl { width:120px; height:38px !important; min-height:38px !important; font-size:.9rem !important; font-weight:400;
@@ -749,7 +752,7 @@
 <body>
 <header style="position:relative">
   <div class="top-btns">
-    <button type="button" class="theme-btn top-cta" id="pdfBtn" title="Export leaderboard and match history as PDF" aria-label="Export leaderboard and match history as PDF">PDF</button>
+    <button type="button" class="theme-btn top-cta" id="fbBtn" title="Feedback" aria-label="Feedback">Feedback</button>
     <button type="button" class="theme-btn top-cta" id="themeBtn">Light/Dark</button>
     <button type="button" class="theme-btn top-cta" id="cfgBtn" title="Settings" aria-label="Settings">Settings</button>
   </div>
@@ -762,10 +765,10 @@
     <button class="tab" data-tab="avail">Calendar</button>
     <button class="tab" data-tab="cal">Matches</button>
     <button class="tab" data-tab="event">Americano</button>
-    <button class="tab" data-tab="hist">Match History</button>
     <button class="tab" data-tab="pred">Predictor</button>
-    <button class="tab" data-tab="fb">Feedback</button>
+    <button class="tab" data-tab="hist">Match History</button>
   </div>
+  <div class="legend sync-line">Sync status: <span id="syncStatus" style="font-weight:600">–</span></div>
 
   <!-- ============ LEADERBOARD ============ -->
   <section class="panel active" id="board">
@@ -846,7 +849,7 @@
   <!-- ============ SCHEDULE ============ -->
   <section class="panel" id="sched" hidden>
     <div class="card">
-      <h3>1. Who's playing this week?</h3>
+      <h3>1. Who's Playing This Week?</h3>
       <div class="row">
         <label>Courts
           <select id="nCourts"><option value="1">1 – GOAT</option><option value="2">2 – GOAT, Camels</option><option value="3" selected>3 – GOAT, Camels, Snails</option></select>
@@ -889,7 +892,7 @@
         </div>
       </div>
       <div class="card edit" style="margin:0 0 14px;padding:12px;border:1px solid var(--border)">
-        <h4 style="margin:0 0 8px">Add a match to <span id="avAddLabel"></span></h4>
+        <h4 style="margin:0 0 8px">Add a Match to <span id="avAddLabel"></span></h4>
         <div class="row cal-form">
           <label>Date<input type="date" id="calDate"></label>
           <label>Start time<input type="time" id="calTime" value="17:30"></label>
@@ -914,7 +917,10 @@
 
   <!-- ============ CONFIGURATION ============ -->
   <section class="panel" id="cfg">
-    <div class="legend" style="margin:0 0 10px;text-align:right">Sync status: <span id="syncStatus" style="font-weight:600">–</span></div>
+    <div class="card">
+      <h3>📄 Export</h3>
+      <div class="row"><button type="button" id="pdfBtn" title="Export leaderboard and match history as PDF">Leaderboard + Match PDF export</button></div>
+    </div>
     <div class="card edit">
       <h3>👥 Players</h3>
       <div class="row cal-form">
@@ -952,7 +958,7 @@
     </div>
 
     <div class="card edit">
-      <h3>🗓️ Reset calendar</h3>
+      <h3>🗓️ Reset Calendar</h3>
       <div class="legend" style="margin:0 0 10px">Deletes the Matches/Calendar weeks in the chosen month (or <b>every</b> week with "All months"), including availability, lineups, reserves, entered results and Americano scores. Submitted results stay in Match History and the leaderboard. Players, fee and payments are kept. A backup is saved first – if it fails, nothing is deleted.</div>
       <div class="row cal-form">
         <label>Month<select id="calResetMonth" style="height:38px;min-width:220px"><option value="">All months</option></select></label>
@@ -998,7 +1004,7 @@
     <div class="print-head print-keep"><h2 style="margin:0">Padel Squad – Match History</h2></div>
     <datalist id="players"></datalist>
     <div class="card edit" style="margin-top:16px">
-      <h3>New Match Session (manual)</h3>
+      <h3>New Match Session (Manual)</h3>
       <div class="legend" style="margin:0 0 10px">Build a session like Matches: add courts, pick 4 players per court and enter who won each game. No predictions are shown.</div>
       <div class="row cal-form">
         <input type="date" id="msDate" aria-label="Session date" style="height:38px">
@@ -1448,9 +1454,8 @@ function predictionsHtml(w, L) {
   const info = model.matches
     ? `Ratings from ${model.matches} past match${model.matches === 1 ? '' : 'es'} with known teams (completed weeks only). <sup>*</sup> = fewer than ${ELO.LOW_DATA} past matches – estimate uncertain.`
     : 'No past matches with known teams yet – every match shows a neutral 50% / 50% estimate. Predictions will improve as results are recorded.';
-  const many = fixtures.length > 12;
-  return `<details class="res-acc pr-acc" data-acc="${w.id}-pr" ${(resOpen[w.id + '-pr'] ?? (!many && w.type !== 'Americano')) ? 'open' : ''}>
-      <summary><b>Predicted results</b>
+  return `<details class="res-acc pr-acc" data-acc="${w.id}-pr" ${(resOpen[w.id + '-pr'] ?? true) ? 'open' : ''}>
+      <summary><b>Predicted Results</b>
         <span class="pill">${fixtures.length} match${fixtures.length === 1 ? '' : 'es'}</span>
         <span class="pr-i" title="Predictions are based only on past win/loss outcomes (Elo-style ratings). They estimate each team's chance of winning – not an exact score.">ⓘ</span></summary>
       <div style="height:10px"></div>
@@ -1603,7 +1608,7 @@ function openProfile(name) {
       <span class="pf-tot"><span class="w">${tot.w} W</span> · <span class="d">${tot.d} D</span> · <span class="l">${tot.l} L</span></span>
       <span class="pf-form">${formHtml({ form:tot.form })}</span></div>
     <div class="pf-sec"${pfMode === 'combined' ? ' hidden' : ''}>
-      <h3>Player stats</h3>
+      <h3>Player Stats</h3>
     ${pfMode === 'americano' ? `<div class="stats pf-stats pf-six">
       ${card('Win %', st.games ? `${amWinPct.toFixed(2)}%` : '–', st.games ? '' : 'no Americano games in history yet')}
       ${card('Podium Finishes', am.weeks ? am.podium : '–', am.weeks ? '' : 'no Americano weeks in history yet')}
@@ -1615,13 +1620,13 @@ function openProfile(name) {
       ${pfMode === 'competitive' ? card('Highest Player Rating', st.peakRating ? st.peakRating.v.toFixed(2) : '–', st.peakRating ? d(st.peakRating.ts) : 'no rated matches yet') : ''}
       ${pfMode === 'competitive' ? card('Highest Win %', st.peakPct ? st.peakPct.v.toFixed(2) + '%' : '–', st.peakPct ? d(st.peakPct.ts) : `from ${MIN_GAMES} games (qualified)`) : ''}
       ${pfMode === 'competitive' ? card('Longest Win Streak', st.bestStreak || '–', st.games ? 'from weekly results' : 'no results yet') : ''}
-      ${pfMode === 'competitive' ? card('Biggest ranking jump', st.jump ? `▲ ${st.jump.n}` : '–', st.jump ? `${st.jump.from} → ${st.jump.to} · ${d(st.jump.ts)}` : 'no climb yet') : ''}
-      ${pfMode === 'competitive' ? card('Biggest ranking drop', st.drop ? `▼ ${st.drop.n}` : '–', st.drop ? `${st.drop.from} → ${st.drop.to} · ${d(st.drop.ts)}` : 'no drop yet') : ''}
-      ${pfMode === 'competitive' ? card('Best / worst rank', st.bestRank != null ? `${st.bestRank} / ${st.worstRank}` : '–', 'across all submissions') : ''}
+      ${pfMode === 'competitive' ? card('Biggest Ranking Jump', st.jump ? `▲ ${st.jump.n}` : '–', st.jump ? `${st.jump.from} → ${st.jump.to} · ${d(st.jump.ts)}` : 'no climb yet') : ''}
+      ${pfMode === 'competitive' ? card('Biggest Ranking Drop', st.drop ? `▼ ${st.drop.n}` : '–', st.drop ? `${st.drop.from} → ${st.drop.to} · ${d(st.drop.ts)}` : 'no drop yet') : ''}
+      ${pfMode === 'competitive' ? card('Best / Worst Rank', st.bestRank != null ? `${st.bestRank} / ${st.worstRank}` : '–', 'across all submissions') : ''}
     </div>`}
     </div>
     <div class="pf-sec">
-      <h3>Head-to-head performance</h3>
+      <h3>Head-to-Head Performance</h3>
     <div class="stats pf-stats pf-six pf-h2h">
       ${card('Biggest Victim', who(st.victim), st.victim ? recStr(st.victim) : '–')}
       ${card('Nemesis', who(st.nemesis), st.nemesis ? recStr(st.nemesis) : '–')}
@@ -2231,7 +2236,7 @@ function renderManualSession() {
   const total = ms.courts.length * PAIRINGS.length, entered = ms.courts.flatMap(c => c.res).filter(Boolean).length;
   $('msCourts').className = '';
   $('msCourts').innerHTML = ms.courts.length ? `
-    <h5>Players &amp; courts</h5>
+    <h5>Players &amp; Courts</h5>
     <div class="courts wk-courts" style="--nc:${nc}">${courtsH}</div>
     <details class="res-acc" open><summary><b>Results</b>
       <span class="pill${entered === total ? ' full' : ''}">${entered}/${total} games entered</span></summary>
@@ -2278,13 +2283,25 @@ $('msSubmit').onclick = () => {
 };
 
 // ---------- tabs ----------
-$('cfgBtn').onclick = () => {
+const openTopPanel = (id, btn) => {
   document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id==='cfg'));
-  $('cfgBtn').classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === id));
+  ['cfgBtn', 'fbBtn'].forEach(b => $(b).classList.toggle('active', b === btn));
 };
+// Settings is protected by the deletion PIN (asked once per page load; open if no PIN has been set yet)
+let cfgUnlocked = false;
+$('cfgBtn').onclick = async () => {
+  if (!cfgUnlocked && pinHash) {
+    const pin = prompt('Enter the PIN to open Settings:');
+    if (pin == null) return;
+    if (await hashPin(pin.trim()) !== pinHash) { alert('Incorrect PIN.'); return; }
+    cfgUnlocked = true;
+  }
+  openTopPanel('cfg', 'cfgBtn');
+};
+$('fbBtn').onclick = () => openTopPanel('fb', 'fbBtn');
 document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
-  $('cfgBtn').classList.remove('active');
+  $('cfgBtn').classList.remove('active'); $('fbBtn').classList.remove('active');
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x===t));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id===t.dataset.tab));
   if (t.dataset.tab === 'board') renderProgress();    // re-measure graph width when shown
@@ -2489,7 +2506,7 @@ function renderPredictor() {
   const box = $('predBody'); if (!box) return;
   const t = today(), rankOf = {}; aggregate().forEach(p => rankOf[p.name] = p);
   const weeks = calendar.filter(w => w.date >= t && w.type !== 'Swingers' && !isSubmitted(w)).sort((a, b) => a.date.localeCompare(b.date));
-  box.innerHTML = weeks.map(w => {
+  box.innerHTML = '<h3 class="pred-sub">Upcoming Predictions</h3>' + weeks.map(w => {
     const html = predictionsHtml(w, weekLineup(w, rankOf));
     return `<div class="card">
       <div class="cw-head"><div><b>${fmtDate(w.date)}</b>${w.time ? ` <span class="legend" style="margin:0">· ${esc(w.time)}</span>` : ''}
@@ -2813,7 +2830,7 @@ ${inp(r, c, 1)}<span class="am-team">${B.map(pn).join('<br>')}</span></div>
           </select></label>
         <button type="button" class="mu-shuffle edit" data-amshuffle="${w.id}" style="margin-left:16px">Shuffle</button>
       </div>
-      <h3 style="margin:18px 0 6px">Court names</h3>
+      <h3 style="margin:18px 0 6px">Court Names</h3>
       <div class="am-courtnames">
         ${Array.from({ length:nCourts(w) }, (_, c) => `<input class="court-label am-cl" data-amcl="${w.id}" data-c="${c}" maxlength="20"
           value="${esc(courtLabel(w, c))}" placeholder="Court ${c + 1}" title="Court name at the venue – click to edit">`).join('')}
@@ -2860,7 +2877,7 @@ function renderEvent() {
   if (!w.amSeed && !amHasScores(w)) { w.amSeed = 1 + Math.floor(Math.random() * 2e9); saveCal(); }   // randomise pairs
   const rankOf = {}; aggregate().forEach(p => rankOf[p.name] = p);
   const L = weekLineup(w, rankOf), ps = amPlayers(w, L);
-  body.innerHTML = `<h3 style="margin:0 0 4px">Players (by ranking)</h3>
+  body.innerHTML = `<h3 style="margin:0 0 4px">Players (by Ranking)</h3>
     <div class="legend" style="margin:0 0 10px">To change players, edit the week in the Calendar tab.</div>
     <div class="ev-players">${ps.map((n, i) => `<span class="ev-p"><b>P${i+1}</b> ${esc(n)}</span>`).join('') || '<span class="legend">No players yet.</span>'}</div>
     ${americanoHtml(w, L, rankOf)}`;
@@ -3105,7 +3122,7 @@ function renderCalendar() {
     const open = w.players.map((n, i) => n ? null : i).filter(i => i != null);
     const waiting = done ? '' : (L.waiting.length || open.length) ? `
       <div class="court" style="border-top-color:var(--bd)">
-        <h4>${L.waiting.length ? `⏳ Next court – needs ${PER_COURT - L.waiting.length} more` : 'Open places'}</h4>
+        <h4>${L.waiting.length ? `⏳ Next Court – Needs ${PER_COURT - L.waiting.length} More` : 'Open Places'}</h4>
         <div class="plist picks">
           ${L.waiting.map(n => `<div class="pentry"><div class="prow">${badge(n)}<span class="pname">${esc(n)}</span></div></div>`).join('')}
           ${open.length ? `<div class="legend" style="margin:4px 0 0;background:none">${open.length} open place${open.length > 1 ? 's' : ''} – players can tick this week on the Calendar tab.</div>` : ''}
@@ -3116,17 +3133,16 @@ function renderCalendar() {
     const amList = () => {
       const ps = [...L.courts.flat(), ...L.waiting];
       const open = capOf(w) - ps.length;
-      return `<h5>Players – sorted by ranking · ${ps.length}/${capOf(w)}</h5>
+      return `<h5>Players – Sorted by Ranking · ${ps.length}/${capOf(w)}</h5>
         <div class="plist${done ? '' : ' picks'} am-plist">${ps.map(n => done
           ? `<div class="pentry"><div class="prow">${badge(n)}${esc(n)}</div>${subNote(n)}</div>`
           : `<div class="pentry"><div class="prow">${badge(n)}<span class="pname">${esc(n)}</span>${subSel(n)}</div>${subNote(n)}</div>`).join('')}</div>
         ${open > 0 && !done ? `<div class="legend" style="margin:6px 0 0">${open} open place${open > 1 ? 's' : ''} – players can tick this week on the Calendar tab.</div>` : ''}`;
     };
-    return `${w.type === 'Americano' ? amList() : `<h5>Key players &amp; courts – sorted by ranking${done ? ' · 🔒 lineup locked' : ''}</h5>
+    return `${w.type === 'Americano' ? amList() : `<h5>Key Players &amp; Courts – Sorted by Ranking${done ? ' · 🔒 Lineup Locked' : ''}</h5>
       <div class="courts wk-courts" style="--nc:${Math.max(1, L.courts.length + (waiting ? 1 : 0))}">${courts}${waiting}</div>`}
       ${spare}
       ${reservesHtml}
-      ${!done && w.date >= today() ? predictionsHtml(w, L) : ''}
       ${w.type === 'Americano' && !done ? `<div class="bench" style="margin-top:14px">🔄 Americano – rounds, scores and leaderboard are on the <a href="#" data-openev="${w.id}">Americano</a> tab.</div>`
         : w.type === 'Swingers' && !done
         ? `<div class="bench" style="margin-top:14px">💃 Swingers – social game, no scores recorded.</div>`
@@ -3222,7 +3238,7 @@ function renderCalendar() {
       <div class="month-body">
         <div class="month-weeks">${ws.map(weekCard).join('')}</div>
         <aside class="month-side">
-          <h4 class="ms-head"><span>Total games by player</span>
+          <h4 class="ms-head"><span>Total Games by Player</span>
             <label class="edit" style="flex-direction:row;align-items:center;gap:6px;font-size:.8rem;font-weight:400">Price per player (£)
               <input type="number" class="feein" min="0" step="0.5" value="${fee.toFixed(2)}" style="width:84px;height:30px"></label></h4>
           ${rows.length ? `<table>
