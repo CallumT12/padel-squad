@@ -56,7 +56,6 @@
     body.printing #history button, body.printing #history summary { display:none !important; }
     body.printing .hb { background:#fff !important; border:1px solid #ccc; padding:8px; margin:0 0 8px; break-inside:avoid; }
     body.printing .hb-head { margin-bottom:4px; }
-    body.printing .gm { font-size:8.5pt; padding:1px 0; }
   }
   * { box-sizing:border-box; }
   body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
@@ -130,12 +129,10 @@
   .rk { display:inline-flex; align-items:center; justify-content:center; gap:6px; }
   .mv { display:inline-block; min-width:26px; font-size:.75rem; text-align:left; }
   .up { color:#22c55e; font-weight:700; } .down { color:#ef4444; font-weight:700; } .same { color:var(--mut); }
-  #chartWrap svg .ln { fill:none; stroke-width:3.5; opacity:.85; transition:opacity .15s, stroke-width .15s; }
-  #chartWrap svg.focus .pl { opacity:.12; } #chartWrap svg .pl.on { opacity:1 !important; } #chartWrap svg .pl.on .ln { stroke-width:5.5; }
+  #chartWrap svg.focus .pl { opacity:.12; } #chartWrap svg .pl.on { opacity:1 !important; }
   #chartWrap svg text { fill:var(--txt); font-size:11px; } #chartWrap svg .ax { fill:var(--mut); }
   #chartWrap svg .grid { stroke:var(--line); }
   #progTable tr.on td { background:var(--line); } #progTable td.name { cursor:pointer; }
-  .gm { padding:3px 0; }
   /* Players list: same row height/placement in view and edit mode */
   table.np-table { table-layout:fixed; width:100%; }
   #npList td { height:44px; vertical-align:middle; overflow:hidden; }
@@ -290,7 +287,6 @@
   .sync-line { margin:-12px 0 14px; text-align:center; font-size:.75rem; }
   body:not(:has(#cfg.panel.active)) .sync-line { display:none; }   /* only on the Settings page */
   .pred-sub { margin:22px 0 10px; }
-  .am-cn-label { font-size:.9rem; color:var(--txt); }
   .am-courtnames { gap:10px; margin:6px 0 14px; }
   .am-courtnames input.am-cl { width:120px; height:38px !important; min-height:38px !important; font-size:.9rem !important; font-weight:400;
     color:var(--txt) !important; border:1px solid var(--bd) !important; border-style:solid !important; background:var(--inp) !important; padding:0 10px; }
@@ -322,10 +318,7 @@
   .mu-pd { min-width:52px; text-align:center; font-weight:800; border-radius:6px; padding:2px 6px; font-variant-numeric:tabular-nums; }
   .mu-pd.up { color:var(--win, #22c55e); } .mu-pd.down { color:var(--loss, #ef4444); } .mu-pd.same { color:var(--muted); }
   .mu-res { margin-top:14px; }
-  .mu-swing { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; margin-top:12px; }
-  .mu-swing > div { background:var(--section); border-radius:10px; padding:8px; text-align:center; font-size:.8rem; display:flex; flex-direction:column; gap:2px; }
   @media (max-width:640px) { .mu-grid { grid-template-columns:1fr; } .mu-proj-grid { grid-template-columns:1fr; } }
-  .pf-subhead { margin:16px 0 8px; font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
   .pf-h2h .stat .v { font-size:1.15rem; font-weight:800; }              /* player names prominent */
   .pf-kpis { margin-left:auto; display:flex; align-items:center; gap:18px; }
   /* compact inline name editor so the profile header barely moves */
@@ -345,7 +338,7 @@
   .ro .edit, .ro .del, .ro [data-addres], .ro [data-use], .ro #addPlayer, .ro #newPlayer { display:none !important; }
   .ro label:has(#newPlayer) { display:none; }
   .pill { font-size:.75rem; padding:2px 8px; border-radius:999px; background:var(--line); color:var(--txt); margin-left:6px; }
-  .pill.full { background:var(--acc); color:#000; } .gm .win { color:#22c55e; font-weight:600; }
+  .pill.full { background:var(--acc); color:#000; }
 
   /* ===================== Brand design layer ===================== */
   body { margin:0; background:var(--page); color:var(--text); line-height:1.5;
@@ -355,7 +348,7 @@
     background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-card); box-shadow:none; }
   .card { padding:20px; }
   .card.qz { border-style:dashed; }
-  .section-muted, .month-weeks .cw, .month-side, .plist div, .chk, .ev-p, .pf-stats .stat { background:var(--section); }
+  .month-weeks .cw, .month-side, .plist div, .chk, .ev-p, .pf-stats .stat { background:var(--section); }
   .court { border-top:3px solid var(--primary); }
   .stat.hl { border-left:4px solid var(--primary); }
 
@@ -366,8 +359,8 @@
   button:hover { background:var(--primary-hover); border-color:var(--primary-hover); }
   button.primary { border-color:var(--primary); background:var(--primary); color:#fff; font-weight:600; }
   button.primary:hover { background:var(--primary-hover); }
-  button.sec, button.secondary { background:var(--surface); color:var(--text); border:1px solid var(--border); font-weight:600; }
-  button.sec:hover, button.secondary:hover { background:var(--selected); border-color:var(--focus); }
+  button.sec{ background:var(--surface); color:var(--text); border:1px solid var(--border); font-weight:600; }
+  button.sec:hover{ background:var(--selected); border-color:var(--focus); }
   button.del { background:var(--surface); color:var(--danger); border:1px solid var(--danger); font-weight:600; }
   button.del:hover { background:var(--danger); color:#fff; }
   button:disabled { opacity:.5; cursor:not-allowed; }
@@ -381,7 +374,7 @@
 
   /* compact controls keep their own size */
   .am-row input.am-in, .game select.wdl, .plist select.subsel, input.court-label, #npList .rn-btn, #npList input.rn-in,
-  .hb .hb-btn, .theme-btn, .ov-x, .calendar-toolbar button, .pf-edit, .promote, .planner-tab, .plist.picks select, .slot select {
+  .hb .hb-btn, .theme-btn, .ov-x, .pf-edit, .plist.picks select, .slot select {
     min-height:0; }
   .plist.picks select, .slot select { min-height:36px; }
   .theme-btn, .ov-x { background:var(--surface); color:var(--text); border:1px solid var(--border); font-weight:600; }
@@ -427,7 +420,7 @@
 
   @media (max-width:640px) {
     .card { padding:16px; }
-    .table-wrap, .card { overflow-x:auto; }
+    .card { overflow-x:auto; }
   }
 
   /* typography */
@@ -442,7 +435,6 @@
   .pf-sec { margin:20px 0 0; } .pf-sec h3 { margin:0 0 10px; }
   details.month.pf-sec > summary { grid-template-columns:40px 1fr auto auto; }
   details.month.pf-sec > summary b { font-size:1.15rem; }
-  details.month.pf-sec .pf-sec-body { padding:16px; }
   .pf-stats .stat { background:var(--section); border:1px solid var(--border); border-radius:var(--radius-card); }
   .pf-stats .stat .l { color:var(--muted); font-size:.75rem; font-weight:600; }
   .pf-stats .stat .v { color:var(--text); }
@@ -558,15 +550,11 @@
   .pe-controls { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:12px; }
   .pe-controls .pe-btn { min-height:34px; height:34px; padding:0 12px; font-size:.8rem; }
   .pe-chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
-  .pe-chip-wrap { display:inline-flex; align-items:center; gap:4px; }
   .pe-chip { min-height:30px; height:30px; padding:0 12px; border-radius:999px; font-size:.78rem; font-weight:600;
              background:var(--section); color:var(--muted); border:1px solid var(--border); transition:all .2s ease-out; }
   .pe-chip:hover { background:var(--selected); color:var(--text); border-color:var(--border); }
   .pe-chip.on { color:#fff; }
   .pe-chip.on:hover { filter:brightness(.95); color:#fff; }
-  .pe-prof { min-height:22px; height:22px; width:22px; padding:0; border-radius:50%; font-size:.65rem; background:var(--section);
-             border:1px solid var(--border); color:var(--muted); }
-  .pe-prof:hover { background:var(--selected); border-color:var(--primary); }
   .pe-chart { position:relative; background:var(--section); border:1px solid var(--border); border-radius:var(--radius-card); padding:12px 8px; }
   #chartWrap { overflow-x:auto; width:100%; }
   #chartWrap .pe-grid { stroke:var(--border); stroke-dasharray:3 3; }
@@ -966,7 +954,7 @@
       <div class="row cal-form">
         <select id="evWeek" aria-label="Americano event" style="min-width:320px;height:38px"></select>
       </div>
-      <div class="legend">To set up an Americano, add a week in the Calendar, set the game type to <b>Americano</b>, choose <b>3 courts (12 players)</b> or <b>4 courts (16 players)</b>, and pick the players there.</div>
+      <div class="legend">To set up an Americano, add a match on the Calendar tab with game type <b>Americano</b> and 3 or 4 courts.</div>
     </div>
     <div class="card" id="evBody"></div>
   </section>
@@ -977,7 +965,7 @@
     <datalist id="players"></datalist>
     <div class="card edit" style="margin-top:16px">
       <h3>New Match Session (Manual)</h3>
-      <div class="legend" style="margin:0 0 10px">Build a session like Matches: add courts, pick 4 players per court and enter who won each game. No predictions are shown.</div>
+      <div class="legend" style="margin:0 0 10px">Add courts, pick 4 players per court and enter each game's result.</div>
       <div class="row cal-form">
         <input type="date" id="msDate" aria-label="Session date" style="height:38px">
         <button type="button" class="sec" id="msAddCourt" style="height:38px">+ Add court</button>
@@ -1046,7 +1034,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ---------- snapshot / storage ----------
-const PAGE_SOURCE = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;   // captured before anything renders
 const SNAP = window.PADEL_SNAPSHOT || null;          // set only in published read-only copies
 // ---- Supabase (shared online data). The publishable key is safe to include in a public page;
 //      access is enforced by Row Level Security policies in the database. ----
@@ -1083,7 +1070,6 @@ const courtName = (n, competitive = true) => `Court ${n}` + (competitive && COUR
 const plainCourt = (n, competitive = true) => `Court ${n}` + (competitive && COURT_NAMES[n-1] ? ` · ${COURT_NAMES[n-1].replace(/[^\p{L}\p{N} ]/gu, '').trim()}` : '');
 // venue court label per week: defaults to "Court 1", "Court 2"… and can be edited on the Calendar
 const courtLabel = (w, c) => (w.courtLabels?.[c] || '').trim() || `Court ${c+1}`;
-const MAX_COURTS = 4;
 const nCourts = w => ([1, 2, 3, 4].includes(+w.courts) ? +w.courts : 3);   // 1–4 courts; 3 (12 players) by default
 const capOf = w => nCourts(w) * 4;
 // minimum courts per game type: Americano 3 (12 or 16 players), Swingers 2 (8+ players), Competitive 1
@@ -1215,13 +1201,6 @@ function formStreaks() {
 const formHtml = p => p.form && p.form.length
   ? p.form.map((r, i) => `<span class="fd f${r}" title="${i === p.form.length - 1 ? 'Most recent: ' : ''}${r==='W'?'Win':r==='D'?'Draw':'Loss'}">${r}</span>`).join('')   // oldest on the left, most recent on the right
   : '<span class="same">–</span>';
-const streakHtml = p => {
-  if (!p.streak) return '<span class="same" title="No weekly results yet">–</span>';
-  const { type:t, n } = p.streak, tip = `Longest winning streak: ${p.bestWin}`;
-  return t==='W' ? `<span class="up" title="${tip}">W${n}${n >= 3 ? ' 🔥' : ''}</span>`
-       : t==='L' ? `<span class="down" title="${tip}">L${n}</span>`
-       : `<span class="same" title="${tip}">D${n}</span>`;
-};
 
 // ---------- leaderboard ----------
 const sorted = arr => [...arr].sort((a,b) => {
@@ -1292,7 +1271,6 @@ function render() {
 }
 
 // ---------- rank progress ----------
-let focusName = null;
 // Chart selection: null = all players shown (default). Clicking a player while all are shown
 // shows ONLY that player; further clicks add/remove players. Unticking the last one shows all again.
 localStorage.removeItem('padelChartHidden');                 // old saved selection no longer used
@@ -1957,7 +1935,7 @@ function amHistoryCard(w, f, rankOf, addShown) {
   const key = 'am-' + w.id;
   return `<div class="hb hb-am">
     <div class="hb-head">
-      <div><b>${new Date(w.date + 'T' + (w.time || '12:00')).toLocaleString()}</b>
+      <div><b>${fmtDate(w.date)}</b>
         ${typeBadge('Americano')} <span class="legend">${w.note ? '· ' + esc(w.note) + ' ' : ''}· ${ps.length} players · not counted on the leaderboard</span></div>
       <button class="del hb-btn" data-amrm="${w.id}">Remove from history</button>
     </div>
@@ -2020,7 +1998,7 @@ function renderHistory() {
     const nGames = (b.games || []).filter(hit).length;
     return `<div class="hb">
       <div class="hb-head">
-        <div><b>${new Date(playedTs(b)).toLocaleString()}</b> ${(b.games || []).length ? typeBadge('Competitive') : ''} <span class="legend">· ${esc(b.source)}${b.by ? ` · by ${esc(b.by)}` : ''} · ${all} record${all>1?'s':''}</span></div>
+        <div><b>${(() => { const w = calendar.find(x => x.batch === b.id); return w ? fmtDate(w.date) + (w.time ? ' · ' + esc(w.time) : '') : fmtDate(ymd(new Date(b.ts))); })()}</b> ${(b.games || []).length ? typeBadge('Competitive') : ''} <span class="legend">· ${esc(b.source)}${b.by ? ` · by ${esc(b.by)}` : ''} · ${all} record${all>1?'s':''}</span></div>
         <button class="del hb-btn" data-batch="${b.id}">Remove entire session</button>
       </div>
       <table><thead><tr><th style="text-align:left">Player</th><th>W</th><th>D</th><th>L</th><th>Points</th><th></th></tr></thead><tbody>
@@ -2091,7 +2069,6 @@ document.querySelectorAll('th').forEach(th => th.onclick = () => {
 
 // ---------- players (Configuration) ----------
 const EMOJI_GROUPS = {"Sport": ["🎾", "🏓", "🏸", "⚽", "🏀", "🏈", "⚾", "🏐", "🏉", "🥎", "🏆", "🥇", "🥈", "🥉", "🏅", "🎯", "🥅", "⛳", "🏋️", "🤸", "🏃", "🚴", "🧗", "🤾"], "Mood": ["🔥", "⚡", "💪", "👑", "⭐", "🌟", "✨", "💫", "🚀", "💥", "💯", "🎉", "🥳", "😎", "🤘", "🤙", "👊", "✌️", "👏", "🙌", "🫡", "😈", "👻", "🤖", "👽", "🧠", "💀", "🥶", "🥵", "😤", "🤓", "🤠", "🥷", "🦸", "🧙"], "Animals": ["🐐", "🐪", "🐌", "🦈", "🐙", "🦁", "🐯", "🐻", "🐼", "🦊", "🐺", "🦅", "🦉", "🐝", "🦋", "🐬", "🐳", "🦖", "🐉", "🦄", "🐸", "🐵", "🦍", "🦒", "🦓", "🦘", "🐧", "🦩", "🐈", "🐕", "🐎", "🐂", "🦬", "🐊", "🐢", "🦀", "🦞", "🦑"], "Food": ["🍔", "🌮", "🌯", "🍕", "🍟", "🌭", "🥪", "🍣", "🍜", "🥘", "🍝", "🥩", "🍗", "🥓", "🌶️", "🥦", "🍆", "🥑", "🍑", "🍈", "🍉", "🍋", "🍓", "🍒", "🍍", "🥥", "🍌", "🍎", "🥕", "🌽", "🧀", "🥐", "🍩", "🍪", "🎂", "🍫", "🍿", "☕", "🍺", "🍷", "🍸", "🥂", "🧃", "🥤", "🍦", "🍨", "🥧", "🍳", "🥚", "🥞", "🥯", "🥗", "🎈", "🤡", "Ⓜ️"], "Other": ["⛪", "🪄", "🤏", "💦", "🔫", "🧤", "🍀", "🌈", "🌊", "☀️", "🌙", "❄️", "🎸", "🎧", "🎮", "🎲", "♟️", "💎", "💰", "🧲", "🔮", "🛸", "🏎️", "⚓", "🗿"]};
-const EMOJIS = Object.values(EMOJI_GROUPS).flat();
 let editingPlayer = null;
 function renderPlayersCfg() {
   const f = $('npFilter').value.trim().toLowerCase();
@@ -2287,7 +2264,7 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
 const PAIRINGS = [ [[0,3],[1,2]], [[0,2],[1,3]], [[0,1],[2,3]] ];
 
 // ---------- calendar ----------
-const CKEY = 'padelCalendar', KEY_PLAYERS = 12, MIN_RES = 3, FKEY = 'padelFee';
+const CKEY = 'padelCalendar', MIN_RES = 3, FKEY = 'padelFee';
 let fee = parseFloat(load(FKEY) ?? '13.5');
 const PINKEY = 'padelPinHash';
 let pinHash = load(PINKEY) || '';                      // SHA-256 of the deletion PIN ('' = no PIN set)
@@ -2356,7 +2333,6 @@ function renderMatchup() {
     const pr = predictMatch(predContext(), [mu[0], mu[1]], [mu[2], mu[3]]), ea = pr.pA;
     const pA = Math.round(ea * 100), pB = 100 - pA, even = pA === pB, favA = pA > pB;
     const ch = v => `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
-    const winA = RATING.K * (1 - ea), lossA = RATING.K * (0 - ea);
     const low = mu.filter(n => !(byName[n]?.games)).length;
     out = `<div class="mu-res">
       <div class="pr-pcts" style="font-size:1rem"><b class="${favA && !even ? 'pr-win' : ''}">Team 1 · ${pA}%</b><b class="${!favA && !even ? 'pr-win' : ''}">${pB}% · Team 2</b></div>
@@ -2548,10 +2524,10 @@ function autoCourts(w) {
   const rest = all.slice(cap), len = Math.max(MIN_RES, +w.resSlots || MIN_RES, rest.length);
   w.reserves = [...rest, ...Array(len - rest.length).fill('')];
 }
-function normalizeWeek(w) {
+function normalizeWeek(w, rearrange = false) {        // rearrange = re-apply auto courts (only after a change to the week)
   if (isSubmitted(w)) return false;
   const before = JSON.stringify([w.players, w.reserves, w.subs, w.courts, w.maxCourts]);
-  autoCourts(w);
+  if (rearrange) autoCourts(w);
   const res = w.reserves.filter(Boolean);
   const len = Math.max(MIN_RES, +w.resSlots || MIN_RES, res.length);   // 3 slots unless more were added
   let moved = false;
@@ -2856,7 +2832,7 @@ function setAvailable(w, name, on) {
     if (w.subs) { delete w.subs[name]; }
     delete w.res;
   }
-  normalizeWeek(w);
+  normalizeWeek(w, true);                               // availability changed → rearrange courts
 }
 function renderAvailability() {
   if (!$('avSheet')) return;
@@ -2947,7 +2923,7 @@ function autoSessionDate(yy, mm, from, to) {
 // New session with the same settings as the most recent one (time, venue, courts), Competitive by default.
 function createAutoSession(date) {
   const last = [...calendar].sort((a, b) => b.date.localeCompare(a.date))[0] || {};
-  const courts = String(last.courts || 3);
+  const courts = String(last.maxCourts || last.courts || 3);
   const w = { id:uid(), date, time:last.time || '17:30', type:'Competitive', courts, maxCourts:courts, note:last.note || '',
               players:Array(+courts * 4).fill(''), reserves:Array(MIN_RES).fill(''), auto:true };
   calendar.push(w);
@@ -3180,7 +3156,7 @@ function renderCalendar() {
       alert(`${minMsg(el.value)} This week has been set to ${mn} courts (${mn * 4} players).`);
     }
     else w[el.dataset.f] = el.dataset.f==='note' ? el.value.trim() : el.value;
-    normalizeWeek(w); saveCal(); render();
+    normalizeWeek(w, true); saveCal(); render();
   });
   $('calList').querySelectorAll('input[data-cl]').forEach(inp => inp.onchange = () => {
     const w = find(inp.dataset.cl), c = +inp.dataset.c, v = inp.value.trim();
@@ -3304,10 +3280,7 @@ function applyMode() {
   const ban = $('roBanner');
   if (SNAP) {
     ban.style.display = '';
-    ban.textContent = SNAP.label
-      ? `📦 Archive view: ${SNAP.label} · saved ${new Date(SNAP.published).toLocaleString()} (read-only)`
-      : `📢 Read-only view · last updated ${new Date(SNAP.published).toLocaleString()}`;
-    if (SNAP.label) document.title = `Padel Squad – ${SNAP.label} (Archive)`;
+    ban.textContent = `📢 Read-only view · last updated ${new Date(SNAP.published).toLocaleString()}`;
   }
   else ban.style.display = 'none';
   // leaving the config page open is fine; but if a viewer is on an edit-only panel nothing breaks
