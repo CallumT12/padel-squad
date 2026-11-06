@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Padel Squad</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -286,6 +286,41 @@
   /* same size / weight as the "Points per match" and "Number of rounds" controls */
   .sync-line { margin:-12px 0 14px; text-align:center; font-size:.75rem; }
   body:not(:has(#cfg.panel.active)) .sync-line { display:none; }   /* only on the Settings page */
+  .ts-d { display:inline-block; min-width:8.6em; font-variant-numeric:tabular-nums; }
+  .ts-t { display:inline-block; min-width:3.2em; font-variant-numeric:tabular-nums; }
+  .ts-sep { display:inline-block; margin:0 .6em; }
+  #abInfo .ab-l { margin-right:.5em; font-weight:600; }
+  #abInfo { display:inline-flex; align-items:center; flex-wrap:wrap; align-self:center; line-height:1.3; }
+  /* anchored navigation – desktop: sticky top bar with every tab · mobile: fixed bottom bar (4 + More) */
+  html body .tabs { display:none !important; }          /* replaced by the anchored nav (kept in the page – the nav drives it) */
+  .bnav { position:sticky; top:0; z-index:150; display:flex; justify-content:center; gap:6px; margin:12px auto 18px; padding:6px;
+    max-width:1100px; box-sizing:border-box; background:var(--surface, var(--card)); border:1px solid var(--border, var(--line));
+    border-radius:16px; box-shadow:0 4px 16px rgba(0,0,0,.06); }
+  .bnav .bn { flex:1 1 0; min-width:0; max-width:170px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    height:54px; min-height:54px; padding:0 4px; border:0; border-radius:12px; background:transparent; color:var(--muted);
+    font-size:.78rem; font-weight:600; cursor:pointer; }
+  .bnav .bn:hover:not(.active) { background:var(--section); color:var(--text, var(--txt)); }
+  .bnav .bn span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .bnav .bn svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .bnav .bn.active { color:var(--primary); background:var(--selected); }
+  .bnav .bn-mob, .bn-menu { display:none; }
+  .sync-line { margin:-8px 0 14px !important; }
+  @media (max-width:768px) {
+    body { padding-bottom:calc(68px + env(safe-area-inset-bottom)); }
+    .bnav { position:fixed; top:auto; left:0; right:0; bottom:0; margin:0; max-width:none; border:0; border-radius:0; gap:0;
+      border-top:1px solid var(--border, var(--line)); box-shadow:0 -4px 16px rgba(0,0,0,.08);
+      padding:6px max(6px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)); }
+    .bnav .bn { max-width:none; height:52px; min-height:52px; padding:0 2px; font-size:.68rem; }
+    .bnav .bn-desk { display:none; }
+    .bnav .bn-mob { display:flex; }
+    .bn-menu { display:flex; position:absolute; right:max(8px, env(safe-area-inset-right)); bottom:calc(100% + 8px); min-width:180px; display:flex; flex-direction:column;
+      padding:6px; background:var(--surface, var(--card)); border:1px solid var(--border, var(--line)); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.18); }
+    .bn-menu[hidden] { display:none; }
+    .bn-menu button { height:44px; min-height:44px; text-align:left; padding:0 14px; border:0; border-radius:8px; background:transparent; color:var(--text, var(--txt)); font-weight:600; }
+    .bn-menu button.active { background:var(--selected); color:var(--primary); }
+    .cs-pop { z-index:220; }
+  }
+  @media print { .bnav { display:none !important; } }
   .pred-sub { margin:22px 0 10px; }
   .am-courtnames { gap:10px; margin:6px 0 14px; }
   .am-courtnames input.am-cl { width:120px; height:38px !important; min-height:38px !important; font-size:.9rem !important; font-weight:400;
@@ -753,6 +788,20 @@
   <h1>Padel <span>Squad</span></h1>
   <div class="sub" id="roBanner" style="display:none;color:var(--primary);font-weight:600"></div>
 </header>
+<!-- ============ NAVIGATION: anchored top bar on desktop (all tabs) · bottom bar on mobile (4 + More) ============ -->
+<nav class="bnav" aria-label="Main navigation">
+  <button type="button" class="bn" data-bn="board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg><span>Leaderboard</span></button>
+  <button type="button" class="bn" data-bn="avail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
+  <button type="button" class="bn" data-bn="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM5 7c3 2 3 8 0 10M19 7c-3 2-3 8 0 10"/></svg><span>Matches</span></button>
+  <button type="button" class="bn bn-desk" data-bn="event"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9M20 20v-4h-4"/></svg><span>Americano</span></button>
+  <button type="button" class="bn" data-bn="pred"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l5-6 4 3 7-9M15 7h5v5"/></svg><span>Predictor</span></button>
+  <button type="button" class="bn bn-desk" data-bn="hist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg><span>Match History</span></button>
+  <button type="button" class="bn bn-mob" id="bnMore" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg><span>More</span></button>
+  <div class="bn-menu" id="bnMenu" hidden>
+    <button type="button" data-bn="event">Americano</button>
+    <button type="button" data-bn="hist">Match History</button>
+  </div>
+</nav>
 <main>
   <div class="tabs">
     <button class="tab active" data-tab="board">Leaderboard</button>
@@ -929,19 +978,19 @@
 
     <div class="card edit">
       <h3>🗄️ Backups</h3>
-      <div class="legend" style="margin:0 0 10px">A full backup (scores, history, calendar, fee, payments) is saved automatically once a week when anyone opens the site. Only the latest <b>3</b> backups are kept – older ones are deleted automatically.</div>
+      <div class="legend" style="margin:0 0 10px">A full backup (scores, history, calendar, fee, payments) is saved automatically once a week when anyone opens the site. Only the latest <b>3</b> backups are kept.</div>
       <div class="row">
         <button type="button" id="abNow">Back up now</button>
-        <button type="button" class="sec" id="exportBtn">Export to file</button>
-        <button type="button" class="sec" id="importBtn">Import from file</button>
+        <button type="button" class="sec" id="exportBtn">Export Player Data</button>
+        <button type="button" class="sec" id="importBtn">Import Player Data</button>
         <input type="file" id="importFile" accept=".json,application/json" style="display:none">
         <span class="legend" id="abInfo" style="margin:0"></span>
       </div>
       <div style="max-height:300px;overflow:auto;margin-top:8px"><table><tbody id="abList"></tbody></table></div>
       <div class="legend">
         <b>Back up now</b> saves a backup online (counts towards the 3 kept).<br>
-        <b>Export to file</b> downloads all data as a .json file to keep on your computer.<br>
-        <b>Import from file</b> restores a .json file (replaces all current data for everyone).
+        <b>Export Player Data</b> downloads all data as a .json file to keep on your computer.<br>
+        <b>Import Player Data</b> restores a .json file (replaces all current data for everyone).
       </div>
       <div class="msg" id="abMsg"></div>
       <div class="msg" id="dataMsg"></div>
@@ -2496,6 +2545,9 @@ $('calAdd').onclick = () => {
   msg.classList.add('ok'); msg.textContent = `Added match on ${fmtDate(date)} – players can now tick their availability.`;
 };
 $('calPast').onchange = () => renderCalendar();
+// fixed-width date + time (so rows / lines don't shift as the day number or month name changes)
+const stampHtml = ts => { const d = new Date(ts); return `<span class="ts-d">${fmtDate(ymd(d))}</span><span class="ts-sep">·</span><span class="ts-t">${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}</span>`; };
+const fmtStamp = ts => { const d = new Date(ts); return `${fmtDate(ymd(d))} · ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
 const fmtDate = d => new Date(d + 'T00:00').toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short', year:'numeric' });
 
 // ---- calendar → courts ----
@@ -3257,7 +3309,7 @@ $('importFile').onchange = async () => {
   try {
     const j = JSON.parse(await f.text());
     if (j.app !== 'padel-leaderboard' || !j.data) throw new Error('Not a padel leaderboard backup file.');
-    if (!confirm(`Restore backup from ${new Date(j.exported).toLocaleString()}?\nThis replaces ALL current data${CLOUD ? ' in Supabase for everyone' : ' in this browser'}.`)) return;
+    if (!confirm(`Restore backup from ${fmtStamp(j.exported)}?\nThis replaces ALL current data${CLOUD ? ' in Supabase for everyone' : ' in this browser'}.`)) return;
     if (CLOUD) { applyData(j.data); render(); await pushChanges(); dmsg('Backup restored to Supabase.'); return; }
     DATA_KEYS().forEach(k => localStorage.removeItem(k));
     Object.entries(j.data).forEach(([k, v]) => localStorage.setItem(k, v));
@@ -3450,24 +3502,24 @@ async function renderBackups() {
   const m = $('abMsg'); m.className = 'msg'; m.textContent = '';
   try {
     const list = await listBackups();
-    $('abInfo').textContent = list.length ? ` Last backup: ${new Date(list[0].at).toLocaleString()} · next automatic one after ${new Date(new Date(list[0].at).getTime() + WEEK_MS).toLocaleDateString()}` : ' No backups yet.';
-    $('abList').innerHTML = list.map(b => `<tr><td class="name" style="text-align:left">${new Date(b.at).toLocaleString()}</td>
+    $('abInfo').innerHTML = list.length ? `<span class="ab-l">Last backup:</span>${stampHtml(list[0].at)}<span class="ts-sep">·</span><span class="ab-l">Next automatic update:</span><span class="ts-d">${fmtDate(ymd(new Date(new Date(list[0].at).getTime() + WEEK_MS)))}</span>` : 'No backups yet.';
+    $('abList').innerHTML = list.map(b => `<tr><td class="name" style="text-align:left" data-at="${b.at}">${stampHtml(b.at)}</td>
       <td><span class="pill">${b.kind === 'manual' ? 'Manual' : 'Weekly'}</span></td>
       <td><button type="button" class="sec" data-abdl="${b.id}">Download</button></td>
       <td><button type="button" class="sec" data-abrs="${b.id}">Restore</button></td>
       <td><button type="button" class="del" style="display:inline-block!important" data-abdel="${b.id}">Delete</button></td></tr>`).join('');
     $('abList').querySelectorAll('[data-abdel]').forEach(btn => btn.onclick = async () => {
-      if (!confirm(`Delete the backup from ${btn.closest('tr').cells[0].textContent}?`)) return;
+      if (!confirm(`Delete the backup from ${fmtStamp(btn.closest('tr').cells[0].dataset.at)}?`)) return;
       try { await deleteBackup(btn.dataset.abdel); renderBackups(); }
       catch (e) { m.className = 'msg err'; m.textContent = 'Delete failed: ' + (e.message || e) + ' – run supabase-backups.sql again to allow deleting.'; }
     });
     $('abList').querySelectorAll('[data-abdl]').forEach(btn => btn.onclick = async () => {
       const d = await getBackup(btn.dataset.abdl);
-      download(`padel-auto-backup-${btn.closest('tr').cells[0].textContent.replace(/[^0-9]+/g,'-')}.json`,
+      download(`padel-auto-backup-${(() => { const d = new Date(btn.closest('tr').cells[0].dataset.at); return ymd(d) + '_' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0'); })()}.json`,
         JSON.stringify({ app:'padel-leaderboard', version:1, exported:new Date().toISOString(), data:d }, null, 2), 'application/json');
     });
     $('abList').querySelectorAll('[data-abrs]').forEach(btn => btn.onclick = async () => {
-      if (!confirm(`Restore the backup from ${btn.closest('tr').cells[0].textContent}?\nThis replaces ALL current data${CLOUD ? ' for everyone' : ''}. A backup of the current data is taken first.`)) return;
+      if (!confirm(`Restore the backup from ${fmtStamp(btn.closest('tr').cells[0].dataset.at)}?\nThis replaces ALL current data${CLOUD ? ' for everyone' : ''}. A backup of the current data is taken first.`)) return;
       try {
         await makeBackup('manual');
         applyData(await getBackup(btn.dataset.abrs)); render();
@@ -3665,6 +3717,26 @@ renderPinState();
   }, true);
   addEventListener('scroll', e => { if (pop && !pop.contains(e.target) && Date.now() > quietUntil) close(false); }, true);
   addEventListener('resize', () => { if (Date.now() > quietUntil) close(false); });
+})();
+
+// ---------- mobile bottom nav ----------
+(() => {
+  const menu = $('bnMenu'), more = $('bnMore');
+  const closeMenu = () => { menu.hidden = true; more.setAttribute('aria-expanded', 'false'); };
+  const sync = () => {
+    const id = document.querySelector('.panel.active')?.id;
+    document.querySelectorAll('.bnav .bn[data-bn]').forEach(b => b.classList.toggle('active', b.dataset.bn === id));
+    more.classList.toggle('active', id === 'event' || id === 'hist');
+    menu.querySelectorAll('[data-bn]').forEach(b => b.classList.toggle('active', b.dataset.bn === id));
+  };
+  document.querySelectorAll('.bnav [data-bn]').forEach(b => b.onclick = () => {
+    document.querySelector(`.tab[data-tab="${b.dataset.bn}"]`)?.click();
+    closeMenu(); sync(); scrollTo({ top:0 });
+  });
+  more.onclick = e => { e.stopPropagation(); menu.hidden = !menu.hidden; more.setAttribute('aria-expanded', String(!menu.hidden)); };
+  document.addEventListener('click', e => { if (!menu.hidden && !e.target.closest('.bnav')) closeMenu(); });
+  new MutationObserver(sync).observe(document.querySelector('main'), { subtree:true, attributes:true, attributeFilter:['class'] });
+  sync();
 })();
 
 applyMode();
