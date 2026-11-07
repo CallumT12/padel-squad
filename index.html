@@ -145,7 +145,7 @@
   input.court-label:hover, input.court-label:focus { color:var(--txt); border-style:solid; background:var(--inp); }
   a.plink { color:inherit; text-decoration:none; border-bottom:1px dashed var(--bd); cursor:pointer; }
   a.plink:hover { color:var(--acc); border-bottom-color:var(--acc); }
-  .ov { position:fixed; inset:0; background:rgba(2,6,23,.6); display:flex; align-items:flex-start; justify-content:center; z-index:50; padding:40px 16px; overflow:auto; }
+  .ov { position:fixed; inset:0; background:rgba(2,6,23,.6); display:flex; align-items:flex-start; justify-content:center; z-index:180; padding:40px 16px; overflow:auto; }
   .ov[hidden] { display:none; }
   .ov-card { position:relative; background:var(--card); color:var(--txt); border-radius:16px; padding:24px; width:min(860px, 100%); box-shadow:0 20px 60px rgba(0,0,0,.4); }
   .ov-x { position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background:var(--line); color:var(--txt); font-size:1.4rem; line-height:1; padding:0; }
@@ -154,10 +154,10 @@
   a.pf-edit:hover { filter:brightness(.85); }
   .pf-head { display:flex; align-items:center; gap:14px; margin-right:40px; }
   .pf-rec { margin:8px 0 16px; font-weight:700; display:flex; align-items:center; flex-wrap:wrap; gap:12px; line-height:1; }
-  .pf-rec { min-height:24px; justify-content:center; }
-  .pf-rec .pf-tot { display:inline-flex; align-items:center; gap:4px; min-width:190px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .pf-rec { min-height:24px; justify-content:center; flex-direction:row; flex-wrap:wrap; gap:12px; text-align:center; }
+  .pf-rec .pf-tot { display:inline-flex; align-items:center; justify-content:center; gap:4px; min-width:190px; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .pf-rec .pf-tot > span { display:inline-block; min-width:44px; text-align:center; }
-  .pf-rec .pf-form { display:inline-flex; align-items:center; gap:2px; min-width:118px; }
+  .pf-rec .pf-form { display:inline-flex; align-items:center; justify-content:center; gap:2px; min-width:118px; }
   .pf-rec .pf-form .fd { margin:0; vertical-align:middle; }
   .pf-stats { grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)) !important; }
   .pf-stats .stat { background:var(--bg); } .pf-stats .v { font-size:1.2rem; }
@@ -366,7 +366,16 @@
   .pf-kpi { font-size:1.6rem; font-weight:800; color:var(--acc); line-height:1; font-variant-numeric:tabular-nums; }
   .pf-kpi.pf-rt { padding-left:18px; border-left:2px solid var(--line); }
   .pf-mode { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin:12px 0 4px; }
-  .pf-mode button { height:34px; min-height:34px; padding:0 16px; width:130px; text-align:center; justify-content:center; }
+  /* profile tabs: same look as the main navigation bar */
+  .pf-mode { display:flex; flex-wrap:nowrap; justify-content:center; gap:6px; margin:14px auto 8px; padding:6px; max-width:520px; box-sizing:border-box;
+    background:var(--surface, var(--card)); border:1px solid var(--border, var(--line)); border-radius:16px; box-shadow:0 4px 16px rgba(0,0,0,.06); }
+  .pf-mode .pf-tab { flex:1 1 0; min-width:0; width:auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    height:54px; min-height:54px; padding:0 4px; border:0; border-radius:12px; background:transparent; color:var(--muted);
+    font-size:.78rem; font-weight:600; cursor:pointer; }
+  .pf-mode .pf-tab:hover:not(.active) { background:var(--section); color:var(--text, var(--txt)); }
+  .pf-mode .pf-tab span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .pf-mode .pf-tab svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .pf-mode .pf-tab.active { color:var(--primary); background:var(--selected); }
   .month-side h4 { margin:0 0 8px; }
   .month-side h4.ms-head { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center; margin:0 0 10px; font-size:1.05rem; font-weight:700; } .month-side td, .month-side th { padding:6px; font-size:.85rem; }
   @media (max-width:900px) { .month-body { grid-template-columns:1fr; } .month-side { position:static; } }
@@ -528,9 +537,9 @@
   .res-n { color:#b7862b; font-size:.75rem; font-weight:700; }
 
   /* Availability: fixed player column + always 5 equal week columns */
-  .av-table.av-fixed { table-layout:fixed; width:100% !important; min-width:860px; }
-  .av-fixed col.av-col-name { width:180px; } .av-fixed col.av-col-wk { width:auto; }
-  .av-fixed .av-name { width:180px; max-width:180px; overflow:hidden; text-overflow:ellipsis; }
+  .av-table.av-fixed { table-layout:fixed; width:100% !important; min-width:800px; }
+  .av-fixed col.av-col-name, .av-fixed col.av-col-wk { width:16.666%; }          /* player column = same width as each week column */
+  .av-fixed .av-name { width:auto; min-width:0; max-width:none; overflow:hidden; text-overflow:ellipsis; }
   .av-fixed .av-wk { min-width:0; }
   .av-fixed th.av-empty { color:var(--muted) !important; background:var(--section); }
   .av-fixed td.av-none { color:var(--border); background:var(--section); }
@@ -735,8 +744,9 @@
     /* any wide table can scroll sideways inside its card instead of breaking the page */
     .card, .hb, .month-side { overflow-x:auto; }
     /* player profile: full-screen sheet */
-    .ov { padding:0 !important; }
-    .ov-card { border-radius:0 !important; min-height:100vh; padding:16px 12px !important; }
+    .ov { padding:0 !important; z-index:200 !important; overscroll-behavior:contain; }   /* sits above the bottom nav (z-index 150) */
+    .ov-card { border-radius:0 !important; width:100% !important; min-height:100vh; min-height:100dvh; padding:calc(16px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important; }
+    .ov-x { position:fixed; top:calc(10px + env(safe-area-inset-top)); right:max(10px, env(safe-area-inset-right)); z-index:1; }
     .pf-head { flex-wrap:wrap; margin-right:36px; gap:10px; }
     .pf-kpis { margin-left:0; width:100%; justify-content:flex-start; }
     .pf-editbox { flex-wrap:wrap !important; } .pf-editbox input { width:100% !important; flex:1 1 100%; }
@@ -776,6 +786,39 @@
   .game select.wdl { background-position:right 8px center; background-size:10px 7px; padding-right:24px !important; padding-left:8px !important; }
   .plist.picks select, .slot select { background-position:right 10px center; padding-right:30px !important; }
   .plist select.subsel { background-image:none; padding-right:4px !important; }
+
+  /* tighter spacing between sections (all pages) */
+  .stats { margin-bottom:12px; }
+  .card { margin-bottom:12px; }
+  .hb, .cw, details.month { margin-bottom:12px; }
+  .pf-sec { margin-top:14px; }
+  .pred-sub { margin:14px 0 8px; }
+  .panel h3[style*="margin:22px"], .panel h3[style*="margin:18px"] { margin-top:12px !important; }
+  .card[style*="margin-top:16px"] { margin-top:0 !important; }
+  .sync-line { margin:-8px 0 8px !important; }
+  /* calendar: Available / Reserve picker in each cell */
+  .av-fixed td.av-cell { height:auto; }
+  .av-pick { position:relative; display:block; width:100%; max-width:130px; margin:0 auto; }
+  /* calendar scrolls with the page (no inner scroll box), so every player is reachable */
+  .av-wrap { max-height:none; }
+  @media (min-width:900px) {
+    #avail > .card { overflow:visible; }
+    .av-wrap { overflow:visible; }
+    .av-table thead th { top:68px; }                    /* week headers stay visible just under the sticky nav bar */
+  }
+  .av-cnt { position:relative; display:inline-block; }                       /* keeps 12/12 centred; the +R pill hangs off its right side */
+  .av-cnt .av-rpill { position:absolute; left:100%; top:0; margin:4px 0 0 4px; white-space:nowrap; }
+  .av-fixed .av-sel { display:block; width:100%; height:30px; min-height:30px; padding:0 22px 0 8px !important; font-size:.78rem; font-weight:600; color:transparent; background-position:right 8px center; }
+  .av-lab { position:absolute; left:6px; right:24px; top:0; bottom:0; display:flex; align-items:center; justify-content:center; font-size:.78rem; font-weight:600; color:var(--muted); pointer-events:none; white-space:nowrap; overflow:hidden; }
+  .av-pick.on .av-sel { background-color:var(--primary); border-color:var(--primary); background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.75 6 6.25l4.5-4.5' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  .av-pick.on .av-lab { color:#fff; }
+  .av-pick.res .av-sel { background-color:#e9a23b; border-color:#e9a23b; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.75 6 6.25l4.5-4.5' fill='none' stroke='%233a2606' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  .av-pick.res .av-lab { color:#3a2606; }
+  @media (min-width:769px) {
+    header { padding:14px 24px 4px; }
+    .bnav { margin:8px auto 12px; }
+    .card { padding:16px; }
+  }
 </style>
 </head>
 <body>
@@ -793,12 +836,12 @@
   <button type="button" class="bn" data-bn="board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg><span>Leaderboard</span></button>
   <button type="button" class="bn" data-bn="avail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg><span>Calendar</span></button>
   <button type="button" class="bn" data-bn="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM5 7c3 2 3 8 0 10M19 7c-3 2-3 8 0 10"/></svg><span>Matches</span></button>
-  <button type="button" class="bn bn-desk" data-bn="event"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9M20 20v-4h-4"/></svg><span>Americano</span></button>
-  <button type="button" class="bn" data-bn="pred"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l5-6 4 3 7-9M15 7h5v5"/></svg><span>Predictor</span></button>
+  <button type="button" class="bn" data-bn="event"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9M20 20v-4h-4"/></svg><span>Americano</span></button>
+  <button type="button" class="bn bn-desk" data-bn="pred"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l5-6 4 3 7-9M15 7h5v5"/></svg><span>Predictor</span></button>
   <button type="button" class="bn bn-desk" data-bn="hist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M3 12a9 9 0 1 0 3-6.7M3 4v4h4"/></svg><span>Match History</span></button>
   <button type="button" class="bn bn-mob" id="bnMore" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg><span>More</span></button>
   <div class="bn-menu" id="bnMenu" hidden>
-    <button type="button" data-bn="event">Americano</button>
+    <button type="button" data-bn="pred">Predictor</button>
     <button type="button" data-bn="hist">Match History</button>
   </div>
 </nav>
@@ -1603,7 +1646,7 @@ function openProfile(name) {
       </div>
     </div>
     <div class="pf-mode" role="group" aria-label="Games included">
-      ${[['competitive', 'Competitive'], ['americano', 'Americano'], ['combined', 'Combined']].map(([k, t]) => `<button type="button" class="${pfMode === k ? 'primary' : 'sec'}" data-pfmode="${k}" aria-pressed="${pfMode === k}">${t}</button>`).join('')}
+      ${[['competitive', 'Competitive', 'M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4'], ['americano', 'Americano', 'M20 11a8 8 0 0 0-14.3-4.9M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9M20 20v-4h-4'], ['combined', 'Combined', 'M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5']].map(([k, t, ic]) => `<button type="button" class="pf-tab${pfMode === k ? ' active' : ''}" data-pfmode="${k}" aria-pressed="${pfMode === k}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ic}"/></svg><span>${t}</span></button>`).join('')}
     </div>
     <div class="pf-rec">
       <span class="pf-tot"><span class="w">${tot.w} W</span> · <span class="d">${tot.d} D</span> · <span class="l">${tot.l} L</span></span>
@@ -1639,7 +1682,6 @@ function openProfile(name) {
       <tbody>${st.opps.map(o => `<tr><td class="name"><a href="#" class="plink" data-player="${esc(o.name)}">${esc(o.name)}</a></td><td>${o.played}</td>
         <td class="w">${o.w}</td><td class="d">${o.d}</td><td class="l">${o.l}</td><td><b>${((o.w * 3 + o.d) / (o.played * 3) * 100).toFixed(0)}%</b></td></tr>`).join('')}</tbody>
     </table></div>` : '<div class="legend">No head-to-head games recorded yet.</div>'}
-    <div class="legend" style="margin-top:8px">${pfMode === 'combined' ? 'Head-to-head, rivals, partners and streaks use all games with known teams (Competitive matches and Americano scores)' : pfMode === 'americano' ? 'Head-to-head, rivals, partners and streaks use Americano games only (win = more points scored)' : 'Head-to-head, rivals, partners and streaks use Competitive matches only'}</div>
     </div>
     <div class="pf-sec">
       <h3>Best Partner</h3>
@@ -2158,6 +2200,7 @@ function renamePlayer(oldName, newName) {
   batches.forEach(b => (b.games || []).forEach(g => { if (g.a) g.a = g.a.map(sw); if (g.b) g.b = g.b.map(sw); }));
   calendar.forEach(w => {
     w.players = w.players.map(sw); w.reserves = w.reserves.map(sw);
+    if (w.av && w.av[oldName]) { w.av[n] = w.av[oldName]; delete w.av[oldName]; }
     if (w.amOrder) w.amOrder = w.amOrder.map(sw);
     if (w.lineup) w.lineup = w.lineup.map(ct => ct.map(sw));
     if (w.subs) { const s2 = {}; Object.entries(w.subs).forEach(([k, v]) => s2[sw(k)] = sw(v)); w.subs = s2; }
@@ -2178,6 +2221,7 @@ function removePlayer(name) {
   results = results.filter(r => r.name !== name);
   roster = roster.filter(n => n !== name);
   weeks.forEach(w => {
+    if (w.av) delete w.av[name];
     w.players = w.players.map(n => n === name ? '' : n);
     w.reserves = w.reserves.map(n => n === name ? '' : n);
     delete w.res;
@@ -2564,16 +2608,24 @@ const isSubmitted = w => !!(w.batch && batches.some(b => b.id === w.batch));
 // between the game type's minimum and the week's chosen maximum; the rest are reserves.
 // e.g. max 3 courts · 5 available → 1 court + 1 reserve · 10 → 2 courts + 2 reserves · 12 → 3 courts.
 const autoCourtsOn = w => w.type !== 'Americano' && !isSubmitted(w) && w.date >= today() && !(w.res && Object.keys(w.res).length);
+// Availability picks: w.av[name] = { t: time of pick, r: true when they chose "Reserve" instead of "Available" }.
+// Earliest pick first; weeks from before this feature have no time, so their current order is kept (and ranks ahead of newer picks).
+const isResPick = (w, n) => !!(w.av && w.av[n] && w.av[n].r);
+function byPick(w, names) {
+  return names.map((n, i) => ({ n, i, t:(w.av && w.av[n] && w.av[n].t) || 0 })).sort((a, b) => a.t - b.t || a.i - b.i).map(x => x.n);
+}
 function autoCourts(w) {
   if (!autoCourtsOn(w)) return;
   if (!w.maxCourts) w.maxCourts = String(nCourts(w));            // existing weeks: today's courts become the maximum
-  const all = [...w.players.filter(Boolean), ...w.reserves.filter(Boolean)];
+  // court places go to "Available" players first (earliest pick first); "Reserve" picks only fill in to complete a court
+  const pool = [...w.players.filter(Boolean), ...w.reserves.filter(Boolean)];
+  const all = [...byPick(w, pool.filter(n => !isResPick(w, n))), ...byPick(w, pool.filter(n => isResPick(w, n)))];
   const max = +w.maxCourts, min = Math.min(max, minCourts(w.type));
   const n = Math.max(min, Math.min(max, Math.floor(all.length / 4)));
   const cap = n * 4;
   w.courts = String(n);
   w.players = [...all.slice(0, cap), ...Array(Math.max(0, cap - all.length)).fill('')];
-  const rest = all.slice(cap), len = Math.max(MIN_RES, +w.resSlots || MIN_RES, rest.length);
+  const rest = byPick(w, all.slice(cap)), len = Math.max(MIN_RES, +w.resSlots || MIN_RES, rest.length);   // reserves ranked by who picked first
   w.reserves = [...rest, ...Array(len - rest.length).fill('')];
 }
 function normalizeWeek(w, rearrange = false) {        // rearrange = re-apply auto courts (only after a change to the week)
@@ -2867,23 +2919,34 @@ function submitWeek(w) {
 }
 
 // ---------- Availability sheet ----------
-// Ticking a week adds the player to that week: a free key place if there is one, otherwise the
-// end of the reserves. Unticking removes them; normalizeWeek() then moves the next reserve up.
-function setAvailable(w, name, on) {
+// mode: 'a' = Available (takes a free court place if there is one, otherwise joins the reserves),
+//        'r' = Reserve (only fills in when a place is free or is needed to complete a court),
+//        ''  = not available (removes them; normalizeWeek() then moves the next reserve up).
+// Reserves are always ranked by who picked first (R1 = earliest pick).
+function setAvailable(w, name, mode) {
   if (isSubmitted(w)) return;
-  const inKey = w.players.includes(name), inRes = w.reserves.includes(name);
-  if (on && !inKey && !inRes) {
-    const free = w.players.indexOf('');
+  mode = mode === true ? 'a' : (mode === 'a' || mode === 'r') ? mode : '';
+  const inKey = w.players.includes(name), inRes = w.reserves.includes(name), on = inKey || inRes;
+  w.av = w.av || {};
+  if (mode && !on) {
+    const free = mode === 'a' ? w.players.indexOf('') : -1;
     if (free >= 0) w.players[free] = name;
     else { const r = w.reserves.filter(Boolean); r.push(name); w.reserves = r; w.resSlots = Math.max(+w.resSlots || MIN_RES, r.length); }
+    w.av[name] = { t:Date.now(), r:mode === 'r' };
+    delete w.res;
+  } else if (mode && on && isResPick(w, name) !== (mode === 'r')) {     // switching Available <-> Reserve counts as a new pick
+    w.av[name] = { t:Date.now(), r:mode === 'r' };
+    if (mode === 'r' && inKey && !autoCourtsOn(w)) { w.players = w.players.map(n => n === name ? '' : n); w.reserves = [...w.reserves.filter(Boolean), name]; }
     delete w.res;
   }
-  if (!on && (inKey || inRes)) {
+  if (!mode && on) {
     w.players = w.players.map(n => n === name ? '' : n);
     w.reserves = w.reserves.map(n => n === name ? '' : n);
     if (w.subs) { delete w.subs[name]; }
+    delete w.av[name];
     delete w.res;
   }
+  w.reserves = byPick(w, w.reserves.filter(Boolean));   // rank reserves: earliest pick first
   normalizeWeek(w, true);                               // availability changed → rearrange courts
 }
 function renderAvailability() {
@@ -2920,34 +2983,37 @@ function renderAvailability() {
     }
     const w = sl.w, conf = w.players.filter(Boolean).length, res = w.reserves.filter(Boolean).length;
     return `<th class="av-wk"><div>${short(w.date)}</div><div class="legend" style="margin:0">${w.time || ''}</div><div style="margin:2px 0">${typeBadge(w.type)}</div>
-      <span class="pill${conf === capOf(w) ? ' full' : ''}">${conf}/${capOf(w)}</span>${res ? ` <span class="pill">+${res} R</span>` : ''}
+      <span class="av-cnt"><span class="pill${conf === capOf(w) ? ' full' : ''}">${conf}/${capOf(w)}</span>${res ? `<span class="pill av-rpill">+${res} R</span>` : ''}</span>
       ${locked(w) ? '<div class="legend" style="margin:2px 0 0">🔒 closed</div>' : ''}${sl.extra > 0 ? `<div class="legend" style="margin:2px 0 0">+${sl.extra} more this week (see Matches)</div>` : ''}</th>`;
   }).join('');
   const rows = names.map(n => `<tr><td class="av-name" title="${esc(n)}">${esc(n)}</td>${slots.map(sl => {
       if (!sl.w) {
         const d = sl.from <= daysIn ? autoSessionDate(yy, mm, sl.from, sl.to) : null;
         return d && d >= t
-          ? `<td class="av-cell av-new"><label><input type="checkbox" data-avnew="${d}" data-avn="${esc(n)}"></label></td>`
+          ? `<td class="av-cell av-new"><select class="av-sel" data-avnew="${d}" data-avn="${esc(n)}" aria-label="${esc(n)} availability"><option value="">–</option><option value="a">Available</option><option value="r">Reserve</option></select></td>`
           : '<td class="av-cell av-none">–</td>';
       }
       const w = sl.w, k = w.players.indexOf(n), r = w.reserves.filter(Boolean).indexOf(n), on = k >= 0 || r >= 0;
+      const val = !on ? '' : isResPick(w, n) ? 'r' : 'a';
+      const lab = k >= 0 ? (val === 'r' ? 'Reserve' : 'Available') : r >= 0 ? `Reserve R${r + 1}` : '–';   // shown on the dropdown itself
       return `<td class="av-cell${on ? (k >= 0 ? ' av-conf' : ' av-res') : ''}">
-        <label><input type="checkbox" data-avw="${w.id}" data-avn="${esc(n)}" ${on ? 'checked' : ''} ${locked(w) ? 'disabled' : ''}>
-        <span>${k >= 0 ? 'Confirmed' : r >= 0 ? `Reserve R${r + 1}` : ''}</span></label></td>`; }).join('')}</tr>`).join('');
+        <span class="av-pick${k >= 0 ? ' on' : r >= 0 ? ' res' : ''}"><select class="av-sel" data-avw="${w.id}" data-avn="${esc(n)}" ${locked(w) ? 'disabled' : ''} aria-label="${esc(n)} availability">
+          <option value="" ${val === '' ? 'selected' : ''}>–</option><option value="a" ${val === 'a' ? 'selected' : ''}>Available</option><option value="r" ${val === 'r' ? 'selected' : ''}>Reserve</option></select>
+        <span class="av-lab" aria-hidden="true">${lab}</span></span></td>`; }).join('')}</tr>`).join('');
   $('avSheet').innerHTML = `<div class="av-wrap"><table class="av-table av-fixed"><colgroup><col class="av-col-name">${'<col class="av-col-wk">'.repeat(5)}</colgroup>
     <thead><tr><th class="av-name av-search"><div style="margin-bottom:6px">Player</div>
       <input id="avFilter" placeholder="Search name" value="${esc(f0)}" autocomplete="off"></th>${head}</tr></thead><tbody>${rows ||
     '<tr><td class="av-name">No players match</td><td colspan="5"></td></tr>'}</tbody></table></div>`;
-  $('avSheet').querySelectorAll('input[data-avw]').forEach(cb => cb.onchange = () => keepAvPosition(cb, () => {
+  $('avSheet').querySelectorAll('select[data-avw]').forEach(cb => cb.onchange = () => keepAvPosition(cb, () => {
     const w = calendar.find(x => x.id === cb.dataset.avw);
-    setAvailable(w, cb.dataset.avn, cb.checked);
+    setAvailable(w, cb.dataset.avn, cb.value);
     saveCal(); render();
   }));
   // first tick in an empty week creates the session in Matches, then adds the player
-  $('avSheet').querySelectorAll('input[data-avnew]').forEach(cb => cb.onchange = () => keepAvPosition(cb, () => {
-    if (!cb.checked) return;
+  $('avSheet').querySelectorAll('select[data-avnew]').forEach(cb => cb.onchange = () => keepAvPosition(cb, () => {
+    if (!cb.value) return;
     const w = calendar.find(x => x.date === cb.dataset.avnew) || createAutoSession(cb.dataset.avnew);
-    setAvailable(w, cb.dataset.avn, true);
+    setAvailable(w, cb.dataset.avn, cb.value);
     saveCal(); render();
   }));
 }
@@ -2962,7 +3028,7 @@ function keepAvPosition(cb, fn) {
   if (w2) { w2.scrollTop = pos.top; w2.scrollLeft = pos.left; }
   scrollTo(pos.x, pos.y);
   const row = [...document.querySelectorAll('#avSheet tbody tr')].find(r => r.querySelector(`[data-avn="${CSS.escape(name)}"]`));
-  const target = row?.cells[col]?.querySelector('input');
+  const target = row?.cells[col]?.querySelector('input, select');
   if (target) target.focus({ preventScroll:true });
 }
 // The usual session day = weekday of the most recent session (Wednesday if none yet).
@@ -3233,6 +3299,7 @@ function renderCalendar() {
   $('calList').querySelectorAll('select[data-k]').forEach(sel => sel.onchange = () => {
     const w = find(sel.dataset.w);
     w[sel.dataset.k][+sel.dataset.i] = sel.value;
+    if (sel.value) { w.av = w.av || {}; if (!w.av[sel.value]) w.av[sel.value] = { t:Date.now(), r:false }; }   // manual placement ranks from now
     if (!isSubmitted(w)) delete w.res;          // courts may have changed – clear entered results
     saveCal(); renderCalendar();
   });
@@ -3322,7 +3389,7 @@ $('importFile').onchange = async () => {
   const rc0 = renderCalendar;
   renderCalendar = function() { rc0(); if (RO) $('cal').querySelectorAll('.cw select, .cw input').forEach(e => e.disabled = true); };
   const ra0 = renderAvailability;
-  renderAvailability = function() { ra0(); if (RO) $('avail').querySelectorAll('input[type=checkbox], button#avAddMonth').forEach(e => e.disabled = true); };
+  renderAvailability = function() { ra0(); if (RO) $('avail').querySelectorAll('input[type=checkbox], select.av-sel, button#avAddMonth').forEach(e => e.disabled = true); };
   const re0 = renderEvent;
   renderEvent = function() { re0(); if (RO) $('event').querySelectorAll('input, select[data-f], button[data-amshuffle]').forEach(e => e.disabled = true); };
 }
@@ -3726,7 +3793,7 @@ renderPinState();
   const sync = () => {
     const id = document.querySelector('.panel.active')?.id;
     document.querySelectorAll('.bnav .bn[data-bn]').forEach(b => b.classList.toggle('active', b.dataset.bn === id));
-    more.classList.toggle('active', id === 'event' || id === 'hist');
+    more.classList.toggle('active', id === 'pred' || id === 'hist');
     menu.querySelectorAll('[data-bn]').forEach(b => b.classList.toggle('active', b.dataset.bn === id));
   };
   document.querySelectorAll('.bnav [data-bn]').forEach(b => b.onclick = () => {
