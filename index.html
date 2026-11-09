@@ -651,14 +651,17 @@
   .pr-acc { margin-top:14px; }
   .pr-i { cursor:help; color:var(--muted); font-size:.85rem; margin-left:2px; }
   .pr-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:10px; }
-  .pr-row { display:grid; grid-template-columns:minmax(0,1fr) 130px minmax(0,1fr); grid-template-rows:auto auto; gap:4px 10px; align-items:center;
+  .pr-row { display:grid; grid-template-columns:minmax(0,1fr) 130px minmax(0,1fr); gap:4px 10px; align-items:center;
             padding:10px 12px; border:1px solid var(--border); border-radius:var(--radius-control); background:var(--surface); }
   .pr-row .gl { grid-column:1 / -1; margin:0; }
   .pr-team { font-size:.85rem; line-height:1.35; min-width:0; color:var(--muted); }
   .pr-team.pr-right { text-align:right; }
   .pr-team.pr-fav { color:var(--text); font-weight:700; }
   .pr-p sup { color:#b7862b; font-weight:700; margin-left:1px; }
-  .pr-team { align-self:start; }
+  .pr-team { align-self:center; }                      /* names and the % bar share the same vertical centre */
+  .pr-favcell { font-size:.85rem; line-height:1; }      /* Favourite sits on its own row below the favoured team */
+  .pr-favcell.pr-right { text-align:right; }
+  .pr-favcell .pr-tag { margin-top:0; }
   .pr-names { line-height:1.35; }
   .pr-tag-off { visibility:hidden; }
   .pr-ev { grid-column:1 / -1; font-size:.72rem; color:var(--muted); margin-top:6px; line-height:1.35; text-align:center; }
@@ -793,6 +796,37 @@
   .hb, .cw, details.month { margin-bottom:12px; }
   .pf-sec { margin-top:14px; }
   .pred-sub { margin:14px 0 8px; }
+  .mu-fav { display:flex; justify-content:center; min-height:22px; }     /* always reserves the row, so the player slots never move */
+  .mu-fav .pr-tag { margin:0; }
+  /* predictor: jump links + accuracy panel */
+  .pred-jump { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin:0 0 12px; }
+  .pred-jump button { height:auto; min-height:0; padding:6px 12px; border-radius:999px; font-size:.8rem; font-weight:600; background:var(--surface); color:var(--muted); border:1px solid var(--border); }
+  .pred-jump button:hover { background:var(--section); color:var(--text); }
+  #muCard, #predBody, #predAcc { scroll-margin-top:84px; }
+  .pa-metrics { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin:12px 0 18px; }
+  .pa-m { background:var(--section); border-radius:var(--radius-control); padding:12px; }
+  .pa-m .pa-lab { font-size:.8rem; color:var(--muted); } .pa-m .pa-num { font-size:1.5rem; font-weight:700; margin-top:2px; }
+  .pa-h { margin:0 0 4px; font-size:.95rem; }
+  .pa-months { position:relative; display:flex; align-items:flex-end; gap:12px; height:132px; padding:0 4px; margin-top:10px; border-bottom:1px solid var(--border); }
+  .pa-months::before { content:''; position:absolute; left:0; right:0; bottom:50px; border-top:1px dashed var(--bd); }
+  .pa-mo { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; }
+  .pa-mo span { font-size:.75rem; color:var(--muted); margin-bottom:3px; }
+  .pa-mo i { display:block; width:100%; max-width:44px; background:var(--primary); border-radius:4px 4px 0 0; }
+  .pa-mlab { display:flex; gap:12px; padding:6px 4px 18px; font-size:.75rem; color:var(--muted); text-align:center; }
+  .pa-mlab span { flex:1; } .pa-mlab em { font-style:normal; opacity:.8; }
+  .pa-row { display:grid; grid-template-columns:64px minmax(0, 1fr) 92px; gap:10px; align-items:center; font-size:.85rem; margin-top:10px; }
+  .pa-track { position:relative; height:10px; border-radius:5px; background:var(--section); }
+  .pa-track i { display:block; height:100%; border-radius:5px; background:var(--primary); }
+  .pa-track b { position:absolute; top:-3px; width:2px; height:16px; background:var(--text); }
+  .pa-val { text-align:right; font-variant-numeric:tabular-nums; } .pa-val span { color:var(--muted); }
+  .pa-rec { display:grid; grid-template-columns:56px minmax(0, 1fr) 44px 74px; gap:8px; align-items:center; padding:8px 0; border-top:1px solid var(--border); font-size:.85rem; }
+  .pa-rec .pa-d { color:var(--muted); } .pa-rec .pa-t { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .pa-rec .pa-t span { color:var(--muted); }
+  .pa-rec .pa-c { text-align:right; font-variant-numeric:tabular-nums; }
+  .pa-b { text-align:center; padding:2px 8px; border-radius:var(--radius-control); font-size:.75rem; font-weight:700; background:var(--section); color:var(--muted); }
+  .pa-b.ok { background:var(--selected); color:var(--primary); }
+  .pa-b.up { background:#fbf3e3; color:#8a6418; }
+  [data-theme=dark] .pa-b.up { background:#3a2f18; color:#e0b45a; }
+  @media (max-width:768px) { #muCard, #predBody, #predAcc { scroll-margin-top:12px; } .pa-rec { grid-template-columns:48px minmax(0, 1fr) 40px 66px; } }
   .panel h3[style*="margin:22px"], .panel h3[style*="margin:18px"] { margin-top:12px !important; }
   .card[style*="margin-top:16px"] { margin-top:0 !important; }
   .sync-line { margin:-8px 0 8px !important; }
@@ -1084,7 +1118,10 @@
   </section>
   <!-- ============ PREDICTOR ============ -->
   <section class="panel" id="pred">
-    <div class="card mu-card">
+    <nav class="pred-jump" aria-label="Jump to a section">
+      <button type="button" data-jump="predAcc">Prediction Accuracy</button>
+    </nav>
+    <div class="card mu-card" id="muCard">
       <h3 style="margin:0 0 12px">Match Predictor</h3>
       <div class="mu-grid">
         <div class="mu-team" id="muT1"></div>
@@ -1094,6 +1131,7 @@
       <div id="muResult"></div>
     </div>
     <div id="predBody"></div>
+    <div id="predAccBox"></div>
   </section>
 
   <!-- ============ FEEDBACK ============ -->
@@ -1423,7 +1461,7 @@ function weekFixtures(w, L) {
     return amSchedule(w, ps)
       .flatMap((courts, r) => courts.map(([a, b], c) => ({ a, b, label:`Round ${r + 1} · ${courtLabel(w, c)}` })));
   }
-  return L.courts.flatMap((ps, c) => PAIRINGS.map(([a, b], g) => ({ a:a.map(i => ps[i]), b:b.map(i => ps[i]), label:`${plainCourt(c + 1)} · Game ${g + 1}` })));
+  return L.courts.flatMap((ps, c) => PAIRINGS.map(([a, b], g) => ({ a:a.map(i => ps[i]), b:b.map(i => ps[i]), label:`${courtLabel(w, c)}${plainCourt(c + 1).replace(/^Court \d+/, '')} · Game ${g + 1}` })));
 }
 // ---------- prediction model (shared by Predicted Results and the Match Predictor) ----------
 // base = Player Rating win chance; then two small, capped nudges from Competitive history:
@@ -1488,13 +1526,14 @@ function predictionsHtml(w, L) {
     const uncertain = !model.matches || [...f.a, ...f.b].some(low);
     return `<div class="pr-row">
       <div class="gl">${f.label}</div>
-      <div class="pr-team ${favA && !even ? 'pr-fav' : ''}"><div class="pr-names">${f.a.map(who).join('<br>')}</div><span class="pr-tag${favA && !even ? '' : ' pr-tag-off'}">Favourite</span></div>
+      <div class="pr-team ${favA && !even ? 'pr-fav' : ''}"><div class="pr-names">${f.a.map(who).join('<br>')}</div></div>
       <div class="pr-mid">
         <div class="pr-bar" title="Win chance: ${p.pctA}% v ${p.pctB}%"><i class="${favA && !even ? 'pr-favbar' : ''}" style="width:${p.pctA}%"></i><i class="${!favA && !even ? 'pr-favbar' : ''}" style="width:${p.pctB}%"></i></div>
         <div class="pr-pcts"><b class="${favA && !even ? 'pr-win' : ''}">${p.pctA}%</b><b class="${!favA && !even ? 'pr-win' : ''}">${p.pctB}%</b></div>
         ${uncertain ? '<div class="pr-unc">low data</div>' : ''}
       </div>
-      <div class="pr-team pr-right ${!favA && !even ? 'pr-fav' : ''}"><div class="pr-names">${f.b.map(who).join('<br>')}</div><span class="pr-tag${!favA && !even ? '' : ' pr-tag-off'}">Favourite</span></div>
+      <div class="pr-team pr-right ${!favA && !even ? 'pr-fav' : ''}"><div class="pr-names">${f.b.map(who).join('<br>')}</div></div>
+      ${even ? '' : `<div class="pr-favcell">${favA ? '<span class="pr-tag">Favourite</span>' : ''}</div><div></div><div class="pr-favcell pr-right">${favA ? '' : '<span class="pr-tag">Favourite</span>'}</div>`}
       <div class="pr-ev">${predEvidence(r)}</div>
     </div>`;
   }).join('');
@@ -2408,12 +2447,16 @@ function renderMatchup() {
       <option value="">– Select player –</option>
       ${names.map(n => `<option value="${esc(n)}" data-aside="${rt(n).toFixed(2)}" ${mu[i] === n ? 'selected' : ''} ${mu[i] !== n && mu.includes(n) ? 'disabled' : ''}>${esc(n)}</option>`).join('')}
     </select></label>`;
+  // favourite team (needs all four players); same win-chance rule as the result below
+  let favTeam = 0;
+  if (mu.every(Boolean)) { const a = Math.round(predictMatch(predContext(), [mu[0], mu[1]], [mu[2], mu[3]]).pA * 100); favTeam = a === 100 - a ? 0 : a > 50 ? 1 : 2; }
   const team = (t, a, b) => {
     const full = mu[a] && mu[b];
     const me = t === 1 ? 'A' : 'B', other = t === 1 ? 'B' : 'A';
     const state = muRes === 'D' ? 'D' : muRes === me ? 'W' : muRes === other ? 'L' : '';
     return `<h4>Team ${t}</h4>${slot(a)}${slot(b)}
       <div class="mu-avg">${full ? `Team rating <b>${((rt(mu[a]) + rt(mu[b])) / 2).toFixed(2)}</b>` : '&nbsp;'}</div>
+      <div class="mu-fav"><span class="pr-tag${favTeam === t ? '' : ' pr-tag-off'}">Favourite</span></div>
       <div class="mu-wdl">${[['W', 'Win'], ['D', 'Draw'], ['L', 'Loss']].map(([k, txt]) =>
         `<button type="button" class="mu-r mu-r-${k}${state === k ? ' on' : ''}" data-mur="${k === 'D' ? 'D' : k === 'W' ? me : other}">${txt}</button>`).join('')}</div>`;
   };
@@ -2460,8 +2503,85 @@ $('muShuffle').onclick = () => {
   mu = next; renderMatchup();
 };
 // Predictor tab: predicted results for every upcoming Competitive / Americano match (same model as on Matches)
+// ---------- prediction accuracy ----------
+// Replays every tracked competitive game in date order and predicts each one using ONLY the games before it,
+// so a result is never used to predict itself. Imported totals have no teams, so they can't be checked.
+function predictionHistory() {
+  const has = new Set(results.map(r => r.batch + '\u0000' + r.name)), games = [];
+  [...batches].map((b, i) => ({ b, i })).sort((x, y) => (x.b.ts - y.b.ts) || (x.i - y.i)).forEach(({ b }) =>
+    (b.games || []).forEach(g => {
+      if (!['A', 'B', 'D'].includes(g.res) || g.a?.length !== 2 || g.b?.length !== 2) return;
+      if (![...g.a, ...g.b].every(n => has.has(b.id + '\u0000' + n))) return;
+      games.push({ a:g.a, b:g.b, res:g.res, ts:b.ts, court:g.court, batch:b.id });
+    }));
+  const rated = [], ratings = {}, played = {}, rows = [];
+  games.forEach(g => {
+    const four = [...g.a, ...g.b];
+    if (four.every(n => (played[n] || 0) >= 3)) {                       // needs a little history for every player
+      const pct = Math.round(predictMatch({ rated, ratings }, g.a, g.b).pA * 100);
+      if (pct !== 50) {
+        const favA = pct > 50;
+        rows.push({ ts:g.ts, court:g.court, batch:g.batch, fav:favA ? g.a : g.b, chance:favA ? pct : 100 - pct,
+                    out:g.res === 'D' ? 'D' : (g.res === 'A') === favA ? 'W' : 'L' });
+      }
+    }
+    rated.push({ a:g.a, b:g.b, res:g.res }); ratingApply(ratings, g.a, g.b, g.res, RATING.K);
+    four.forEach(n => played[n] = (played[n] || 0) + 1);
+  });
+  return { rows, total:games.length };
+}
+function renderAccuracy() {
+  const box = $('predAccBox'); if (!box) return;
+  const { rows, total } = predictionHistory(), n = rows.length;
+  const head = '<h3 style="margin:0 0 4px">Prediction Accuracy</h3>';
+  if (!n) {
+    box.innerHTML = `<div class="card" id="predAcc">${head}<div class="legend" style="margin:6px 0 0">Accuracy appears once competitive games have been recorded with their teams. Imported totals can't be checked, because they don't say who played whom.</div></div>`;
+    return;
+  }
+  const W = rows.filter(r => r.out === 'W').length, L = rows.filter(r => r.out === 'L').length, D = rows.filter(r => r.out === 'D').length;
+  const bands = [[51, 60, '51–60%'], [61, 70, '61–70%'], [71, 80, '71–80%'], [81, 100, '81%+']].map(([lo, hi, lab]) => {
+    const rs = rows.filter(r => r.chance >= lo && r.chance <= hi); if (!rs.length) return '';
+    const act = (rs.filter(r => r.out === 'W').length + rs.filter(r => r.out === 'D').length / 2) / rs.length * 100;
+    const pred = rs.reduce((s, r) => s + r.chance, 0) / rs.length;
+    return `<div class="pa-row"><span class="legend" style="margin:0">${lab}</span>
+      <div class="pa-track" title="Predicted ${Math.round(pred)}% · actual ${Math.round(act)}%"><i style="width:${act.toFixed(1)}%"></i><b style="left:${pred.toFixed(1)}%"></b></div>
+      <span class="pa-val">${Math.round(act)}% <span>(${rs.length})</span></span></div>`;
+  }).join('');
+  const dt = ts => new Date(ts).toLocaleDateString(undefined, { day:'numeric', month:'short' });
+  // monthly accuracy: share of checked games where the favourite won, last 6 months with games
+  const byMonth = {};
+  rows.forEach(r => { const d = new Date(r.ts), k = d.getFullYear() * 100 + d.getMonth(); const m = byMonth[k] = byMonth[k] || { ts:r.ts, n:0, w:0 }; m.n++; if (r.out === 'W') m.w++; });
+  const mk = Object.keys(byMonth).sort((a, b) => a - b).slice(-6).map(k => byMonth[k]);
+  const monthly = `<div class="pa-months">${mk.map(m => { const p = Math.round(m.w / m.n * 100); return `<div class="pa-mo"><span>${p}%</span><i style="height:${p}px"></i></div>`; }).join('')}</div>
+    <div class="pa-mlab">${mk.map(m => `<span>${new Date(m.ts).toLocaleDateString(undefined, { month:'short' })} ’${String(new Date(m.ts).getFullYear()).slice(-2)} <em>(${m.n})</em></span>`).join('')}</div>`;
+  // recent = every checked game from the latest weekly submission (normally 9 games)
+  const lastB = rows[n - 1].batch;
+  const recent = rows.filter(r => r.batch === lastB).map(r => `<div class="pa-rec"><span class="pa-d">${dt(r.ts)}</span>
+    <span class="pa-t">${r.court ? `Court ${r.court} <span>· </span>` : ''}${r.fav.map(esc).join(' &amp; ')}</span><span class="pa-c">${r.chance}%</span>
+    <span class="pa-b ${r.out === 'W' ? 'ok' : r.out === 'L' ? 'up' : ''}">${r.out === 'W' ? 'Correct' : r.out === 'L' ? 'Upset' : 'Draw'}</span></div>`).join('');
+  box.innerHTML = `<div class="card" id="predAcc">${head}
+    <div class="legend" style="margin:0">Each game is checked against the prediction made before it was played.</div>
+    <div class="pa-metrics">
+      <div class="pa-m"><div class="pa-lab">Games checked</div><div class="pa-num">${n}</div></div>
+      <div class="pa-m"><div class="pa-lab">Favourite won</div><div class="pa-num">${Math.round(W / n * 100)}%</div></div>
+      <div class="pa-m"><div class="pa-lab">Upsets</div><div class="pa-num">${L}</div></div>
+      <div class="pa-m"><div class="pa-lab">Draws</div><div class="pa-num">${D}</div></div>
+    </div>
+    <h4 class="pa-h">Monthly Accuracy</h4>
+    <div class="legend" style="margin:0">Share of games where the favourite won, by month. Dashed line = 50%. Games in brackets.</div>
+    ${monthly}
+    <h4 class="pa-h" style="margin-top:18px">Predicted Chance vs What Happened</h4>
+    <div class="legend" style="margin:0">Bar = how often the favourite actually won.</div>
+    ${bands}
+    <h4 class="pa-h" style="margin-top:18px">Recent Predictions</h4>
+    <div class="legend" style="margin:0">Latest weekly submission · ${dt(rows[n - 1].ts)}</div>
+    ${recent}
+    <div class="legend">Based on ${n} of ${total} tracked competitive games.${n < 10 ? ' Small sample so far – treat with caution.' : ''}</div>
+  </div>`;
+}
 function renderPredictor() {
   renderMatchup();
+  renderAccuracy();
   const box = $('predBody'); if (!box) return;
   const t = today(), rankOf = {}; aggregate().forEach(p => rankOf[p.name] = p);
   const weeks = calendar.filter(w => w.date >= t && w.type !== 'Swingers' && !isSubmitted(w)).sort((a, b) => a.date.localeCompare(b.date));
@@ -3806,6 +3926,7 @@ renderPinState();
   sync();
 })();
 
+document.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => document.getElementById(b.dataset.jump)?.scrollIntoView({ behavior:'smooth', block:'start' }));
 applyMode();
 if (CLOUD) { syncMsg('Loading…'); cloudRefresh(true).then(autoBackup); }
 else autoBackup();
