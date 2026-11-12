@@ -123,6 +123,10 @@
                  font-size:.8rem; font-weight:700; line-height:1; border-width:1px; vertical-align:middle; }
   .hb td.hb-act { text-align:right; padding-right:0; width:170px; }
   .hb table { width:100%; }
+  /* competitive sessions: the player table uses the full card width, W / D / L / Points evenly spaced */
+  .hb:not(.hb-am) table { table-layout:fixed; width:100%; }
+  .hb:not(.hb-am) th:first-child, .hb:not(.hb-am) td:first-child { width:32%; text-align:left; overflow-wrap:anywhere; }
+  .hb:not(.hb-am) th:not(:first-child), .hb:not(.hb-am) td:not(:first-child) { width:17%; text-align:center; }
   button.del { background:transparent; color:#ef4444; border:1px solid #ef4444; padding:4px 10px; font-size:.75rem; }
   button.del:hover { background:#ef4444; color:#fff; }
   details { margin-top:8px; font-size:.85rem; color:var(--mut); } summary { cursor:pointer; }
@@ -135,10 +139,12 @@
   #progTable tr.on td { background:var(--line); } #progTable td.name { cursor:pointer; }
   /* Players list: same row height/placement in view and edit mode */
   table.np-table { table-layout:fixed; width:100%; }
-  #npList td { height:44px; vertical-align:middle; overflow:hidden; }
-  #npList td:last-child { text-align:right; }
-  #npList .rn-btn { box-sizing:border-box; height:30px; min-width:76px; padding:0 10px; margin:0 0 0 4px; font-size:.8rem; font-weight:700; line-height:1; vertical-align:middle; }
-  #npList select.rn-emoji { width:96px; min-width:96px; padding:0 6px; }
+  .np-table th, #npList td { text-align:center; }
+  .np-table th:nth-child(2), #npList td.name { text-align:left; }
+  #npList td { height:44px; vertical-align:middle; padding-left:6px; padding-right:6px; }
+  #npList td.name { white-space:normal; overflow-wrap:anywhere; line-height:1.25; }          /* long / emoji names wrap instead of disappearing on mobile */
+  #npList .rn-btn { box-sizing:border-box; display:block; width:100%; max-width:84px; min-width:0; height:30px; padding:0 6px; margin:0 auto; font-size:.8rem; font-weight:700; line-height:1; }
+  #npList select.rn-emoji { max-width:240px; margin:4px 0 0; padding:0 6px; }
   #npList input.rn-in { box-sizing:border-box; width:100%; max-width:240px; height:30px; padding:0 8px; margin:0; font:inherit; font-weight:600; }
   input.court-label { width:92px; height:26px; padding:2px 6px; margin-left:6px; font-size:.8rem; font-weight:400;
                       color:var(--mut); background:transparent; border:1px dashed var(--bd); border-radius:6px; vertical-align:middle; }
@@ -175,6 +181,7 @@
   .am-row input.am-in { width:52px; min-width:0; height:36px; padding:2px 4px; text-align:center; font-weight:700; justify-self:center; }
   .am-row input.am-in::-webkit-inner-spin-button, .am-row input.am-in::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
   .am-row input.am-in { -moz-appearance:textfield; }
+  .am-row input.am-in:disabled { opacity:.75; cursor:not-allowed; background:var(--section); }
   .am-match .gl { text-align:center; margin-bottom:4px; }
   .am-table td, .am-table th { padding:6px 8px; }
   td.form { white-space:nowrap; }
@@ -444,7 +451,7 @@
   th { background:var(--section); color:var(--muted); font-size:.85rem; font-weight:600; text-transform:none; letter-spacing:0; }
   .hb td, .hb th, .am-table td, .am-table th { padding:8px 10px; }
   .month-side td, .month-side th { padding:7px 6px; } .month-side td:last-child, .month-side th:last-child { text-align:center; }
-  td.hb-act, #npList td:last-child { text-align:right; }
+  td.hb-act { text-align:right; }
 
   /* results colours */
   .w, .up { color:var(--win); } .d { color:var(--draw); } .l, .down { color:var(--loss); }
@@ -807,6 +814,37 @@
   .pa-m { background:var(--section); border-radius:var(--radius-control); padding:12px; }
   .pa-m .pa-lab { font-size:.8rem; color:var(--muted); } .pa-m .pa-num { font-size:1.5rem; font-weight:700; margin-top:2px; }
   .pa-h { margin:0 0 4px; font-size:.95rem; }
+  /* Predicted vs Actual chart */
+  .pa-chart { --pa-head:#14472f; --pa-dark:#14472f; --pa-mid:#8fd19e; --pa-text:#14472f; margin-top:18px; border:1px solid var(--border); border-radius:14px; overflow:hidden; background:var(--surface); }
+  [data-theme=dark] .pa-chart { --pa-head:#17402d; --pa-dark:#43b377; --pa-mid:#2e7a52; --pa-text:#8fe0b0; }
+  .pa-chead { display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--pa-head); color:#fff; }
+  .pa-ct { font-size:1.15rem; font-weight:800; line-height:1.2; } .pa-cs { margin-top:2px; font-size:.85rem; opacity:.92; }
+  .pa-cbody { padding:12px 16px 16px; }
+  .pa-leg { display:flex; justify-content:flex-end; gap:16px; font-size:.85rem; }
+  .pa-dot { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:6px; vertical-align:-1px; }
+  .pa-dot.pred { background:var(--pa-mid); } .pa-dot.act { background:var(--pa-dark); }
+  .pa-br { display:grid; grid-template-columns:80px minmax(0, 1fr) 96px; gap:14px; align-items:center; margin-top:30px; }
+  .pa-band { background:var(--selected); color:var(--pa-text); border-radius:10px; padding:12px 6px; text-align:center; font-weight:800; font-size:.95rem; }
+  .pa-pbar { position:relative; height:22px; border-radius:6px; background:var(--section); }
+  .pa-pbar i { display:block; height:100%; border-radius:6px 0 0 6px; background:var(--pa-mid); border-right:2px solid var(--pa-dark); box-sizing:border-box; }
+  .pa-pbar em { position:absolute; bottom:calc(100% + 5px); transform:translateX(-50%); font-style:normal; font-weight:800; font-size:.8rem; line-height:1; color:var(--pa-text); white-space:nowrap; }
+  .pa-abar { position:relative; height:22px; margin-top:8px; }
+  .pa-abar i { display:block; height:100%; border-radius:6px; background:var(--pa-dark); }
+  .pa-abar span { position:absolute; top:50%; transform:translateY(-50%); font-weight:800; font-size:.9rem; color:var(--text); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .pa-abar span.in { right:8px; color:#fff; }
+  .pa-abar small { font-weight:500; font-size:.8rem; color:var(--muted); } .pa-abar span.in small { color:rgba(255,255,255,.85); }
+  .pa-delta { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; text-align:center; background:var(--selected); color:var(--pa-text); border-radius:10px; padding:10px 6px; }
+  .pa-delta::before { content:''; position:absolute; left:-8px; top:-4px; bottom:-4px; border-left:1px solid var(--border); }
+  .pa-delta b { font-size:1.05rem; white-space:nowrap; } .pa-delta small { font-size:.7rem; color:var(--muted); }
+  .pa-take { display:flex; align-items:center; gap:12px; margin-top:22px; padding:12px 14px; border-radius:12px; background:var(--selected); font-size:.9rem; line-height:1.35; }
+  .pa-take b { color:var(--pa-text); }
+  .pa-i { flex:0 0 28px; width:28px; height:28px; border-radius:50%; background:var(--pa-dark); color:#fff; display:flex; align-items:center; justify-content:center; font:italic 800 .95rem serif; }
+  @media (max-width:520px) {
+    .pa-br { grid-template-columns:60px minmax(0, 1fr) 76px; gap:10px; }
+    .pa-band { padding:9px 2px; font-size:.78rem; }
+    .pa-delta b { font-size:.85rem; } .pa-delta small { font-size:.62rem; }
+    .pa-ct { font-size:1rem; } .pa-chead svg { width:28px; height:28px; }
+  }
   .pa-months { position:relative; display:flex; align-items:flex-end; gap:12px; height:132px; padding:0 4px; margin-top:10px; border-bottom:1px solid var(--border); }
   .pa-months::before { content:''; position:absolute; left:0; right:0; bottom:50px; border-top:1px dashed var(--bd); }
   .pa-mo { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; }
@@ -814,11 +852,6 @@
   .pa-mo i { display:block; width:100%; max-width:44px; background:var(--primary); border-radius:4px 4px 0 0; }
   .pa-mlab { display:flex; gap:12px; padding:6px 4px 18px; font-size:.75rem; color:var(--muted); text-align:center; }
   .pa-mlab span { flex:1; } .pa-mlab em { font-style:normal; opacity:.8; }
-  .pa-row { display:grid; grid-template-columns:64px minmax(0, 1fr) 92px; gap:10px; align-items:center; font-size:.85rem; margin-top:10px; }
-  .pa-track { position:relative; height:10px; border-radius:5px; background:var(--section); }
-  .pa-track i { display:block; height:100%; border-radius:5px; background:var(--primary); }
-  .pa-track b { position:absolute; top:-3px; width:2px; height:16px; background:var(--text); }
-  .pa-val { text-align:right; font-variant-numeric:tabular-nums; } .pa-val span { color:var(--muted); }
   .pa-rec { display:grid; grid-template-columns:56px minmax(0, 1fr) 44px 74px; gap:8px; align-items:center; padding:8px 0; border-top:1px solid var(--border); font-size:.85rem; }
   .pa-rec .pa-d { color:var(--muted); } .pa-rec .pa-t { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .pa-rec .pa-t span { color:var(--muted); }
   .pa-rec .pa-c { text-align:right; font-variant-numeric:tabular-nums; }
@@ -1008,6 +1041,15 @@
       <div class="row"><button type="button" id="pdfBtn" title="Export leaderboard and match history as PDF">Leaderboard + Match PDF export</button></div>
     </div>
     <div class="card edit">
+      <h3>🗑️ Remove Session</h3>
+      <div class="legend" style="margin:0 0 10px">Deletes a session from Match History. This is the only place sessions can be removed, and the deletion PIN is asked every time.</div>
+      <div class="row cal-form">
+        <label>Session<select id="rsSel" style="min-width:280px;max-width:100%"></select></label>
+        <button type="button" class="del" id="rsBtn">Remove Session</button>
+      </div>
+      <div class="msg" id="rsMsg"></div>
+    </div>
+    <div class="card edit">
       <h3>👥 Players</h3>
       <div class="row cal-form">
         <label>Search<input id="npFilter" placeholder="Find a player" style="width:200px"></label>
@@ -1016,7 +1058,7 @@
       </div>
       <div class="msg" id="npMsg"></div>
       <div style="max-height:420px;overflow:auto;margin-top:8px">
-        <table class="np-table"><colgroup><col style="width:64px"><col><col style="width:80px"><col style="width:80px"><col style="width:290px"></colgroup><thead><tr><th>Rank</th><th style="text-align:left">Player</th><th>Played</th><th>Points</th><th></th></tr></thead>
+        <table class="np-table"><colgroup><col style="width:13%"><col style="width:31%"><col style="width:17%"><col style="width:19%"><col style="width:20%"></colgroup><thead><tr><th>Rank</th><th style="text-align:left">Player</th><th>Matches</th><th>Edit</th><th>Remove</th></tr></thead>
         <tbody id="npList"></tbody></table>
       </div>
       <div class="legend">New players start in the Qualifier Zone with 0 games. Removing a player deletes all their results and takes them off upcoming calendar weeks.</div>
@@ -1031,7 +1073,7 @@
     </div>
     <div class="card edit">
       <h3>🔒 Deletion PIN</h3>
-      <div class="legend" style="margin:0 0 10px">When set, this PIN must be entered before removing records or sessions in Match History and before deleting Calendar weeks.</div>
+      <div class="legend" style="margin:0 0 10px">When set, this PIN must be entered every time a session is removed in Settings and before deleting Calendar weeks.</div>
       <div class="row cal-form">
         <label>Current PIN<input id="pinCur" type="password" inputmode="numeric" autocomplete="off" style="width:140px"></label>
         <label>New PIN<input id="pinNew" type="password" inputmode="numeric" autocomplete="off" style="width:140px"></label>
@@ -1392,6 +1434,7 @@ function render() {
   renderProgress();
   renderCalendar();
   renderPlayersCfg();
+  renderSessionRemove();
   renderEvent();
   renderAvailability();
   renderManualSession();
@@ -2067,7 +2110,6 @@ function amHistoryCard(w, f, rankOf, addShown) {
     <div class="hb-head">
       <div><b>${fmtDate(w.date)}</b>
         ${typeBadge('Americano')} <span class="legend">${w.note ? '· ' + esc(w.note) + ' ' : ''}· ${ps.length} players · not counted on the leaderboard</span></div>
-      <button class="del hb-btn" data-amrm="${w.id}">Remove from history</button>
     </div>
     <table><thead><tr><th style="text-align:left">Player</th><th>Played</th><th>Won</th><th>Drawn</th><th>Points</th><th>+/−</th></tr></thead><tbody>
       ${table.map(e => `<tr><td class="name">${esc(e.name)}</td><td>${e.played}</td><td class="w">${e.won}</td><td class="d">${e.drawn}</td>
@@ -2129,11 +2171,10 @@ function renderHistory() {
     return `<div class="hb">
       <div class="hb-head">
         <div><b>${(() => { const w = calendar.find(x => x.batch === b.id); return w ? fmtDate(w.date) + (w.time ? ' · ' + esc(w.time) : '') : fmtDate(ymd(new Date(b.ts))); })()}</b> ${(b.games || []).length ? typeBadge('Competitive') : ''} <span class="legend">· ${esc(b.source)}${b.by ? ` · by ${esc(b.by)}` : ''} · ${all} record${all>1?'s':''}</span></div>
-        <button class="del hb-btn" data-batch="${b.id}">Remove entire session</button>
       </div>
-      <table><thead><tr><th style="text-align:left">Player</th><th>W</th><th>D</th><th>L</th><th>Points</th><th></th></tr></thead><tbody>
+      <table><thead><tr><th style="text-align:left">Player</th><th>W</th><th>D</th><th>L</th><th>Points</th></tr></thead><tbody>
       ${recs.map(r => `<tr><td class="name">${esc(r.name)}</td><td class="w">${r.w}</td><td class="d">${r.d}</td><td class="l">${r.l}</td>
-        <td class="pts">${r.w*PTS.W + r.d*PTS.D}</td><td class="hb-act"><button class="del hb-btn" data-rec="${r.id}">Remove</button></td></tr>`).join('')}
+        <td class="pts">${r.w*PTS.W + r.d*PTS.D}</td></tr>`).join('')}
       </tbody></table>
       ${courtsH.length ? `<details class="res-acc" data-hbopen="${b.id}" ${histOpen.has(b.id) ? 'open' : ''}><summary><b>Results</b>
           <span class="pill full">${nGames} game${nGames > 1 ? 's' : ''}</span></summary>
@@ -2165,24 +2206,7 @@ function renderHistory() {
     results.forEach(r => { if (r.batch === b.id && tally[r.name]) Object.assign(r, tally[r.name]); });
     save(); render();
   });
-  $('history').querySelectorAll('[data-amrm]').forEach(btn => btn.onclick = async () => {
-    const w = calendar.find(x => x.id === btn.dataset.amrm); if (!w) return;
-    if (!confirm(`Remove the Americano on ${fmtDate(w.date)} from Match History?\nIts scores stay on the Americano tab and it can be submitted again.`)) return;
-    if (!(await checkPin())) return;
-    delete w.amHist; saveCal(); render();
-  });
-  $('history').querySelectorAll('[data-rec]').forEach(btn => btn.onclick = async () => {
-    const r = results.find(x => x.id===btn.dataset.rec);
-    if (!confirm(`Remove ${r.name}'s record (${r.w}W ${r.d}D ${r.l}L, ${r.w*3+r.d} pts)? The leaderboard will be recalculated.`)) return;
-    if (!(await checkPin())) return;
-    results = results.filter(x => x.id!==r.id); save(); render();
-  });
-  $('history').querySelectorAll('[data-batch]').forEach(btn => btn.onclick = async () => {
-    const n = results.filter(x => x.batch===btn.dataset.batch).length;
-    if (!confirm(`Remove this entire session (${n} player records)? The leaderboard will be recalculated.`)) return;
-    if (!(await checkPin())) return;
-    results = results.filter(x => x.batch!==btn.dataset.batch); save(); render();
-  });
+
 }
 $('hFilter').oninput = renderHistory;
 $('hMonth').onchange = renderHistory;
@@ -2206,15 +2230,16 @@ function renderPlayersCfg() {
   const list = aggregate().filter(p => !f || p.name.toLowerCase().includes(f));
   $('npList').innerHTML = list.map(p => p.name === editingPlayer
     ? `<tr><td><span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span></td>
-    <td class="name"><input id="rnName" class="rn-in" value="${esc(p.name)}" maxlength="40"></td><td>${p.games}</td><td class="pts">${p.points}</td>
-    <td style="white-space:nowrap"><select id="rnEmoji" class="rn-btn rn-emoji" title="Add an emoji to the name">
-        <option value="">+ Emoji</option>${Object.entries(EMOJI_GROUPS).map(([g, list]) => `<optgroup label="${g}">${list.map(e => `<option>${e}</option>`).join('')}</optgroup>`).join('')}</select>
-      <button type="button" id="rnSave" class="rn-btn">Save</button>
-      <button type="button" class="sec rn-btn" id="rnCancel">Cancel</button></td></tr>`
+    <td class="name"><input id="rnName" class="rn-in" value="${esc(p.name)}" maxlength="40">
+      <select id="rnEmoji" class="rn-btn rn-emoji" title="Add an emoji to the name">
+        <option value="">+ Emoji</option>${Object.entries(EMOJI_GROUPS).map(([g, list]) => `<optgroup label="${g}">${list.map(e => `<option>${e}</option>`).join('')}</optgroup>`).join('')}</select></td>
+    <td>${p.games}</td>
+    <td><button type="button" id="rnSave" class="rn-btn">Save</button></td>
+    <td><button type="button" class="sec rn-btn" id="rnCancel">Cancel</button></td></tr>`
     : `<tr><td><span class="rank sm${rc(p.rank,p.qual)}">${p.label}</span></td>
-    <td class="name">${esc(p.name)}</td><td>${p.games}</td><td class="pts">${p.points}</td>
-    <td style="white-space:nowrap"><button type="button" class="sec rn-btn" data-edp="${esc(p.name)}">Edit</button>
-      <button type="button" class="del rn-btn" data-rmp="${esc(p.name)}">Remove</button></td></tr>`).join('')
+    <td class="name">${esc(p.name)}</td><td>${p.games}</td>
+    <td><button type="button" class="sec rn-btn" data-edp="${esc(p.name)}">Edit</button></td>
+    <td><button type="button" class="del rn-btn" data-rmp="${esc(p.name)}">Remove</button></td></tr>`).join('')
     || '<tr><td colspan="5" class="legend">No players found.</td></tr>';
   $('npList').querySelectorAll('[data-rmp]').forEach(b => b.onclick = () => removePlayer(b.dataset.rmp));
   $('npList').querySelectorAll('[data-edp]').forEach(b => b.onclick = () => { editingPlayer = b.dataset.edp; renderPlayersCfg(); $('rnName').focus(); });
@@ -2226,6 +2251,40 @@ function renderPlayersCfg() {
     $('rnName').onkeydown = e => { if (e.key === 'Enter') $('rnSave').click(); if (e.key === 'Escape') $('rnCancel').click(); };
   }
 }
+// ---------- Remove Session (Settings only – the deletion PIN is asked every time) ----------
+function sessionOptions() {
+  const wkOf = b => calendar.find(x => x.batch === b.id);
+  const playedTs = b => { const w = wkOf(b); return w ? new Date(w.date + 'T' + (w.time || '12:00')).getTime() : b.ts; };
+  const dateOf = b => { const w = wkOf(b); return w ? fmtDate(w.date) + (w.time ? ' · ' + w.time : '') : fmtDate(ymd(new Date(b.ts))); };
+  const comp = batches.map(b => ({ b, n:results.filter(r => r.batch === b.id).length })).filter(x => x.n)
+    .map(({ b, n }) => ({ v:'c:' + b.id, ts:playedTs(b), label:`${dateOf(b)} · ${(b.games || []).length ? 'Competitive' : 'Manual entry'} · ${n} player records` }));
+  const am = calendar.filter(w => w.type === 'Americano' && w.amHist)
+    .map(w => ({ v:'a:' + w.id, ts:new Date(w.date + 'T' + (w.time || '12:00')).getTime(), label:`${fmtDate(w.date)} · Americano` }));
+  return [...comp, ...am].sort((x, y) => y.ts - x.ts);
+}
+function renderSessionRemove() {
+  const sel = $('rsSel'); if (!sel) return;
+  const keep = sel.value, opts = sessionOptions();
+  sel.innerHTML = '<option value="">Select a session…</option>' + opts.map(o => `<option value="${o.v}" ${o.v === keep ? 'selected' : ''}>${esc(o.label)}</option>`).join('');
+  $('rsBtn').disabled = !opts.length;
+}
+$('rsBtn').onclick = async () => {
+  const v = $('rsSel').value, m = $('rsMsg'); m.className = 'msg';
+  if (!v) { m.className = 'msg err'; m.textContent = 'Select a session first.'; return; }
+  const kind = v.slice(0, 1), id = v.slice(2), label = $('rsSel').selectedOptions[0].textContent;
+  if (kind === 'a') {
+    const w = calendar.find(x => x.id === id); if (!w) return;
+    if (!confirm(`Remove this Americano from Match History?\n\n${label}\n\nIts scores stay on the Americano tab and it can be submitted again.`)) return;
+    if (!(await checkPin())) return;
+    delete w.amHist; saveCal();
+  } else {
+    const n = results.filter(x => x.batch === id).length;
+    if (!confirm(`Remove this entire session (${n} player records)?\n\n${label}\n\nThe leaderboard will be recalculated.`)) return;
+    if (!(await checkPin())) return;
+    results = results.filter(x => x.batch !== id); save();
+  }
+  $('rsSel').value = ''; m.className = 'msg ok'; m.textContent = 'Session removed.'; render();
+};
 // Rename a player everywhere: results, players list, calendar weeks, match details, payments.
 function renamePlayer(oldName, newName) {
   const n = newName.trim().replace(/\s+/g, ' '), m = $('npMsg'); m.className = 'msg';
@@ -2539,14 +2598,33 @@ function renderAccuracy() {
     return;
   }
   const W = rows.filter(r => r.out === 'W').length, L = rows.filter(r => r.out === 'L').length, D = rows.filter(r => r.out === 'D').length;
-  const bands = [[51, 60, '51–60%'], [61, 70, '61–70%'], [71, 80, '71–80%'], [81, 100, '81%+']].map(([lo, hi, lab]) => {
-    const rs = rows.filter(r => r.chance >= lo && r.chance <= hi); if (!rs.length) return '';
-    const act = (rs.filter(r => r.out === 'W').length + rs.filter(r => r.out === 'D').length / 2) / rs.length * 100;
-    const pred = rs.reduce((s, r) => s + r.chance, 0) / rs.length;
-    return `<div class="pa-row"><span class="legend" style="margin:0">${lab}</span>
-      <div class="pa-track" title="Predicted ${Math.round(pred)}% · actual ${Math.round(act)}%"><i style="width:${act.toFixed(1)}%"></i><b style="left:${pred.toFixed(1)}%"></b></div>
-      <span class="pa-val">${Math.round(act)}% <span>(${rs.length})</span></span></div>`;
-  }).join('');
+  const bd = [[51, 60, '51–60%'], [61, 70, '61–70%'], [71, 80, '71–80%'], [81, 100, '81%+']].map(([lo, hi, lab]) => {
+    const rs = rows.filter(r => r.chance >= lo && r.chance <= hi); if (!rs.length) return null;
+    const act = (rs.filter(r => r.out === 'W').length + rs.filter(r => r.out === 'D').length / 2) / rs.length * 100;   // draws count as half a win
+    return { lab, n:rs.length, act, pred:rs.reduce((s, r) => s + r.chance, 0) / rs.length };
+  }).filter(Boolean);
+  const diffs = bd.map(x => Math.round(x.act) - Math.round(x.pred)), kb = bd.length;
+  const lower = diffs.filter(d => d <= -3).length, higher = diffs.filter(d => d >= 3).length;
+  const avgD = kb ? diffs.reduce((t, d) => t + d, 0) / kb : 0;
+  const where = kb === 1 ? 'in this range' : kb === 2 ? 'in both ranges' : `in all ${kb} ranges`;
+  const take = lower === kb ? `The favourite won ${Math.abs(avgD) >= 15 ? 'noticeably' : 'slightly'} less often than predicted, ${where}.`
+    : higher === kb ? `The favourite won ${avgD >= 15 ? 'noticeably' : 'slightly'} more often than predicted, ${where}.`
+    : !lower && !higher ? 'Actual results are close to the predictions.'
+    : `The favourite won less often than predicted in ${lower} of ${kb} ranges and more often in ${higher}.`;
+  const chart = `<div class="pa-chart">
+    <div class="pa-chead"><svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><rect x="5" y="20" width="7" height="15" rx="2" fill="#fff"/><rect x="16.5" y="12" width="7" height="23" rx="2" fill="#fff"/><rect x="28" y="4" width="7" height="31" rx="2" fill="#fff"/></svg>
+      <div><div class="pa-ct">Predicted vs Actual</div></div></div>
+    <div class="pa-cbody">
+      <div class="pa-leg"><span><i class="pa-dot pred"></i>Prediction</span><span><i class="pa-dot act"></i>Actual</span></div>
+      ${bd.map(x => { const pr = Math.round(x.pred), ac = Math.round(x.act), d = ac - pr;
+        return `<div class="pa-br"><div class="pa-band">${x.lab}</div>
+          <div class="pa-bars">
+            <div class="pa-pbar"><i style="width:${pr}%"></i><em style="left:${pr}%;${pr > 92 ? 'transform:translateX(-100%)' : ''}">${pr}%</em></div>
+            <div class="pa-abar"><i style="width:${ac}%"></i><span class="${ac > 78 ? 'in' : ''}" style="${ac > 78 ? '' : `left:calc(${ac}% + 8px)`}">${ac}% <small>(${x.n})</small></span></div>
+          </div>
+          <div class="pa-delta"><b>${d === 0 ? '≈ 0pp' : `${d < 0 ? '↓ −' : '↑ +'}${Math.abs(d)}pp`}</b><small>(${d < 0 ? 'actual lower' : d > 0 ? 'actual higher' : 'on target'})</small></div></div>`; }).join('')}
+      <div class="pa-take"><span class="pa-i">i</span><div><b>Key takeaway:</b><br>${take}</div></div>
+    </div></div>`;
   const dt = ts => new Date(ts).toLocaleDateString(undefined, { day:'numeric', month:'short' });
   // monthly accuracy: share of checked games where the favourite won, last 6 months with games
   const byMonth = {};
@@ -2570,9 +2648,7 @@ function renderAccuracy() {
     <h4 class="pa-h">Monthly Accuracy</h4>
     <div class="legend" style="margin:0">Share of games where the favourite won, by month. Dashed line = 50%. Games in brackets.</div>
     ${monthly}
-    <h4 class="pa-h" style="margin-top:18px">Predicted Chance vs What Happened</h4>
-    <div class="legend" style="margin:0">Bar = how often the favourite actually won.</div>
-    ${bands}
+    ${chart}
     <h4 class="pa-h" style="margin-top:18px">Recent Predictions</h4>
     <div class="legend" style="margin:0">Latest weekly submission · ${dt(rows[n - 1].ts)}</div>
     ${recent}
@@ -2737,9 +2813,8 @@ function byPick(w, names) {
 function autoCourts(w) {
   if (!autoCourtsOn(w)) return;
   if (!w.maxCourts) w.maxCourts = String(nCourts(w));            // existing weeks: today's courts become the maximum
-  // court places go to "Available" players first (earliest pick first); "Reserve" picks only fill in to complete a court
-  const pool = [...w.players.filter(Boolean), ...w.reserves.filter(Boolean)];
-  const all = [...byPick(w, pool.filter(n => !isResPick(w, n))), ...byPick(w, pool.filter(n => isResPick(w, n)))];
+  // current court places stay put; when a place opens (or a court needs completing) the reserves are promoted in queue order, earliest pick first
+  const all = [...w.players.filter(Boolean), ...byPick(w, w.reserves.filter(Boolean))];
   const max = +w.maxCourts, min = Math.min(max, minCourts(w.type));
   const n = Math.max(min, Math.min(max, Math.floor(all.length / 4)));
   const cap = n * 4;
@@ -2756,6 +2831,7 @@ function normalizeWeek(w, rearrange = false) {        // rearrange = re-apply au
   const len = Math.max(MIN_RES, +w.resSlots || MIN_RES, res.length);   // 3 slots unless more were added
   let moved = false;
   w.players = w.players.map(n => { if (n || !res.length) return n; moved = true; return res.shift(); });
+  if (w.av) w.players.forEach(n => { if (n && w.av[n] && w.av[n].r) w.av[n].r = false; });   // a reserve who gets a court place becomes Available
   w.reserves = [...res, ...Array(Math.max(0, len - res.length)).fill('')];
   if (moved) delete w.res;                              // courts changed – clear entered results
   // drop substitute notes for players no longer in the key players (or pointing at themselves after a rename)
@@ -2891,12 +2967,12 @@ function americanoHtml(w, L, rankOf) {
   const need = capOf(w);
   if (L.courts.length < nCourts(w) || ps.length < need)
     return `<div class="bench" style="margin-top:14px">Americano needs ${need} players across ${nCourts(w)} courts (${ps.length}/${need} so far).</div>`;
-  const rounds = amSchedule(w, ps), sc = w.amer || {}, max = amMax(w);
+  const rounds = amSchedule(w, ps), sc = w.amer || {}, max = amMax(w), lockAm = !!w.amHist;   // submitted to Match History → everything score-related is locked
   const pn = n => `<span title="P${ps.indexOf(n)+1}">${esc(n)}</span>`;
   const scored = rounds.reduce((t, cs, r) => t + cs.filter((_, c) => { const v = sc[`${r}-${c}`]; return v && v[0] !== '' && v[1] !== '' && v[0] != null && v[1] != null; }).length, 0);
   const key = w.id + '-am', open = resOpen[key] ?? true;
   const inp = (r, c, side) => { const v = sc[`${r}-${c}`]?.[side]; return `<input type="number" class="am-in" min="0" max="${max}" inputmode="numeric"
-      data-am="${w.id}" data-rc="${r}-${c}" data-side="${side}" value="${v ?? ''}">`; };
+      data-am="${w.id}" data-rc="${r}-${c}" data-side="${side}" value="${v ?? ''}" ${lockAm ? 'disabled' : ''}>`; };
   const roundsHtml = rounds.map((courts, r) => `
     <div class="court am-round"><h4>Round ${r+1}</h4>
       ${courts.map(([A, B], c) => `<div class="am-match">
@@ -2913,12 +2989,12 @@ ${inp(r, c, 1)}<span class="am-team">${B.map(pn).join('<br>')}</span></div>
         <span class="pill" style="font-weight:400">${rounds.length} rounds · ${nCourts(w)} courts</span></h3>
       <div class="row" style="margin:10px 0">
         <label style="flex-direction:row;align-items:center;gap:8px;font-size:.9rem;color:var(--txt)">Points per match
-          <input type="number" min="1" max="99" data-f="maxPts" data-w="${w.id}" value="${max}" style="width:80px;height:38px"></label>
+          <input type="number" min="1" max="99" data-f="maxPts" data-w="${w.id}" value="${max}" style="width:80px;height:38px" ${lockAm ? 'disabled' : ''}></label>
         <label style="flex-direction:row;align-items:center;gap:8px;font-size:.9rem;color:var(--txt);margin-left:16px">Number of rounds
-          <select data-f="amRounds" data-w="${w.id}" style="height:38px;width:80px">
+          <select data-f="amRounds" data-w="${w.id}" style="height:38px;width:80px" ${lockAm ? 'disabled' : ''}>
             ${Array.from({ length:ps.length - 1 }, (_, i) => i + 1).map(k => `<option value="${k}" ${k === rounds.length ? 'selected' : ''}>${k}</option>`).join('')}
           </select></label>
-        <button type="button" class="mu-shuffle edit" data-amshuffle="${w.id}" style="margin-left:16px">Shuffle</button>
+        <button type="button" class="mu-shuffle edit" data-amshuffle="${w.id}" style="margin-left:16px" ${lockAm ? 'disabled' : ''}>Shuffle</button>
       </div>
       <h3 style="margin:18px 0 6px">Court Names</h3>
       <div class="am-courtnames">
@@ -2926,10 +3002,13 @@ ${inp(r, c, 1)}<span class="am-team">${B.map(pn).join('<br>')}</span></div>
           value="${esc(courtLabel(w, c))}" placeholder="Court ${c + 1}" title="Court name at the venue – click to edit">`).join('')}
       </div>
       <div class="courts">${roundsHtml}</div>
-      <div class="row edit" style="margin-top:12px;justify-content:center">${w.amHist
+      <div class="row edit" style="margin-top:12px;justify-content:center">${lockAm
         ? `<span class="pill full">✓ In Match History</span>`
         : `<button type="button" data-amhist="${w.id}" ${scored === rounds.length * nCourts(w) ? '' : 'disabled title="Enter a score for every match first"'}>Submit to Match History</button>`}
       </div>
+      <div class="legend" style="text-align:center;margin-top:6px">${lockAm ? 'Scores are locked. To change them, remove this session from Match History in Settings.'
+        : scored === rounds.length * nCourts(w) ? 'All matches are scored – ready to submit. Scores lock once submitted.'
+        : `${rounds.length * nCourts(w) - scored} match${rounds.length * nCourts(w) - scored === 1 ? '' : 'es'} still need a score before this can be submitted.`}</div>
     </div>
     <h3 style="margin:22px 0 8px">Partner Schedule</h3>
     <div class="legend" style="margin:0 0 8px">Each player's partner and court in every round.</div>
@@ -2975,12 +3054,13 @@ function renderEvent() {
   const find = id => calendar.find(x => x.id === id);
   body.querySelectorAll('details.res-acc').forEach(d => d.ontoggle = () => { resOpen[d.dataset.acc] = d.open; });
   body.querySelectorAll('[data-f]').forEach(el => el.onchange = () => {
-    const wk = find(el.dataset.w); wk[el.dataset.f] = el.value;
+    const wk = find(el.dataset.w); if (wk.amHist) { renderEvent(); return; }          // submitted → locked
+    wk[el.dataset.f] = el.value;
     if (el.dataset.f === 'amRounds') delete wk.amHist;          // rounds changed → must be re-submitted when complete
     saveCal(); renderEvent(); renderHistory();
   });
   body.querySelectorAll('[data-amhist]').forEach(b => b.onclick = () => {
-    const wk = find(b.dataset.amhist);
+    const wk = find(b.dataset.amhist); if (wk.amHist) return;
     const L2 = weekLineup(wk, rankOf), ps2 = amPlayers(wk, L2), rs = amSchedule(wk, ps2), sc2 = wk.amer || {};
     const missing = rs.reduce((t, cs, r) => t + cs.filter((_, c) => { const v = sc2[`${r}-${c}`]; return !(v && v[0] !== '' && v[1] !== '' && v[0] != null && v[1] != null); }).length, 0);
     if (missing) return alert(`Enter a score for every match first (${missing} missing).`);
@@ -2994,13 +3074,14 @@ function renderEvent() {
     saveCal(); render();
   });
   body.querySelectorAll('[data-amshuffle]').forEach(b => b.onclick = () => {
-    const wk = find(b.dataset.amshuffle);
+    const wk = find(b.dataset.amshuffle); if (wk.amHist) return;                      // submitted → locked
     if (amHasScores(wk) && !confirm('Reshuffling creates new pairs and clears all scores entered for this Americano. Continue?')) return;
     wk.amSeed = 1 + Math.floor(Math.random() * 2e9); delete wk.amer; delete wk.amOrder; delete wk.amHist; wk.amOpt = true;
     saveCal(); renderEvent();
   });
   body.querySelectorAll('input[data-am]').forEach(inp => inp.onchange = () => {
     const wk = find(inp.dataset.am), max = amMax(wk), side = +inp.dataset.side;
+    if (wk.amHist) { renderEvent(); return; }               // submitted → scores are locked
     if (!wk.amOrder) wk.amOrder = ps.slice();              // lock P1…Pn once scoring starts
     if (!amHasScores(wk)) wk.amOpt = true;                  // scores entered on the low-movement layout
     const sc = (wk.amer ||= {}), cur = sc[inp.dataset.rc] || ['', ''];
@@ -3054,9 +3135,10 @@ function setAvailable(w, name, mode) {
     else { const r = w.reserves.filter(Boolean); r.push(name); w.reserves = r; w.resSlots = Math.max(+w.resSlots || MIN_RES, r.length); }
     w.av[name] = { t:Date.now(), r:mode === 'r' };
     delete w.res;
-  } else if (mode && on && isResPick(w, name) !== (mode === 'r')) {     // switching Available <-> Reserve counts as a new pick
-    w.av[name] = { t:Date.now(), r:mode === 'r' };
-    if (mode === 'r' && inKey && !autoCourtsOn(w)) { w.players = w.players.map(n => n === name ? '' : n); w.reserves = [...w.reserves.filter(Boolean), name]; }
+  } else if (mode && on && isResPick(w, name) !== (mode === 'r')) {
+    // Reserve -> Available keeps their place in the queue; Available -> Reserve gives up the court place and joins the back of the queue
+    w.av[name] = { t:mode === 'a' && w.av[name] ? w.av[name].t : Date.now(), r:mode === 'r' };
+    if (mode === 'r' && inKey) { w.players = w.players.map(n => n === name ? '' : n); w.reserves = [...w.reserves.filter(Boolean), name]; }
     delete w.res;
   }
   if (!mode && on) {
@@ -3115,7 +3197,7 @@ function renderAvailability() {
       }
       const w = sl.w, k = w.players.indexOf(n), r = w.reserves.filter(Boolean).indexOf(n), on = k >= 0 || r >= 0;
       const val = !on ? '' : isResPick(w, n) ? 'r' : 'a';
-      const lab = k >= 0 ? (val === 'r' ? 'Reserve' : 'Available') : r >= 0 ? `Reserve R${r + 1}` : '–';   // shown on the dropdown itself
+      const lab = k >= 0 ? 'Available' : r >= 0 ? `${val === 'r' ? 'Reserve' : 'Available'} R${r + 1}` : '–';   // shown on the dropdown itself
       return `<td class="av-cell${on ? (k >= 0 ? ' av-conf' : ' av-res') : ''}">
         <span class="av-pick${k >= 0 ? ' on' : r >= 0 ? ' res' : ''}"><select class="av-sel" data-avw="${w.id}" data-avn="${esc(n)}" ${locked(w) ? 'disabled' : ''} aria-label="${esc(n)} availability">
           <option value="" ${val === '' ? 'selected' : ''}>–</option><option value="a" ${val === 'a' ? 'selected' : ''}>Available</option><option value="r" ${val === 'r' ? 'selected' : ''}>Reserve</option></select>
